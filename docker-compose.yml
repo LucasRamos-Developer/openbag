@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: open-bag-postgres
+    environment:
+      POSTGRES_DB: openbag
+      POSTGRES_USER: openbag
+      POSTGRES_PASSWORD: openbag123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - open-bag-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: open-bag-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - open-bag-network
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: open-bag-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - open-bag-network
+
+  # Kibana (opcional, para visualizar dados do Elasticsearch)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: open-bag-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - open-bag-network
+
+  # Spring Boot Application
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: open-bag-app
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/openbag
+      - SPRING_DATASOURCE_USERNAME=openbag
+      - SPRING_DATASOURCE_PASSWORD=openbag123
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+      - elasticsearch
+    networks:
+      - open-bag-network
+    volumes:
+      - ./logs:/app/logs
+
+volumes:
+  postgres_data:
+  redis_data:
+  elasticsearch_data:
+
+networks:
+  open-bag-network:
+    driver: bridge
