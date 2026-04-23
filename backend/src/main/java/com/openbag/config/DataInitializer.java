@@ -1,9 +1,9 @@
 package com.openbag.config;
 
-import com.openbag.entity.Permission;
-import com.openbag.entity.Role;
-import com.openbag.repository.PermissionRepository;
-import com.openbag.repository.RoleRepository;
+import com.openbag.modules.user.entity.Permission;
+import com.openbag.modules.user.entity.Role;
+import com.openbag.modules.user.repository.PermissionRepository;
+import com.openbag.modules.user.repository.RoleRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;

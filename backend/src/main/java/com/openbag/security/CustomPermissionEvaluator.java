@@ -1,6 +1,6 @@
 package com.openbag.security;
 
-import com.openbag.service.AuthorizationService;
+import com.openbag.modules.shared.service.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.PermissionEvaluator;
