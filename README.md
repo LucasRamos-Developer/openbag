@@ -1,10 +1,10 @@
-# 🛍️ OpenBag
+# OpenBag
 
 > **Uma plataforma open source de delivery que conecta associações e cooperativas de entregadores com restaurantes, promovendo taxas justas e impacto social positivo.**
 
 ---
 
-## 🎯 Nossa Missão
+## Nossa Missão
 
 O OpenBag nasceu para **combater o monopólio** das grandes plataformas de delivery e oferecer uma alternativa justa, transparente e socialmente responsável.
 
@@ -14,7 +14,7 @@ Grandes empresas dominam o mercado de delivery e implementam taxas abusivas sem 
 
 - **Taxas elevadas** que sufocam restaurantes pequenos e médios
 - **Comissões que chegam a 30%** sobre cada pedido
-- **Mudanças unilaterais** de regras e preços (exemplo: taxa de R$ 1,99 implementada sem aviso)
+- **Mudanças unilaterais** de regras e preços (exemplo: taxa implementada sem aviso)
 - **Falta de proteção social** para entregadores autônomos
 - **Centralização de lucros** em detrimento de quem realmente trabalha
 
@@ -24,53 +24,55 @@ O OpenBag propõe um modelo **justo, transparente e cooperativo**:
 
 | Característica | Similares | OpenBag |
 |---------------|-------------------|---------|
-| **Comissão** | Até 30% por pedido | Taxa fixa de R$ 1,98* |
+| **Comissão** | Até 30% por pedido | Taxa fixa de R$ 3,98 por pedido |
 | **Transparência** | Mudanças unilaterais | Open source, auditável |
 | **Proteção Social** | Nenhuma | Modelo cooperativo viabiliza benefícios |
-| **Quem lucra?** | Shareholders | Restaurantes e entregadores |
+| **Quem lucra?** | Acionistas | Restaurantes e entregadores |
 | **Controle** | Centralizado | Descentralizado (cooperativas) |
 
-**Taxa dividida: R$ 0,99 para o restaurante + R$ 0,99 para a cooperativa de entregadores*
+**Como funciona a nossa taxa de R$ 3,98:**
+- **R$ 1,99 cobrado do Restaurante:** Valor destinado a manter a infraestrutura técnica do OpenBag rodando.
+- **R$ 1,99 cobrado do Entregador/Cooperativa:** A plataforma não lucra com isso. Esse valor é repassado integralmente para a cooperativa, que terá acesso a esse fundo exclusivo para dar suporte, proteção e benefícios ao seu entregador cooperado.
 
-💡 **O resto é todo de quem trabalha:** diferente de modelos que cobram percentual, nossa taxa fixa garante que o lucro real fique com restaurantes e entregadores, reduzindo custos para o consumidor.
+O resto do valor do pedido e da entrega é todo de quem trabalha. Diferente de modelos que cobram um percentual alto, nossa taxa fixa garante que o lucro real fique com os restaurantes e entregadores, reduzindo os custos até mesmo para o consumidor final.
 
 ---
 
-## 🤝 Impacto Social
+## Impacto Social
 
 O OpenBag foi pensado para fortalecer **associações e cooperativas de entregadores**. Diferente de plataformas que trabalham com autônomos isolados, **exigimos que entregadores sejam vinculados a uma cooperativa ou associação**.
 
 ### Por Que Apenas Cooperativas?
 
-O modelo cooperativo permite que a taxa de R$ 1,00 destinada aos entregadores seja usada para:
+O modelo cooperativo permite que aquele repasse de R$ 1,99 da entrega seja administrado de forma coletiva para oferecer:
 
-✅ **Seguro de vida e acidentes pessoais** para os membros  
-✅ **Planos de previdência e aposentadoria** coletivos  
-✅ **Suporte jurídico** compartilhado  
-✅ **Capacitação e treinamento** profissional  
-✅ **Representação coletiva** e voz ativa  
-✅ **Gestão democrática** das decisões
+- **Seguro de vida e acidentes pessoais** para os membros  
+- **Planos de previdência e aposentadoria** coletivos  
+- **Suporte jurídico** compartilhado  
+- **Capacitação e treinamento** profissional  
+- **Representação coletiva** e voz ativa  
+- **Gestão democrática** das decisões
 
-💡 **A plataforma não fornece esses serviços diretamente** - ela viabiliza que as cooperativas possam oferecê-los aos seus associados através da taxa destinada a elas.
+Nota: A plataforma não fornece esses serviços diretamente, ela viabiliza financeiramente para que as cooperativas possam oferecê-los aos seus associados. A cooperativa também é livre para definir taxas adicionais se os membros concordarem.
 
 ### Para Restaurantes
 
-✅ **Custos previsíveis** (sem surpresas de comissão)  
-✅ **Maior margem de lucro** por pedido  
-✅ **Controle sobre seus dados** e clientes  
-✅ **Parcerias locais** com cooperativas da região  
-✅ **Visibilidade justa** (sem leilão de posições)
+- **Custos previsíveis:** sem surpresas de comissões variáveis.
+- **Maior margem de lucro** por pedido.
+- **Controle sobre seus dados** e de seus clientes.
+- **Parcerias locais** com cooperativas da região.
+- **Visibilidade justa:** sem leilão de posições no aplicativo.
 
 ### Para Consumidores
 
-✅ **Preços mais baixos** (menos intermediação)  
-✅ **Transparência total** sobre taxas  
-✅ **Apoio à economia local** e cooperativismo  
-✅ **Contribuição para direitos trabalhistas** dos entregadores
+- **Preços mais baixos:** a redução da intermediação barateia o cardápio.
+- **Transparência total** sobre quem está recebendo as taxas.
+- **Apoio à economia local** e ao cooperativismo.
+- **Contribuição para direitos trabalhistas** dos entregadores.
 
 ---
 
-## 🚀 Como Funciona
+## Como Funciona
 
 ### 1. Restaurante se cadastra na plataforma
 Processo simples e gratuito, sem burocracias desnecessárias.
@@ -79,74 +81,35 @@ Processo simples e gratuito, sem burocracias desnecessárias.
 Associações e cooperativas locais se cadastram e conectam aos restaurantes da região.
 
 ### 3. Cliente faz pedido pelo app
-Interface simples e intuitiva, web e mobile.
+Interface simples e intuitiva, via web ou mobile.
 
 ### 4. Entregador associado realiza a entrega
-Entregador vinculado à cooperativa aceita e entrega usando rotas otimizadas (OpenStreetMap).
+O entregador vinculado à cooperativa aceita e entrega usando rotas otimizadas (via OpenStreetMap).
 
 ### 5. Taxas transparentes beneficiam todos
-- **R$ 1,00** vai para o restaurante (manutenção da plataforma)
-- **R$ 1,00** vai para a cooperativa (que pode usar para benefícios sociais)
-- **Todo o resto** fica com quem trabalhou: restaurante e entregador
+- **R$ 1,99** do restaurante (manutenção da plataforma OpenBag).
+- **R$ 1,99** do entregador (repassado para a cooperativa dar suporte ao cooperado).
+- **Todo o resto** fica com quem trabalhou (restaurante e entregador).
 
 ---
 
-## 🏗️ Arquitetura Técnica
+## Para Desenvolvedores
 
-```
-OpenBag/
-├── 📱 Frontend (Flutter)    → App mobile e web
-├── ☕ Backend (Spring Boot) → API REST (Java 21)
-├── 🗄️ PostgreSQL            → Banco de dados
-├── 🔍 Elasticsearch         → Busca de restaurantes
-├── 🗺️ OpenStreetMap         → Mapas (sem dependência do Google)
-└── 🐳 Docker Compose        → Deploy simplificado
-```
+Toda a parte técnica, arquitetura detalhada (Flutter, Spring Boot, PostgreSQL, Docker) e o guia completo para rodar o projeto localmente foram documentados separadamente para manter este repositório limpo.
 
-**[📖 Ver documentação técnica completa](README-DEVELOPER.md)**
-
----
-
-## 💻 Quick Start
-
-### Para Desenvolvedores
-
-```bash
-# 1. Clone o repositório
-git clone https://github.com/seu-usuario/openbag.git
-cd openbag
-
-# 2. Suba a infraestrutura
-docker compose up -d
-
-# 3. Rode o backend
-cd backend
-mvn spring-boot:run
-
-# 4. Rode o frontend
-cd frontend
-flutter run -d chrome
-```
-
-📚 **Para instruções detalhadas de desenvolvimento, consulte [README-DEVELOPER.md](README-DEVELOPER.md)**
-
-### Para Mantenedores: Publicar Landing Page
-
-Quer hospedar a landing page do projeto no GitHub Pages?
-
-🌐 **Veja o guia completo: [GITHUB_PAGES.md](GITHUB_PAGES.md)**
+**Consulte o [Guia de Desenvolvimento (README-DEVELOPER.md)](README-DEVELOPER.md)** para instruções de setup, variáveis de ambiente e padrões de código.
 
 ### Para Usuários (em breve)
 
-- 📱 **App Android**: Google Play Store _(em desenvolvimento)_
-- 🍎 **App iOS**: Apple App Store _(em desenvolvimento)_
-- 🌐 **Web**: https://openbag.app _(em desenvolvimento)_
+- **App Android**: Google Play Store (em desenvolvimento)
+- **App iOS**: Apple App Store (em desenvolvimento)
+- **Web**: https://openbag.app (em desenvolvimento)
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
-### ✅ Fase 1 - MVP (Atual)
+### Fase 1 - MVP (Atual)
 - [x] Cadastro de restaurantes
 - [x] Cadastro de clientes
 - [x] Carrinho de compras
@@ -154,21 +117,21 @@ Quer hospedar a landing page do projeto no GitHub Pages?
 - [x] Integração com OpenStreetMap
 - [x] Autenticação JWT
 
-### 🚧 Fase 2 - Cooperativas (Q2 2026)
+### Fase 2 - Cooperativas (Q2 2026)
 - [ ] Painel de gestão para cooperativas
 - [ ] Sistema de alocação de entregas
 - [ ] Relatórios financeiros
 - [ ] Integração com sistemas de pagamento
 - [ ] Dashboard de métricas sociais
 
-### 📅 Fase 3 - Expansão (Q3 2026)
+### Fase 3 - Expansão (Q3 2026)
 - [ ] App nativo para entregadores
 - [ ] Sistema de avaliações
 - [ ] Programa de fidelidade
 - [ ] Multi-idiomas
 - [ ] Expansão para outras cidades
 
-### 🔮 Fase 4 - Governança (Q4 2026)
+### Fase 4 - Governança (Q4 2026)
 - [ ] DAO (Organização Autônoma Descentralizada)
 - [ ] Votação democrática de features
 - [ ] Modelo de franquia cooperativa
@@ -176,56 +139,61 @@ Quer hospedar a landing page do projeto no GitHub Pages?
 
 ---
 
-## 🤝 Como Contribuir
+## Como Contribuir
 
 O OpenBag é **100% open source** e depende da comunidade!
 
 ### Formas de Contribuir
 
-- 💻 **Código**: Backend (Java), Frontend (Flutter), DevOps
-- 📝 **Documentação**: Tradução, tutoriais, guias
-- 🎨 **Design**: UI/UX, branding, materiais de divulgação
-- 🐛 **Testes**: Reportar bugs, testar features
-- 💡 **Ideias**: Sugerir funcionalidades, melhorias
-- 🌍 **Divulgação**: Compartilhar o projeto, recrutar cooperativas
+- **Código**: Backend (Java), Frontend (Flutter), DevOps
+- **Documentação**: Tradução, tutoriais, guias
+- **Design**: UI/UX, branding, materiais de divulgação
+- **Testes**: Reportar bugs, testar features
+- **Ideias**: Sugerir funcionalidades, melhorias
+- **Divulgação**: Compartilhar o projeto, recrutar cooperativas
 
-📖 **Leia nosso [guia de contribuição](CONTRIBUTING.md)** para começar
+**Leia nosso [guia de contribuição](CONTRIBUTING.md)** para começar.
 
----
-
-## 📄 Licença
-
-Este projeto é licenciado sob a **MIT License** - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-Isso significa que você pode:
-- ✅ Usar comercialmente
-- ✅ Modificar o código
-- ✅ Distribuir
-- ✅ Usar em projetos privados
-
-**A única exigência é manter a atribuição aos autores originais.**
+1. Faça um Fork do projeto
+2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
+3. Faça o Commit de suas mudanças (`git commit -am 'Adiciona nova funcionalidade'`)
+4. Faça o Push para a branch (`git push origin feature/nova-funcionalidade`)
+5. Abra um Pull Request
 
 ---
 
-## 💬 Sobre o Nome
+## Licença
 
-**"OpenBag"** é um nome sugestivo e **pode ser alterado** conforme o projeto evolui. Estamos abertos a sugestões que reflitam melhor nossa missão cooperativista e social!
+Este projeto é licenciado sob a **AGPL-3.0 License** - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
-Sugestões? Abra uma [discussão](https://github.com/seu-usuario/openbag/discussions) ou [issue](https://github.com/seu-usuario/openbag/issues)!
+Escolhemos a AGPL-3.0 por ser uma licença **mais forte que protege contra uso em SaaS** sem o compartilhamento do código-fonte. Isso significa que é permitido:
 
----
+- Usar comercialmente
+- Modificar o código
+- Distribuir
+- Usar em projetos privados
 
-## 📞 Contato & Comunidade
-
-- 🌐 **Website**: [openbag.app](https://openbag.app) _(em construção)_
-- 💬 **Discord**: [discord.gg/openbag](#) _(em breve)_
-- 📧 **Email**: contato@openbag.app
-- 🐦 **Twitter/X**: [@OpenBagApp](#) _(em breve)_
-- 📱 **Telegram**: [t.me/openbag](#) _(em breve)_
+**Aviso Importante:** Se você modificar o código e usar a plataforma como um serviço (SaaS) na rede, você é obrigado a disponibilizar o código-fonte das suas modificações. Isso garante que o OpenBag permaneça sempre aberto e beneficie toda a comunidade.
 
 ---
 
-## 🙏 Apoiadores
+## Equipe
+
+- **Desenvolvedor Principal**: Lucas Ramos
+- **Contribuidores**: [Lista de contribuidores]
+
+---
+
+## Sobre o Nome
+
+**"OpenBag"** é um nome **provisório** e estamos totalmente abertos a sugestões que reflitam melhor nossa missão cooperativista e social!
+
+**Dúvidas e questões?** Entre em contato através:
+- Email: contato@openbag.dev ou lucasramos-developer@gmail.com
+- [Discussões no GitHub](https://github.com/LucasRamos-Developer/openbag/discussions)
+- [Issues no GitHub](https://github.com/LucasRamos-Developer/openbag/issues)
+
+## Apoiadores
 
 Este projeto é possível graças ao apoio de:
 
@@ -238,48 +206,7 @@ Este projeto é possível graças ao apoio de:
 
 ---
 
-<p align="center">
-  <strong>Desenvolvido com ❤️ pela comunidade OpenBag</strong><br>
-  <em>Porque delivery justo é possível.</em>
-</p>
+Desenvolvido pela comunidade OpenBag.
+Porque delivery justo é possível.
 
-<p align="center">
-  <a href="README-DEVELOPER.md">📖 Documentação Técnica</a> •
-  <a href="CONTRIBUTING.md">🤝 Como Contribuir</a> •
-  <a href="https://github.com/seu-usuario/openbag/issues">🐛 Reportar Bug</a> •
-  <a href="https://github.com/seu-usuario/openbag/discussions">💡 Sugerir Feature</a>
-</p>
-
-1. Fork o projeto
-2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
-3. Commit suas mudanças (`git commit -am 'Adiciona nova funcionalidade'`)
-4. Push para a branch (`git push origin feature/nova-funcionalidade`)
-5. Abra um Pull Request
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-## 👥 Equipe
-
-- **Desenvolvedor Principal**: Lucas Ramos
-- **Contribuidores**: [Lista de contribuidores]
-
-## 🗺️ Roadmap
-
-- [ ] Sistema de cupons e promoções
-- [ ] Chat em tempo real
-- [ ] Sistema de fidelidade
-- [ ] Analytics avançado
-- [ ] API para terceiros
-- [ ] Suporte a múltiplas linguagens
-
-## 📞 Contato
-
-- Email: contato@openbag.dev
-- Discord: [Link do servidor]
-- Website: [Em construção]
-
----
-
-⭐ Se você gostou do projeto, não esqueça de dar uma estrela!
+[Documentação Técnica](README-DEVELOPER.md) | [Como Contribuir](CONTRIBUTING.md) | [Reportar Bug](https://github.com/LucasRamos-Developer/openbag/issues) | [Sugerir Feature](https://github.com/LucasRamos-Developer/openbag/discussions)

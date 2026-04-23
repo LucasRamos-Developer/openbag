@@ -5,6 +5,16 @@ backend/target/
 backend/.mvn/
 backend/mvnw
 backend/mvnw.cmd
+backend/.settings/
+backend/.classpath
+backend/.project
+backend/.idea/
+backend/.vscode/
+backend/.gradle/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/.mvn/wrapper/maven-wrapper.properties
+backend/.github/*
+!backend/.github/agenst/
 *.class
 *.jar
 !backend/.mvn/wrapper/maven-wrapper.jar
