@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:url_strategy/url_strategy.dart' if (dart.library.html) 'package:url_strategy/url_strategy.dart';
 
 import 'screens/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
@@ -20,11 +19,6 @@ import 'utils/theme.dart';
 import 'constants/app_constants.dart';
 
 void main() {
-  // Remove the # from the URL on web
-  if (kIsWeb) {
-    setPathUrlStrategy();
-  }
-  
   runApp(const OpenBagApp());
 }
 

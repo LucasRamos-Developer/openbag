@@ -1,5 +1,5 @@
-# Use OpenJDK 21 como base
-FROM openjdk:21-jdk-slim
+# Use Eclipse Temurin 21 como base
+FROM eclipse-temurin:21-jdk-jammy
 
 # Instalar Maven
 RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*

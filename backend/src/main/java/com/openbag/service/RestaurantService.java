@@ -2,9 +2,11 @@ package com.openbag.service;
 
 import com.openbag.entity.Product;
 import com.openbag.entity.Restaurant;
+import com.openbag.entity.User;
 import com.openbag.exception.ResourceNotFoundException;
 import com.openbag.repository.ProductRepository;
 import com.openbag.repository.RestaurantRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +17,7 @@ import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
+@Slf4j
 public class RestaurantService {
 
     @Autowired
@@ -23,21 +26,24 @@ public class RestaurantService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private RoleService roleService;
+
     public Page<Restaurant> getAllRestaurants(Pageable pageable) {
-        return restaurantRepository.findByActiveTrue(pageable);
+        return restaurantRepository.findByIsActiveTrue(pageable);
     }
 
     public Restaurant getRestaurantById(Long id) {
-        return restaurantRepository.findByIdAndActiveTrue(id)
+        return restaurantRepository.findByIdAndIsActiveTrue(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurante não encontrado com ID: " + id));
     }
 
     public List<Restaurant> searchRestaurants(String query) {
-        return restaurantRepository.findByNameContainingIgnoreCaseAndActiveTrue(query);
+        return restaurantRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(query);
     }
 
-    public List<Restaurant> getRestaurantsByCategory(String category) {
-        return restaurantRepository.findByCategoryAndActiveTrue(category);
+    public List<Restaurant> getRestaurantsByCategory(Long categoryId) {
+        return restaurantRepository.findByCategory(categoryId);
     }
 
     public List<Restaurant> getRestaurantsNearLocation(Double latitude, Double longitude, Double radius) {
@@ -46,25 +52,41 @@ public class RestaurantService {
 
     public List<Product> getRestaurantProducts(Long restaurantId) {
         Restaurant restaurant = getRestaurantById(restaurantId);
-        return productRepository.findByRestaurantAndActiveTrue(restaurant);
+        return productRepository.findByRestaurantAndIsActiveTrue(restaurant);
     }
 
     public List<Product> searchProductsInRestaurant(Long restaurantId, String query) {
         Restaurant restaurant = getRestaurantById(restaurantId);
-        return productRepository.findByRestaurantAndNameContainingIgnoreCaseAndActiveTrue(
+        return productRepository.findByRestaurantAndNameContainingIgnoreCaseAndIsActiveTrue(
                 restaurant, query);
     }
 
     public List<Product> getProductsByCategory(Long restaurantId, Long categoryId) {
         Restaurant restaurant = getRestaurantById(restaurantId);
-        return productRepository.findByRestaurantAndCategoryIdAndActiveTrue(
+        return productRepository.findByRestaurantAndCategoryIdAndIsActiveTrue(
                 restaurant, categoryId);
     }
 
     @Transactional
     public Restaurant createRestaurant(Restaurant restaurant) {
         restaurant.setActive(true);
-        return restaurantRepository.save(restaurant);
+        Restaurant savedRestaurant = restaurantRepository.save(restaurant);
+        
+        // Auto-adiciona a role RESTAURANT_OWNER ao owner do restaurante
+        if (savedRestaurant.getOwner() != null) {
+            try {
+                User owner = savedRestaurant.getOwner();
+                if (!owner.hasRole("RESTAURANT_OWNER")) {
+                    roleService.addRoleToUser(owner.getId(), "RESTAURANT_OWNER");
+                    log.info("Role RESTAURANT_OWNER adicionada automaticamente ao usuário {} ao criar restaurante {}", 
+                            owner.getId(), savedRestaurant.getId());
+                }
+            } catch (Exception e) {
+                log.warn("Não foi possível adicionar role RESTAURANT_OWNER automaticamente: {}", e.getMessage());
+            }
+        }
+        
+        return savedRestaurant;
     }
 
     @Transactional
@@ -77,17 +99,14 @@ public class RestaurantService {
         if (restaurantDetails.getDescription() != null) {
             restaurant.setDescription(restaurantDetails.getDescription());
         }
-        if (restaurantDetails.getPhone() != null) {
-            restaurant.setPhone(restaurantDetails.getPhone());
+        if (restaurantDetails.getPhoneNumber() != null) {
+            restaurant.setPhoneNumber(restaurantDetails.getPhoneNumber());
         }
-        if (restaurantDetails.getEmail() != null) {
-            restaurant.setEmail(restaurantDetails.getEmail());
+        if (restaurantDetails.getLogoUrl() != null) {
+            restaurant.setLogoUrl(restaurantDetails.getLogoUrl());
         }
-        if (restaurantDetails.getCategory() != null) {
-            restaurant.setCategory(restaurantDetails.getCategory());
-        }
-        if (restaurantDetails.getImageUrl() != null) {
-            restaurant.setImageUrl(restaurantDetails.getImageUrl());
+        if (restaurantDetails.getBannerUrl() != null) {
+            restaurant.setBannerUrl(restaurantDetails.getBannerUrl());
         }
         if (restaurantDetails.getDeliveryFee() != null) {
             restaurant.setDeliveryFee(restaurantDetails.getDeliveryFee());
@@ -95,17 +114,14 @@ public class RestaurantService {
         if (restaurantDetails.getMinimumOrder() != null) {
             restaurant.setMinimumOrder(restaurantDetails.getMinimumOrder());
         }
-        if (restaurantDetails.getDeliveryTime() != null) {
-            restaurant.setDeliveryTime(restaurantDetails.getDeliveryTime());
+        if (restaurantDetails.getDeliveryTimeMin() != null) {
+            restaurant.setDeliveryTimeMin(restaurantDetails.getDeliveryTimeMin());
+        }
+        if (restaurantDetails.getDeliveryTimeMax() != null) {
+            restaurant.setDeliveryTimeMax(restaurantDetails.getDeliveryTimeMax());
         }
         if (restaurantDetails.getAddress() != null) {
             restaurant.setAddress(restaurantDetails.getAddress());
-        }
-        if (restaurantDetails.getLatitude() != null) {
-            restaurant.setLatitude(restaurantDetails.getLatitude());
-        }
-        if (restaurantDetails.getLongitude() != null) {
-            restaurant.setLongitude(restaurantDetails.getLongitude());
         }
         
         return restaurantRepository.save(restaurant);

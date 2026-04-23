@@ -29,9 +29,9 @@ class RestaurantCard extends StatelessWidget {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
-                child: restaurant.imageUrl != null
+                child: restaurant.logoUrl != null
                     ? Image.network(
-                        restaurant.imageUrl!,
+                        restaurant.logoUrl!,
                         fit: BoxFit.cover,
                         width: double.infinity,
                         errorBuilder: (context, error, stackTrace) {
@@ -86,7 +86,7 @@ class RestaurantCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          restaurant.category,
+                          restaurant.categories.isNotEmpty ? restaurant.categories[0].name : '',
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.primary,
                             fontSize: 12,
@@ -141,7 +141,7 @@ class RestaurantCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        restaurant.deliveryTime ?? '30-45 min',
+                        restaurant.deliveryTimeRange,
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.grey,

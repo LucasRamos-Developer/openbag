@@ -38,7 +38,23 @@ public class CustomUserDetailsService implements UserDetailsService {
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {
             List<GrantedAuthority> authorities = new ArrayList<>();
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getUserType().name()));
+            
+            // Adiciona authorities baseadas nas roles
+            for (var role : user.getRoles()) {
+                // Adiciona a role como authority (prefixo ROLE_ é necessário para Spring Security)
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
+                
+                // Adiciona cada permissão da role como authority
+                for (var permission : role.getPermissions()) {
+                    authorities.add(new SimpleGrantedAuthority(permission.getName()));
+                }
+            }
+            
+            // Fallback para compatibilidade: se não tiver roles mas tiver userType
+            if (authorities.isEmpty() && user.getUserType() != null) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getUserType().name()));
+            }
+            
             return authorities;
         }
 

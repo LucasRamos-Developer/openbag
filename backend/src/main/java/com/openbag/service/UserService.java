@@ -44,11 +44,11 @@ public class UserService {
     public User updateUser(User userDetails) {
         User currentUser = getCurrentUser();
         
-        if (userDetails.getName() != null) {
-            currentUser.setName(userDetails.getName());
+        if (userDetails.getFullName() != null) {
+            currentUser.setFullName(userDetails.getFullName());
         }
-        if (userDetails.getPhone() != null) {
-            currentUser.setPhone(userDetails.getPhone());
+        if (userDetails.getPhoneNumber() != null) {
+            currentUser.setPhoneNumber(userDetails.getPhoneNumber());
         }
         
         return userRepository.save(currentUser);

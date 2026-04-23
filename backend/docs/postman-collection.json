@@ -1,0 +1,142 @@
+{
+  "info": {
+    "name": "OpenBag - Onboarding Restaurante",
+    "description": "Collection para testar endpoints de cadastro de restaurantes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Verificar E-mail Disponível",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/check-email?email=novo@restaurante.com",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "check-email"],
+          "query": [
+            {
+              "key": "email",
+              "value": "novo@restaurante.com",
+              "description": "E-mail a ser verificado"
+            }
+          ]
+        },
+        "description": "Verifica se um e-mail está disponível para cadastro"
+      },
+      "response": [
+        {
+          "name": "E-mail Disponível",
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"available\": true\n}"
+        },
+        {
+          "name": "E-mail Já Cadastrado",
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"available\": false\n}"
+        }
+      ]
+    },
+    {
+      "name": "2. Cadastrar Restaurante - Exemplo Completo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"owner\": {\n    \"fullName\": \"João Silva\",\n    \"email\": \"joao@pizzaria.com\",\n    \"password\": \"senha123\",\n    \"phoneNumber\": \"11999999999\"\n  },\n  \"restaurant\": {\n    \"name\": \"Pizzaria do João\",\n    \"description\": \"As melhores pizzas artesanais da região\",\n    \"phoneNumber\": \"1133334444\",\n    \"cnpj\": \"12.345.678/0001-90\",\n    \"logoUrl\": \"https://exemplo.com/logo.png\",\n    \"bannerUrl\": \"https://exemplo.com/banner.jpg\",\n    \"deliveryFee\": 5.00,\n    \"minimumOrder\": 30.00,\n    \"deliveryTimeMin\": 30,\n    \"deliveryTimeMax\": 50\n  },\n  \"address\": {\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"complement\": \"Loja 2\",\n    \"neighborhood\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"zipCode\": \"01234-567\",\n    \"latitude\": -23.550520,\n    \"longitude\": -46.633308\n  },\n  \"openingHours\": [\n    {\n      \"label\": \"Almoço\",\n      \"weekday\": 1,\n      \"openTime\": \"11:00\",\n      \"closeTime\": \"15:00\"\n    },\n    {\n      \"label\": \"Jantar\",\n      \"weekday\": 1,\n      \"openTime\": \"18:00\",\n      \"closeTime\": \"23:00\"\n    },\n    {\n      \"label\": \"Almoço\",\n      \"weekday\": 2,\n      \"openTime\": \"11:00\",\n      \"closeTime\": \"15:00\"\n    },\n    {\n      \"label\": \"Jantar\",\n      \"weekday\": 2,\n      \"openTime\": \"18:00\",\n      \"closeTime\": \"23:00\"\n    }\n  ],\n  \"layoutConfig\": {\n    \"primaryColor\": \"#FF0000\",\n    \"secondaryColor\": \"#000000\"\n  },\n  \"categoryIds\": [1, 2]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register/restaurant",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "register", "restaurant"]
+        },
+        "description": "Cadastro completo de restaurante com owner, endereço, horários e configurações"
+      },
+      "response": [
+        {
+          "name": "Sucesso",
+          "status": "Created",
+          "code": 201,
+          "body": "{\n  \"restaurantId\": 15,\n  \"message\": \"Restaurante cadastrado com sucesso!\",\n  \"slug\": null\n}"
+        },
+        {
+          "name": "E-mail Duplicado",
+          "status": "Bad Request",
+          "code": 400,
+          "body": "{\n  \"error\": \"Email já está em uso\"\n}"
+        },
+        {
+          "name": "CNPJ Duplicado",
+          "status": "Bad Request",
+          "code": 400,
+          "body": "{\n  \"error\": \"CNPJ já cadastrado\"\n}"
+        },
+        {
+          "name": "Categoria Não Encontrada",
+          "status": "Not Found",
+          "code": 404,
+          "body": "{\n  \"error\": \"Uma ou mais categorias não foram encontradas\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "3. Cadastrar Restaurante - Mínimo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"owner\": {\n    \"fullName\": \"Maria Santos\",\n    \"email\": \"maria@hamburgueriatop.com\",\n    \"password\": \"senha123\",\n    \"phoneNumber\": \"21988887777\"\n  },\n  \"restaurant\": {\n    \"name\": \"Hamburgueria Top\",\n    \"phoneNumber\": \"2133332222\",\n    \"cnpj\": \"98765432000100\",\n    \"deliveryFee\": 7.50,\n    \"minimumOrder\": 25.00,\n    \"deliveryTimeMin\": 25,\n    \"deliveryTimeMax\": 40\n  },\n  \"address\": {\n    \"street\": \"Avenida Principal\",\n    \"number\": \"500\",\n    \"neighborhood\": \"Botafogo\",\n    \"city\": \"Rio de Janeiro\",\n    \"state\": \"RJ\",\n    \"zipCode\": \"22250-040\"\n  },\n  \"openingHours\": [\n    {\n      \"weekday\": 1,\n      \"openTime\": \"18:00\",\n      \"closeTime\": \"23:30\"\n    }\n  ],\n  \"layoutConfig\": {\n    \"primaryColor\": \"#FFD700\",\n    \"secondaryColor\": \"#8B4513\"\n  },\n  \"categoryIds\": [1]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register/restaurant",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "register", "restaurant"]
+        },
+        "description": "Cadastro com campos mínimos obrigatórios (sem description, logoUrl, bannerUrl, label, etc)"
+      }
+    },
+    {
+      "name": "4. Cadastrar Restaurante - Múltiplos Períodos",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"owner\": {\n    \"fullName\": \"Carlos Oliveira\",\n    \"email\": \"carlos@cafemanha.com\",\n    \"password\": \"senha123\",\n    \"phoneNumber\": \"31977776666\"\n  },\n  \"restaurant\": {\n    \"name\": \"Café & Cia\",\n    \"description\": \"Café da manhã, almoço e café da tarde\",\n    \"phoneNumber\": \"3144445555\",\n    \"cnpj\": \"11223344000155\",\n    \"deliveryFee\": 3.00,\n    \"minimumOrder\": 15.00,\n    \"deliveryTimeMin\": 20,\n    \"deliveryTimeMax\": 35\n  },\n  \"address\": {\n    \"street\": \"Rua do Comércio\",\n    \"number\": \"789\",\n    \"neighborhood\": \"Savassi\",\n    \"city\": \"Belo Horizonte\",\n    \"state\": \"MG\",\n    \"zipCode\": \"30140-000\"\n  },\n  \"openingHours\": [\n    {\n      \"label\": \"Café da Manhã\",\n      \"weekday\": 1,\n      \"openTime\": \"07:00\",\n      \"closeTime\": \"11:00\"\n    },\n    {\n      \"label\": \"Almoço\",\n      \"weekday\": 1,\n      \"openTime\": \"11:30\",\n      \"closeTime\": \"15:00\"\n    },\n    {\n      \"label\": \"Café da Tarde\",\n      \"weekday\": 1,\n      \"openTime\": \"15:30\",\n      \"closeTime\": \"18:00\"\n    }\n  ],\n  \"layoutConfig\": {\n    \"primaryColor\": \"#8B4513\",\n    \"secondaryColor\": \"#DEB887\"\n  },\n  \"categoryIds\": [3]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register/restaurant",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "register", "restaurant"]
+        },
+        "description": "Exemplo com múltiplos períodos de funcionamento no mesmo dia"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}

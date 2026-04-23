@@ -60,7 +60,10 @@ services:
       - open-bag-network
 
   # Spring Boot Application
+  # Para rodar o backend no Docker, use: docker compose --profile backend up
   app:
+    profiles:
+      - backend
     build:
       context: ./backend
       dockerfile: Dockerfile

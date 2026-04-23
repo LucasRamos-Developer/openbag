@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,5 +32,15 @@ public class RegisterRequest {
     @Size(min = 6, max = 100, message = "Senha deve ter entre 6 e 100 caracteres")
     private String password;
 
+    /**
+     * @deprecated Use roles instead
+     */
+    @Deprecated
     private UserType userType = UserType.CUSTOMER;
+
+    /**
+     * Lista de roles para o usuário (opcional)
+     * Se não fornecido, o usuário receberá a role CUSTOMER por padrão
+     */
+    private List<String> roles;
 }

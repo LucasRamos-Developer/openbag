@@ -29,34 +29,34 @@ public class ProductService {
     private CategoryRepository categoryRepository;
 
     public Product getProductById(Long id) {
-        return productRepository.findByIdAndActiveTrue(id)
+        return productRepository.findByIdAndIsActiveTrue(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com ID: " + id));
     }
 
     public Page<Product> getAllProducts(Pageable pageable) {
-        return productRepository.findByActiveTrue(pageable);
+        return productRepository.findByIsActiveTrue(pageable);
     }
 
     public List<Product> getProductsByRestaurant(Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurante não encontrado"));
-        return productRepository.findByRestaurantAndActiveTrue(restaurant);
+        return productRepository.findByRestaurantAndIsActiveTrue(restaurant);
     }
 
     public List<Product> getProductsByCategory(Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
-        return productRepository.findByCategoryAndActiveTrue(category);
+        return productRepository.findByCategoryAndIsActiveTrue(category);
     }
 
     public List<Product> searchProducts(String query) {
-        return productRepository.findByNameContainingIgnoreCaseAndActiveTrue(query);
+        return productRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(query);
     }
 
     public List<Product> getProductsByRestaurantAndCategory(Long restaurantId, Long categoryId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurante não encontrado"));
-        return productRepository.findByRestaurantAndCategoryIdAndActiveTrue(restaurant, categoryId);
+        return productRepository.findByRestaurantAndCategoryIdAndIsActiveTrue(restaurant, categoryId);
     }
 
     @Transactional
@@ -130,8 +130,8 @@ public class ProductService {
         if (categoryDetails.getDescription() != null) {
             category.setDescription(categoryDetails.getDescription());
         }
-        if (categoryDetails.getImageUrl() != null) {
-            category.setImageUrl(categoryDetails.getImageUrl());
+        if (categoryDetails.getIconUrl() != null) {
+            category.setIconUrl(categoryDetails.getIconUrl());
         }
         
         return categoryRepository.save(category);

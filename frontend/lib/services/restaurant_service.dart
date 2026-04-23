@@ -1,19 +1,20 @@
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../models/restaurant.dart';
+import '../models/restaurant.dart' hide Category;
+import '../models/restaurant.dart' as models;
 import 'auth_service.dart';
 
 class RestaurantService extends ChangeNotifier {
   static const String baseUrl = 'http://localhost:8080/api';
   
   List<Restaurant> _restaurants = [];
-  List<Category> _categories = [];
+  List<models.Category> _categories = [];
   bool _isLoading = false;
   String? _error;
 
   List<Restaurant> get restaurants => _restaurants;
-  List<Category> get categories => _categories;
+  List<models.Category> get categories => _categories;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -52,7 +53,7 @@ class RestaurantService extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        _categories = data.map((json) => Category.fromJson(json)).toList();
+        _categories = data.map((json) => models.Category.fromJson(json)).toList();
       }
     } catch (e) {
       debugPrint('Erro ao carregar categorias: $e');

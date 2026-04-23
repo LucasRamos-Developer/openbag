@@ -118,4 +118,10 @@ public class Restaurant {
         inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     private List<Category> categories = new ArrayList<>();
+
+    @OneToOne(mappedBy = "restaurant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private LayoutConfig layoutConfig;
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OpeningHour> openingHours = new ArrayList<>();
 }

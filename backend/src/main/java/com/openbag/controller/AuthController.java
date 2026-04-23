@@ -1,11 +1,10 @@
 package com.openbag.controller;
 
-import com.openbag.dto.JwtAuthenticationResponse;
-import com.openbag.dto.LoginRequest;
-import com.openbag.dto.RegisterRequest;
+import com.openbag.dto.*;
 import com.openbag.entity.User;
 import com.openbag.repository.UserRepository;
 import com.openbag.security.JwtTokenProvider;
+import com.openbag.service.RoleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -19,7 +18,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -38,8 +40,14 @@ public class AuthController {
     @Autowired
     private JwtTokenProvider tokenProvider;
 
+    @Autowired
+    private RoleService roleService;
+
+    @Autowired
+    private com.openbag.service.RestaurantOnboardingService restaurantOnboardingService;
+
     @PostMapping("/login")
-    @Operation(summary = "Login do usuário", description = "Autentica um usuário e retorna um token JWT")
+    @Operation(summary = "Login do usuário", description = "Autentica um usuário e retorna um token JWT com roles e permissões")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -52,12 +60,19 @@ public class AuthController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = tokenProvider.generateToken(authentication);
 
-            User user = userRepository.findByEmail(loginRequest.getEmail())
+            User user = userRepository.findById(((com.openbag.security.CustomUserDetailsService.CustomUserPrincipal) authentication.getPrincipal()).getId())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
             JwtAuthenticationResponse.UserDto userDto = new JwtAuthenticationResponse.UserDto(user);
             
-            return ResponseEntity.ok(new JwtAuthenticationResponse(jwt, userDto));
+            // Adiciona roles e permissões à resposta
+            List<RoleDTO> roles = user.getRoles().stream()
+                    .map(RoleDTO::simple)
+                    .collect(Collectors.toList());
+            
+            List<String> permissions = user.getPermissionNames().stream().toList();
+            
+            return ResponseEntity.ok(new JwtAuthenticationResponse(jwt, userDto, roles, permissions));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "Credenciais inválidas"));
@@ -84,9 +99,36 @@ public class AuthController {
             user.setEmail(signUpRequest.getEmail());
             user.setPhoneNumber(signUpRequest.getPhoneNumber());
             user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
-            user.setUserType(signUpRequest.getUserType());
+            
+            // Mantém userType para compatibilidade
+            if (signUpRequest.getUserType() != null) {
+                user.setUserType(signUpRequest.getUserType());
+            }
 
             User result = userRepository.save(user);
+
+            // Processa roles
+            List<String> rolesToAdd = new ArrayList<>();
+            if (signUpRequest.getRoles() != null && !signUpRequest.getRoles().isEmpty()) {
+                // Valida que não está tentando se registrar como ADMIN via API pública
+                for (String roleName : signUpRequest.getRoles()) {
+                    if ("ADMIN".equalsIgnoreCase(roleName)) {
+                        return ResponseEntity.badRequest()
+                            .body(Map.of("error", "Não é possível registrar-se como ADMIN via API pública"));
+                    }
+                    rolesToAdd.add(roleName.toUpperCase());
+                }
+            }
+            
+            // Sempre adiciona CUSTOMER se não tiver nenhuma role
+            if (rolesToAdd.isEmpty()) {
+                rolesToAdd.add("CUSTOMER");
+            } else if (!rolesToAdd.contains("CUSTOMER")) {
+                rolesToAdd.add("CUSTOMER"); // Garante que sempre tem CUSTOMER
+            }
+
+            // Adiciona as roles ao usuário
+            roleService.addRolesToUser(result.getId(), rolesToAdd);
 
             return ResponseEntity.ok(Map.of(
                 "message", "Usuário registrado com sucesso",
@@ -94,12 +136,12 @@ public class AuthController {
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Erro interno do servidor"));
+                .body(Map.of("error", "Erro ao registrar usuário: " + e.getMessage()));
         }
     }
 
     @GetMapping("/me")
-    @Operation(summary = "Perfil do usuário", description = "Retorna informações do usuário autenticado")
+    @Operation(summary = "Perfil do usuário", description = "Retorna informações do usuário autenticado com roles e permissões")
     public ResponseEntity<?> getCurrentUser(Authentication authentication) {
         try {
             String email = authentication.getName();
@@ -107,10 +149,53 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
             JwtAuthenticationResponse.UserDto userDto = new JwtAuthenticationResponse.UserDto(user);
-            return ResponseEntity.ok(userDto);
+            
+            // Adiciona roles e permissões
+            List<RoleDTO> roles = user.getRoles().stream()
+                    .map(RoleDTO::simple)
+                    .collect(Collectors.toList());
+            
+            List<String> permissions = user.getPermissionNames().stream().toList();
+            
+            return ResponseEntity.ok(Map.of(
+                "user", userDto,
+                "roles", roles,
+                "permissions", permissions
+            ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", "Usuário não encontrado"));
+        }
+    }
+
+    @GetMapping("/check-email")
+    @Operation(summary = "Verificar disponibilidade de e-mail", description = "Verifica se um e-mail está disponível para cadastro")
+    public ResponseEntity<CheckEmailResponse> checkEmailAvailability(@RequestParam String email) {
+        boolean available = !userRepository.existsByEmail(email);
+        return ResponseEntity.ok(new CheckEmailResponse(available));
+    }
+
+    @PostMapping("/register/restaurant")
+    @Operation(summary = "Registro completo de restaurante", description = "Registra um novo restaurante com owner, endereço, horários e configurações")
+    public ResponseEntity<?> registerRestaurant(@Valid @RequestBody RestaurantOnboardingRequest request) {
+        try {
+            com.openbag.entity.Restaurant restaurant = restaurantOnboardingService.completeOnboarding(request);
+            
+            RestaurantOnboardingResponse response = new RestaurantOnboardingResponse(
+                restaurant.getId(),
+                "Restaurante cadastrado com sucesso!"
+            );
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (com.openbag.exception.BadRequestException e) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", e.getMessage()));
+        } catch (com.openbag.exception.ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Erro ao cadastrar restaurante: " + e.getMessage()));
         }
     }
 }

@@ -1,3 +1,6 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
 class AppConstants {
   // API Configuration
   static const String baseUrl = 'http://localhost:8080/api';

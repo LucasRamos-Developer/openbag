@@ -46,10 +46,8 @@ public class Address {
     @Column(name = "zip_code")
     private String zipCode;
 
-    @Column(precision = 10, scale = 8)
     private Double latitude;
 
-    @Column(precision = 11, scale = 8)
     private Double longitude;
 
     @Column(name = "is_default")

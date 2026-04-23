@@ -1,10 +1,13 @@
 package com.openbag.config;
 
+import com.openbag.security.CustomPermissionEvaluator;
 import com.openbag.security.CustomUserDetailsService;
 import com.openbag.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -34,6 +37,9 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private CustomPermissionEvaluator customPermissionEvaluator;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -52,6 +58,17 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+    /**
+     * Configura o MethodSecurityExpressionHandler para usar o CustomPermissionEvaluator
+     * Isso permite usar hasPermission() nas anotações @PreAuthorize
+     */
+    @Bean
+    public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+        DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
+        expressionHandler.setPermissionEvaluator(customPermissionEvaluator);
+        return expressionHandler;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -67,21 +84,8 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/swagger-ui.html").permitAll()
                 
-                // Endpoints para clientes
-                .requestMatchers("/api/orders/**").hasAnyRole("CUSTOMER", "ADMIN")
-                .requestMatchers("/api/restaurants/*/products").hasAnyRole("CUSTOMER", "ADMIN")
-                
-                // Endpoints para donos de restaurante
-                .requestMatchers("/api/restaurants/manage/**").hasAnyRole("RESTAURANT_OWNER", "ADMIN")
-                .requestMatchers("/api/products/manage/**").hasAnyRole("RESTAURANT_OWNER", "ADMIN")
-                
-                // Endpoints para entregadores
-                .requestMatchers("/api/delivery/**").hasAnyRole("DELIVERY_PERSON", "ADMIN")
-                
-                // Endpoints administrativos
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                
                 // Todos os outros endpoints requerem autenticação
+                // As permissões específicas são verificadas via anotações @PreAuthorize nos controllers
                 .anyRequest().authenticated()
             );
 

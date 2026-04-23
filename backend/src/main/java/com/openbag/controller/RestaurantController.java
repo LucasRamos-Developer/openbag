@@ -50,10 +50,10 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurants);
     }
 
-    @GetMapping("/category/{category}")
+    @GetMapping("/category/{categoryId}")
     @Operation(summary = "Listar restaurantes por categoria")
-    public ResponseEntity<List<Restaurant>> getRestaurantsByCategory(@PathVariable String category) {
-        List<Restaurant> restaurants = restaurantService.getRestaurantsByCategory(category);
+    public ResponseEntity<List<Restaurant>> getRestaurantsByCategory(@PathVariable Long categoryId) {
+        List<Restaurant> restaurants = restaurantService.getRestaurantsByCategory(categoryId);
         return ResponseEntity.ok(restaurants);
     }
 

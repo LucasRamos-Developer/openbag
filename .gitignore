@@ -1,0 +1,146 @@
+# ========================================
+# Backend (Java/Maven)
+# ========================================
+backend/target/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+*.class
+*.jar
+!backend/.mvn/wrapper/maven-wrapper.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+
+# ========================================
+# Frontend (Flutter/Dart)
+# ========================================
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/.packages
+frontend/.pub-cache/
+frontend/.pub/
+frontend/build/
+frontend/.fvm/
+frontend/coverage/
+frontend/lib/generated_plugin_registrant.dart
+
+# Miscellaneous Flutter
+frontend/*.log
+frontend/*.pyc
+frontend/*.swp
+frontend/.DS_Store
+frontend/.atom/
+frontend/.buildlog/
+frontend/.history
+frontend/.svn/
+frontend/migrate_working_dir/
+
+# IntelliJ related Flutter
+frontend/*.iml
+frontend/*.ipr
+frontend/*.iws
+frontend/.idea/
+
+# Android related
+frontend/**/android/**/gradle-wrapper.jar
+frontend/**/android/.gradle
+frontend/**/android/captures/
+frontend/**/android/gradlew
+frontend/**/android/gradlew.bat
+frontend/**/android/local.properties
+frontend/**/android/**/GeneratedPluginRegistrant.java
+frontend/**/android/key.properties
+frontend/*.jks
+
+# iOS/XCode related
+frontend/**/ios/**/*.mode1v3
+frontend/**/ios/**/*.mode2v3
+frontend/**/ios/**/*.moved-aside
+frontend/**/ios/**/*.pbxuser
+frontend/**/ios/**/*.perspectivev3
+frontend/**/ios/**/*sync/
+frontend/**/ios/**/.sconsign.dblite
+frontend/**/ios/**/.tags*
+frontend/**/ios/**/.vagrant/
+frontend/**/ios/**/DerivedData/
+frontend/**/ios/**/Icon?
+frontend/**/ios/**/Pods/
+frontend/**/ios/**/.symlinks/
+frontend/**/ios/**/profile
+frontend/**/ios/**/xcuserdata
+frontend/**/ios/.generated/
+frontend/**/ios/Flutter/App.framework
+frontend/**/ios/Flutter/Flutter.framework
+frontend/**/ios/Flutter/Flutter.podspec
+frontend/**/ios/Flutter/Generated.xcconfig
+frontend/**/ios/Flutter/ephemeral
+frontend/**/ios/Flutter/app.flx
+frontend/**/ios/Flutter/app.zip
+frontend/**/ios/Flutter/flutter_assets/
+frontend/**/ios/Flutter/flutter_export_environment.sh
+frontend/**/ios/ServiceDefinitions.json
+frontend/**/ios/Runner/GeneratedPluginRegistrant.*
+
+# Web related
+frontend/web/flutter_service_worker.js
+frontend/web/version.json
+
+# ========================================
+# IDEs e Editores
+# ========================================
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+.metadata
+.factorypath
+nbproject/
+.nb-gradle/
+
+# ========================================
+# Sistema Operacional
+# ========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ========================================
+# Logs e Temporários
+# ========================================
+*.log
+*.tmp
+*.temp
+*.pid
+*.seed
+*.pid.lock
+
+# ========================================
+# Environment e Configurações Sensíveis
+# ========================================
+.env
+.env.local
+.env.*.local
+*.env
+secrets/
+*.pem
+*.key
+
+# ========================================
+# Docker (opcional - mantenha apenas se necessário)
+# ========================================
+# docker-compose.override.yml

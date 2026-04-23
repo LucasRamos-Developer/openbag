@@ -28,14 +28,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // Método usado pelo OrderService
     List<Order> findByRestaurantIdOrderByOrderDateDesc(Long restaurantId);
     
-    List<Order> findByCustomer(User customer);
+    List<Order> findByUser(User user);
     
     List<Order> findByRestaurant(Restaurant restaurant);
     
-    List<Order> findByDeliveryPerson(User deliveryPerson);
-    
-    @Query("SELECT o FROM Order o WHERE o.customer = :customer ORDER BY o.createdAt DESC")
-    List<Order> findByCustomerOrderByCreatedAtDesc(@Param("customer") User customer);
+    @Query("SELECT o FROM Order o WHERE o.user = :user ORDER BY o.createdAt DESC")
+    List<Order> findByUserOrderByCreatedAtDesc(@Param("user") User user);
     
     @Query("SELECT o FROM Order o WHERE o.restaurant = :restaurant " +
            "AND o.status IN ('PENDING', 'CONFIRMED', 'PREPARING') ORDER BY o.createdAt ASC")
@@ -46,7 +44,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     
     @Query("SELECT o FROM Order o WHERE o.deliveryPerson = :deliveryPerson " +
            "AND o.status IN ('OUT_FOR_DELIVERY') ORDER BY o.createdAt ASC")
-    List<Order> findActiveOrdersByDeliveryPerson(@Param("deliveryPerson") User deliveryPerson);
+    List<Order> findActiveOrdersByDeliveryPerson(@Param("deliveryPerson") com.openbag.entity.DeliveryPerson deliveryPerson);
     
     @Query("SELECT o FROM Order o WHERE o.createdAt BETWEEN :startDate AND :endDate " +
            "AND o.restaurant = :restaurant")
