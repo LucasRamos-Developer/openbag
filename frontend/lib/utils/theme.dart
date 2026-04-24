@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import '../constants/app_colors.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFFE91E63);
-  static const Color secondaryColor = Color(0xFFFF6B6B);
-  static const Color accentColor = Color(0xFFFFB74D);
-  static const Color backgroundColor = Color(0xFFF8F9FA);
-  static const Color surfaceColor = Colors.white;
-  static const Color errorColor = Color(0xFFE53E3E);
-  static const Color successColor = Color(0xFF38A169);
+  // Usando as cores do design system
+  static const Color primaryColor = AppColors.primary;
+  static const Color secondaryColor = AppColors.accent;
+  static const Color accentColor = AppColors.accent;
+  static const Color backgroundColor = AppColors.bgMain;
+  static const Color surfaceColor = AppColors.bgSurface;
+  static const Color errorColor = AppColors.error;
+  static const Color successColor = AppColors.success;
   
-  static const Color textPrimary = Color(0xFF2D3748);
-  static const Color textSecondary = Color(0xFF718096);
-  static const Color textLight = Color(0xFFA0AEC0);
+  static const Color textPrimary = AppColors.textTitle;
+  static const Color textSecondary = AppColors.textBody;
+  static const Color textLight = AppColors.textBody;
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -19,7 +21,13 @@ class AppTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryColor,
         brightness: Brightness.light,
+        primary: primaryColor,
+        secondary: secondaryColor,
+        error: errorColor,
+        surface: surfaceColor,
+        background: backgroundColor,
       ),
+      scaffoldBackgroundColor: backgroundColor,
       fontFamily: 'Inter',
       
       // AppBar Theme

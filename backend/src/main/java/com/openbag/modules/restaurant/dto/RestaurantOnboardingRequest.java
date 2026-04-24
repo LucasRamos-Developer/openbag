@@ -69,6 +69,11 @@ public class RestaurantOnboardingRequest {
         @Size(max = 100, message = "Nome deve ter no máximo 100 caracteres")
         private String name;
 
+        @NotBlank(message = "Slug do restaurante é obrigatório")
+        @Size(max = 100, message = "Slug deve ter no máximo 100 caracteres")
+        @Pattern(regexp = "^[a-z0-9]+(?:-[a-z0-9]+)*$", message = "Slug deve conter apenas letras minúsculas, números e hífens")
+        private String slug;
+
         @Size(max = 500, message = "Descrição deve ter no máximo 500 caracteres")
         private String description;
 

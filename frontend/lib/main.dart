@@ -7,6 +7,7 @@ import 'package:responsive_framework/responsive_framework.dart';
 import 'screens/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
+import 'screens/onboarding/restaurant_onboarding_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/restaurant/restaurant_detail_screen.dart';
 import 'screens/cart/cart_screen.dart';
@@ -15,7 +16,8 @@ import 'screens/profile/profile_screen.dart';
 import 'services/auth_service.dart';
 import 'services/restaurant_service.dart';
 import 'services/cart_service.dart';
-import 'utils/theme.dart';
+import 'core/ui/ui.dart';
+import 'core/ui/showcase/ui_components_showcase.dart';
 import 'constants/app_constants.dart';
 
 void main() {
@@ -35,7 +37,9 @@ class OpenBagApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         title: AppConstants.appName,
-        theme: AppTheme.lightTheme,
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.light,
         routerConfig: _router,
         debugShowCheckedModeBanner: false,
         builder: (context, child) => ResponsiveBreakpoints.builder(
@@ -66,6 +70,14 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/register',
       builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: '/onboarding/restaurant',
+      builder: (context, state) => const RestaurantOnboardingScreen(),
+    ),
+    GoRoute(
+      path: '/ui-showcase',
+      builder: (context, state) => const UIComponentsShowcase(),
     ),
     GoRoute(
       path: '/home',

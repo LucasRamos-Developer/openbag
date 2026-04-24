@@ -39,6 +39,11 @@ public class RestaurantService {
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurante não encontrado com ID: " + id));
     }
 
+    public Restaurant getRestaurantBySlug(String slug) {
+        return restaurantRepository.findBySlugAndIsActiveTrue(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurante não encontrado: " + slug));
+    }
+
     public List<Restaurant> searchRestaurants(String query) {
         return restaurantRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(query);
     }

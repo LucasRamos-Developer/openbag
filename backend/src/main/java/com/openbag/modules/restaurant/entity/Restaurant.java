@@ -36,6 +36,11 @@ public class Restaurant {
     @Size(max = 100)
     private String name;
 
+    @NotBlank
+    @Size(max = 100)
+    @Column(unique = true)
+    private String slug;
+
     @Size(max = 500)
     private String description;
 

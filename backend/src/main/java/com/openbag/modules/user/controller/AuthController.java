@@ -27,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -185,11 +186,17 @@ public class AuthController {
         return ResponseEntity.ok(new CheckEmailResponse(available));
     }
 
-    @PostMapping("/register/restaurant")
-    @Operation(summary = "Registro completo de restaurante", description = "Registra um novo restaurante com owner, endereço, horários e configurações")
-    public ResponseEntity<?> registerRestaurant(@Valid @RequestBody RestaurantOnboardingRequest request) {
+    @PostMapping(value = "/register/restaurant", consumes = {"multipart/form-data"})
+    @Operation(
+        summary = "Registro completo de restaurante",
+        description = "Registra um novo restaurante com owner, endereço, horários, configurações e upload de logo/banner"
+    )
+    public ResponseEntity<?> registerRestaurant(
+            @RequestPart("data") @Valid RestaurantOnboardingRequest request,
+            @RequestPart(value = "logo", required = false) MultipartFile logo,
+            @RequestPart(value = "banner", required = false) MultipartFile banner) {
         try {
-            Restaurant restaurant = restaurantOnboardingService.completeOnboarding(request);
+            Restaurant restaurant = restaurantOnboardingService.completeOnboarding(request, logo, banner);
             
             RestaurantOnboardingResponse response = new RestaurantOnboardingResponse(
                 restaurant.getId(),

@@ -44,17 +44,27 @@ public class PublicRestaurantController {
         return ResponseEntity.ok(restaurants);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{idOrSlug}")
     @Operation(
-        summary = "Buscar restaurante por ID (público)",
-        description = "Retorna os detalhes completos de um restaurante incluindo horários de funcionamento, endereço e coordenadas. Não requer autenticação."
+        summary = "Buscar restaurante por ID ou slug (público)",
+        description = "Retorna os detalhes completos de um restaurante incluindo horários de funcionamento, endereço e coordenadas. Aceita ID numérico ou slug. Não requer autenticação."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Restaurante encontrado"),
         @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
     })
-    public ResponseEntity<Restaurant> getRestaurantById(@PathVariable Long id) {
-        Restaurant restaurant = restaurantService.getRestaurantById(id);
+    public ResponseEntity<Restaurant> getRestaurant(@PathVariable String idOrSlug) {
+        Restaurant restaurant;
+        
+        // Tenta parsear como ID numérico primeiro
+        try {
+            Long id = Long.parseLong(idOrSlug);
+            restaurant = restaurantService.getRestaurantById(id);
+        } catch (NumberFormatException e) {
+            // Se não for número, busca por slug
+            restaurant = restaurantService.getRestaurantBySlug(idOrSlug);
+        }
+        
         return ResponseEntity.ok(restaurant);
     }
 

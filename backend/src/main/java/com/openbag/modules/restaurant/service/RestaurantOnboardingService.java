@@ -16,11 +16,13 @@ import com.openbag.modules.restaurant.repository.RestaurantRepository;
 import com.openbag.modules.user.repository.UserRepository;
 import com.openbag.modules.product.repository.CategoryRepository;
 import com.openbag.modules.user.service.RoleService;
+import com.openbag.modules.shared.service.FileStorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,54 +50,83 @@ public class RestaurantOnboardingService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private FileStorageService fileStorageService;
+
     /**
-     * Completa o onboarding de um restaurante, criando o owner, restaurante e todas as entidades relacionadas
+     * Completa o onboarding de um restaurante com upload de logo e banner
      * 
      * @param request Dados completos do onboarding
+     * @param logo Arquivo de logo (opcional)
+     * @param banner Arquivo de banner (opcional)
      * @return Restaurante criado
-     * @throws BadRequestException se houver duplicidade de email, telefone ou CNPJ
+     * @throws BadRequestException se houver duplicidade de email, telefone, CNPJ ou slug
      * @throws ResourceNotFoundException se categorias não existirem
      */
-    public Restaurant completeOnboarding(RestaurantOnboardingRequest request) {
+    public Restaurant completeOnboarding(RestaurantOnboardingRequest request, MultipartFile logo, MultipartFile banner) {
         log.info("Iniciando onboarding de restaurante: {}", request.getRestaurant().getName());
 
-        // 1. Validar unicidade de email, telefone e CNPJ
+        // 1. Validar unicidade de email, telefone, CNPJ e slug
         validateUniqueness(request);
 
-        // 2. Validar que todas as categorias existem
+        // 2. Fazer upload das imagens se fornecidas
+        String logoUrl = null;
+        String bannerUrl = null;
+        
+        if (logo != null && !logo.isEmpty()) {
+            logoUrl = fileStorageService.storeImage(logo, "restaurants/logos");
+            log.info("Logo salva: {}", logoUrl);
+        }
+        
+        if (banner != null && !banner.isEmpty()) {
+            bannerUrl = fileStorageService.storeImage(banner, "restaurants/banners");
+            log.info("Banner salvo: {}", bannerUrl);
+        }
+
+        // 3. Validar que todas as categorias existem
         List<Category> categories = validateAndGetCategories(request.getCategoryIds());
 
-        // 3. Criar o usuário owner
+        // 4. Criar o usuário owner
         User owner = createOwner(request.getOwner());
 
-        // 4. Criar o restaurante
-        Restaurant restaurant = createRestaurant(request.getRestaurant(), owner);
+        // 5. Criar o restaurante
+        Restaurant restaurant = createRestaurant(request.getRestaurant(), owner, logoUrl, bannerUrl);
 
-        // 5. Criar e vincular o endereço
+        // 6. Criar e vincular o endereço
         Address address = createAddress(request.getAddress(), restaurant);
         restaurant.setAddress(address);
 
-        // 6. Criar e vincular a configuração de layout
+        // 7. Criar e vincular a configuração de layout
         LayoutConfig layoutConfig = createLayoutConfig(request.getLayoutConfig(), restaurant);
         restaurant.setLayoutConfig(layoutConfig);
 
-        // 7. Criar e vincular horários de funcionamento
+        // 8. Criar e vincular horários de funcionamento
         List<OpeningHour> openingHours = createOpeningHours(request.getOpeningHours(), restaurant);
         restaurant.setOpeningHours(openingHours);
 
-        // 8. Vincular categorias
+        // 9. Vincular categorias
         restaurant.setCategories(categories);
 
-        // 9. Salvar restaurante (cascade salvará address, layoutConfig e openingHours)
+        // 10. Salvar restaurante (cascade salvará address, layoutConfig e openingHours)
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
 
-        // 10. Adicionar roles ao owner
+        // 11. Adicionar roles ao owner
         addRolesToOwner(owner);
 
-        log.info("Onboarding concluído com sucesso. Restaurante ID: {}, Owner ID: {}", 
-                savedRestaurant.getId(), owner.getId());
+        log.info("Onboarding concluído com sucesso. Restaurante ID: {}, Owner ID: {}, Slug: {}", 
+                savedRestaurant.getId(), owner.getId(), savedRestaurant.getSlug());
 
         return savedRestaurant;
+    }
+
+    /**
+     * Completa o onboarding de um restaurante (versão legada sem upload)
+     * 
+     * @deprecated Use {@link #completeOnboarding(RestaurantOnboardingRequest, MultipartFile, MultipartFile)}
+     */
+    @Deprecated
+    public Restaurant completeOnboarding(RestaurantOnboardingRequest request) {
+        return completeOnboarding(request, null, null);
     }
 
     private void validateUniqueness(RestaurantOnboardingRequest request) {
@@ -112,6 +143,11 @@ public class RestaurantOnboardingService {
         // Validar CNPJ
         if (restaurantRepository.existsByCnpj(request.getRestaurant().getCnpj())) {
             throw new BadRequestException("CNPJ já cadastrado");
+        }
+
+        // Validar slug
+        if (restaurantRepository.existsBySlug(request.getRestaurant().getSlug())) {
+            throw new BadRequestException("Slug já está em uso. Escolha outro.");
         }
     }
 
@@ -137,14 +173,19 @@ public class RestaurantOnboardingService {
         return userRepository.save(owner);
     }
 
-    private Restaurant createRestaurant(RestaurantOnboardingRequest.RestaurantData restaurantData, User owner) {
+    private Restaurant createRestaurant(
+            RestaurantOnboardingRequest.RestaurantData restaurantData, 
+            User owner, 
+            String logoUrl, 
+            String bannerUrl) {
         Restaurant restaurant = new Restaurant();
         restaurant.setName(restaurantData.getName());
+        restaurant.setSlug(restaurantData.getSlug());
         restaurant.setDescription(restaurantData.getDescription());
         restaurant.setPhoneNumber(restaurantData.getPhoneNumber());
         restaurant.setCnpj(restaurantData.getCnpj());
-        restaurant.setLogoUrl(restaurantData.getLogoUrl());
-        restaurant.setBannerUrl(restaurantData.getBannerUrl());
+        restaurant.setLogoUrl(logoUrl != null ? logoUrl : restaurantData.getLogoUrl());
+        restaurant.setBannerUrl(bannerUrl != null ? bannerUrl : restaurantData.getBannerUrl());
         restaurant.setDeliveryFee(restaurantData.getDeliveryFee());
         restaurant.setMinimumOrder(restaurantData.getMinimumOrder());
         restaurant.setDeliveryTimeMin(restaurantData.getDeliveryTimeMin());
