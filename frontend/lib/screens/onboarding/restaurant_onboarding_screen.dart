@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
@@ -7,18 +8,21 @@ import '../../widgets/onboarding/step_indicator.dart';
 import '../../core/ui/ui.dart';
 import 'steps/user_info_step.dart';
 import 'steps/organization_step.dart';
+import 'steps/address_step.dart';
 import 'steps/customization_step.dart';
 
 /// Tela principal do onboarding de restaurante
 /// 
-/// 3 steps para novos usuários:
+/// 4 steps para novos usuários:
 /// 1. Dados do proprietário
-/// 2. Dados do restaurante + endereço + horários
-/// 3. Personalização + categorias
+/// 2. Dados do restaurante
+/// 3. Endereço
+/// 4. Personalização + categorias
 /// 
-/// 2 steps para usuários logados (pula step 1):
-/// 1. Dados do restaurante + endereço + horários
-/// 2. Personalização + categorias
+/// 3 steps para usuários logados (pula step 1):
+/// 1. Dados do restaurante
+/// 2. Endereço
+/// 3. Personalização + categorias
 class RestaurantOnboardingScreen extends StatefulWidget {
   const RestaurantOnboardingScreen({super.key});
 
@@ -41,6 +45,7 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
   // Callbacks de validação dos steps
   bool Function()? _validateUserInfo;
   bool Function()? _validateOrganization;
+  bool Function()? _validateAddress;
   bool Function()? _validateCustomization;
 
   @override
@@ -58,7 +63,7 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
   void _updateAuthState() {
     final authService = Provider.of<AuthService>(context, listen: false);
     _isLoggedIn = authService.isAuthenticated;
-    _totalSteps = _isLoggedIn ? 2 : 3;
+    _totalSteps = _isLoggedIn ? 3 : 4;
   }
 
   Future<void> _loadInitialData() async {
@@ -167,18 +172,22 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
     bool isValid = false;
 
     if (_isLoggedIn) {
-      // Usuário logado: step 0 = Organization, step 1 = Customization
+      // Usuário logado: step 0 = Organization, step 1 = Address, step 2 = Customization
       if (_currentStep == 0) {
         isValid = await _validateOrganizationStep();
+      } else if (_currentStep == 1) {
+        isValid = await _validateAddressStep();
       } else {
         isValid = await _validateCustomizationStep();
       }
     } else {
-      // Novo usuário: step 0 = UserInfo, step 1 = Organization, step 2 = Customization
+      // Novo usuário: step 0 = UserInfo, step 1 = Organization, step 2 = Address, step 3 = Customization
       if (_currentStep == 0) {
         isValid = await _validateUserInfoStep();
       } else if (_currentStep == 1) {
         isValid = await _validateOrganizationStep();
+      } else if (_currentStep == 2) {
+        isValid = await _validateAddressStep();
       } else {
         isValid = await _validateCustomizationStep();
       }
@@ -223,6 +232,10 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
     return _validateOrganization?.call() ?? true;
   }
 
+  Future<bool> _validateAddressStep() async {
+    return _validateAddress?.call() ?? true;
+  }
+
   Future<bool> _validateCustomizationStep() async {
     return _validateCustomization?.call() ?? true;
   }
@@ -246,11 +259,10 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
         await _onboardingService.clearDraft();
 
         // Mostrar sucesso e navegar
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? 'Restaurante cadastrado com sucesso!'),
-            backgroundColor: Colors.green,
-          ),
+        AppToast.show(
+          context,
+          message: result['message'] ?? 'Restaurante cadastrado com sucesso!',
+          type: ToastType.success,
         );
 
         // Navegar para home ou dashboard do restaurante
@@ -263,12 +275,11 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 5),
-        ),
+      AppToast.show(
+        context,
+        message: 'Erro: $e',
+        type: ToastType.error,
+        duration: const Duration(seconds: 5),
       );
     } finally {
       if (mounted) {
@@ -285,43 +296,130 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
       onWillPop: _onWillPop,
       child: Scaffold(
         backgroundColor: colorScheme.background,
-        appBar: AppBar(
-          title: const Text('Cadastrar Restaurante'),
-          centerTitle: true,
-          elevation: 0,
-          backgroundColor: colorScheme.surface,
-        ),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 700),
-            child: AppCard(
-              margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-              padding: const EdgeInsets.all(56),
-              elevation: 1,
-              borderRadius: 12,
-              child: Column(
-                children: [
-                  StepIndicator(
-                    currentStep: _currentStep,
-                    totalSteps: _totalSteps,
+        body: Stack(
+          children: [
+            // Background com blur
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colorScheme.primary.withOpacity(0.1),
+                      colorScheme.secondary.withOpacity(0.05),
+                    ],
                   ),
-                  const SizedBox(height: 40),
-                  Expanded(
-                    child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (index) {
-                  setState(() => _currentStep = index);
-                },
-                      children: _buildSteps(),
-                    ),
+                ),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Container(
+                    color: colorScheme.primary.withOpacity(0.08),
                   ),
-                ],
+                ),
               ),
             ),
-          ),
+            
+            // Box centralizada
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 800),
+                child: Container(
+                  margin: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Header da box com título
+                      Container(
+                        padding: const EdgeInsets.all(32),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: colorScheme.outline.withOpacity(0.1),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Cadastro de Restaurante',
+                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.primary,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 24),
+                            // Wizard dots simplificados
+                            _buildSimpleStepIndicator(),
+                          ],
+                        ),
+                      ),
+                      
+                      // Conteúdo do wizard
+                      Flexible(
+                        child: Container(
+                          constraints: const BoxConstraints(maxHeight: 600),
+                          padding: const EdgeInsets.all(32),
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: PageView(
+                                  controller: _pageController,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  onPageChanged: (index) {
+                                    setState(() => _currentStep = index);
+                                  },
+                                  children: _buildSteps(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSimpleStepIndicator() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(_totalSteps, (index) {
+        final isActive = index == _currentStep;
+        final isCompleted = index < _currentStep;
+        
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: (isActive || isCompleted)
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(4),
+          ),
+        );
+      }),
     );
   }
 
@@ -341,7 +439,7 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
       );
     }
 
-    // Step 2 (ou 1 se logado): Organização
+    // Step 2 (ou 1 se logado): Dados do Restaurante
     steps.add(
       _buildStepWithNavigation(
         OrganizationStep(
@@ -352,7 +450,18 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
       ),
     );
 
-    // Step 3 (ou 2 se logado): Personalização
+    // Step 3 (ou 2 se logado): Endereço
+    steps.add(
+      _buildStepWithNavigation(
+        AddressStep(
+          initialData: _formData,
+          onDataChanged: _onStepDataChanged,
+          onValidationCallback: (validator) => _validateAddress = validator,
+        ),
+      ),
+    );
+
+    // Step 4 (ou 3 se logado): Personalização
     steps.add(
       _buildStepWithNavigation(
         CustomizationStep(
@@ -372,10 +481,7 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
     return Column(
       children: [
         Expanded(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.zero,
-            child: stepContent,
-          ),
+          child: stepContent,
         ),
         const SizedBox(height: 24),
         _buildNavigationButtons(),
@@ -389,17 +495,19 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
       children: [
         if (_currentStep > 0) ...[
           AppButton(
-            text: 'Anterior',
+            text: 'ANTERIOR',
             onPressed: _isSubmitting ? null : _goToPreviousStep,
             variant: ButtonVariant.text,
+            textColor: Colors.grey[900],
+            size: ButtonSize.large,
           ),
           const SizedBox(width: 12),
         ],
         AppButton(
-          text: _currentStep == _totalSteps - 1 ? 'Concluir' : 'Próximo',
+          text: _currentStep == _totalSteps - 1 ? 'CONCLUIR' : 'PRÓXIMO',
           onPressed: _isSubmitting ? null : _goToNextStep,
           isLoading: _isSubmitting,
-          backgroundColor: Colors.grey[900],
+          variant: ButtonVariant.contained,
           size: ButtonSize.large,
         ),
       ],
@@ -428,9 +536,11 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
             if (_currentStep > 0)
               Expanded(
                 child: AppButton(
-                  text: 'Anterior',
+                  text: 'ANTERIOR',
                   onPressed: _isSubmitting ? null : _goToPreviousStep,
-                  variant: ButtonVariant.outlined,
+                  variant: ButtonVariant.text,
+                  textColor: Colors.grey[900],
+                  size: ButtonSize.large,
                   icon: Icons.arrow_back_rounded,
                 ),
               ),
@@ -440,9 +550,11 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
             // Botão Próximo/Finalizar
             Expanded(
               child: AppButton(
-                text: _currentStep == _totalSteps - 1 ? 'Concluir cadastro' : 'Próxima etapa',
+                text: _currentStep == _totalSteps - 1 ? 'CONCLUIR CADASTRO' : 'PRÓXIMA ETAPA',
                 onPressed: _isSubmitting ? null : _goToNextStep,
                 isLoading: _isSubmitting,
+                variant: ButtonVariant.contained,
+                size: ButtonSize.large,
                 endIcon: _currentStep == _totalSteps - 1 ? Icons.check_rounded : Icons.arrow_forward_rounded,
               ),
             ),

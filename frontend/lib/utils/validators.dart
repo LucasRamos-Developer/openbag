@@ -138,7 +138,10 @@ String? validateNonNegativeNumber(String? value, String fieldName) {
     return '$fieldName é obrigatório';
   }
 
-  final number = double.tryParse(value);
+  // Substituir vírgula por ponto para aceitar formato brasileiro
+  final normalizedValue = value.replaceAll(',', '.');
+  final number = double.tryParse(normalizedValue);
+  
   if (number == null) {
     return '$fieldName deve ser um número válido';
   }
@@ -176,6 +179,23 @@ String? validateHexColor(String? value) {
 
   if (!RegExp(r'^#[0-9A-Fa-f]{6}$').hasMatch(value)) {
     return 'Formato inválido. Use: #RRGGBB';
+  }
+
+  return null;
+}
+
+/// Valida coordenada geográfica (latitude ou longitude)
+String? validateCoordinate(String? value, String fieldName) {
+  if (value == null || value.isEmpty) {
+    return '$fieldName é obrigatória';
+  }
+
+  // Aceitar tanto vírgula quanto ponto como separador decimal
+  final normalizedValue = value.replaceAll(',', '.');
+  final number = double.tryParse(normalizedValue);
+
+  if (number == null) {
+    return '$fieldName deve ser um número válido';
   }
 
   return null;

@@ -28,8 +28,6 @@ public class RestaurantOnboardingRequest {
     private AddressDTO address;
 
     @Valid
-    @NotEmpty(message = "Horários de funcionamento são obrigatórios")
-    @Size(min = 1, message = "Deve haver pelo menos um horário de funcionamento")
     private List<OpeningHourDTO> openingHours;
 
     @Valid

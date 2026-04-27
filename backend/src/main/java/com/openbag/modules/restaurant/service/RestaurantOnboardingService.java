@@ -100,9 +100,11 @@ public class RestaurantOnboardingService {
         LayoutConfig layoutConfig = createLayoutConfig(request.getLayoutConfig(), restaurant);
         restaurant.setLayoutConfig(layoutConfig);
 
-        // 8. Criar e vincular horários de funcionamento
-        List<OpeningHour> openingHours = createOpeningHours(request.getOpeningHours(), restaurant);
-        restaurant.setOpeningHours(openingHours);
+        // 8. Criar e vincular horários de funcionamento (se fornecidos)
+        if (request.getOpeningHours() != null && !request.getOpeningHours().isEmpty()) {
+            List<OpeningHour> openingHours = createOpeningHours(request.getOpeningHours(), restaurant);
+            restaurant.setOpeningHours(openingHours);
+        }
 
         // 9. Vincular categorias
         restaurant.setCategories(categories);

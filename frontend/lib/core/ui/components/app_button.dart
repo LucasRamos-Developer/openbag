@@ -38,6 +38,7 @@ class AppButton extends StatefulWidget {
   // Customizações
   final double? borderRadius;
   final double? elevation;
+  final double? borderWidth;
 
   const AppButton({
     super.key,
@@ -54,6 +55,7 @@ class AppButton extends StatefulWidget {
     this.borderColor,
     this.borderRadius,
     this.elevation,
+    this.borderWidth,
   });
 
   @override
@@ -154,7 +156,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
         padding: _getPadding(),
         side: BorderSide(
           color: borderColor,
-          width: 1.5,
+          width: widget.borderWidth ?? 1.5,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(widget.borderRadius ?? 8),
@@ -212,7 +214,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
       case ButtonSize.small:
         return const EdgeInsets.symmetric(horizontal: 12, vertical: 6);
       case ButtonSize.large:
-        return const EdgeInsets.symmetric(horizontal: 28, vertical: 14);
+        return const EdgeInsets.symmetric(horizontal: 30, vertical: 10);
       case ButtonSize.medium:
       default:
         return const EdgeInsets.symmetric(horizontal: 20, vertical: 10);
@@ -234,9 +236,9 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
   double _getFontSize() {
     switch (widget.size) {
       case ButtonSize.small:
-        return 13;
+        return 11;
       case ButtonSize.large:
-        return 15;
+        return 12;
       case ButtonSize.medium:
       default:
         return 14;
@@ -265,7 +267,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
       style: TextStyle(
         fontSize: _getFontSize(),
         fontWeight: FontWeight.w600,
-        letterSpacing: 0.4,
+        letterSpacing: 0.5,
       ),
     );
 

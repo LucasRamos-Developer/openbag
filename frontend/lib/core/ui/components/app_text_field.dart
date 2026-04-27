@@ -36,6 +36,7 @@ class AppTextField extends StatefulWidget {
   
   // Tipo de input
   final TextInputType? keyboardType;
+  final TextCapitalization textCapitalization;
   final bool obscureText;
   final int? maxLines;
   final int? minLines;
@@ -66,6 +67,8 @@ class AppTextField extends StatefulWidget {
   final Color? borderColor;
   final Color? focusedBorderColor;
   final Color? errorBorderColor;
+  final Color? prefixTextColor;
+  final Color? suffixTextColor;
 
   const AppTextField({
     super.key,
@@ -80,6 +83,7 @@ class AppTextField extends StatefulWidget {
     this.variant = TextFieldVariant.outlined,
     this.size = TextFieldSize.medium,
     this.keyboardType,
+    this.textCapitalization = TextCapitalization.none,
     this.obscureText = false,
     this.maxLines = 1,
     this.minLines,
@@ -100,6 +104,8 @@ class AppTextField extends StatefulWidget {
     this.borderColor,
     this.focusedBorderColor,
     this.errorBorderColor,
+    this.prefixTextColor,
+    this.suffixTextColor,
   });
 
   @override
@@ -108,40 +114,104 @@ class AppTextField extends StatefulWidget {
 
 class _AppTextFieldState extends State<AppTextField> {
   bool _isFocused = false;
+  final FocusNode _focusNode = FocusNode();
+  String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    setState(() {
+      _isFocused = _focusNode.hasFocus;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     
-    return Focus(
-      onFocusChange: (hasFocus) {
-        setState(() => _isFocused = hasFocus);
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        child: TextFormField(
-          controller: widget.controller,
-          initialValue: widget.initialValue,
-          validator: widget.validator,
-          autovalidateMode: widget.autovalidateMode,
-          keyboardType: widget.keyboardType,
-          obscureText: widget.obscureText,
-          inputFormatters: widget.inputFormatters,
-          maxLines: widget.obscureText ? 1 : widget.maxLines,
-          minLines: widget.minLines,
-          maxLength: widget.maxLength,
-          enabled: widget.enabled,
-          readOnly: widget.readOnly,
-          autofocus: widget.autofocus,
-          onChanged: widget.onChanged,
-          onFieldSubmitted: widget.onSubmitted,
-          onTap: widget.onTap,
-          onEditingComplete: widget.onEditingComplete,
-          style: _getTextStyle(colorScheme),
-          decoration: _buildDecoration(theme, colorScheme),
-        ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 0), // Sem padding, controlado externamente
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            child: TextFormField(
+              focusNode: _focusNode,
+              controller: widget.controller,
+              initialValue: widget.initialValue,
+              validator: (value) {
+                final error = widget.validator?.call(value);
+                // Atualiza o estado do erro
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted && _errorText != error) {
+                    setState(() {
+                      _errorText = error;
+                    });
+                  }
+                });
+                return error;
+              },
+              autovalidateMode: widget.autovalidateMode,
+              keyboardType: widget.keyboardType,
+              textCapitalization: widget.textCapitalization,
+              obscureText: widget.obscureText,
+              inputFormatters: widget.inputFormatters,
+              maxLines: widget.obscureText ? 1 : widget.maxLines,
+              minLines: widget.minLines,
+              maxLength: widget.maxLength,
+              enabled: widget.enabled,
+              readOnly: widget.readOnly,
+              autofocus: widget.autofocus,
+              cursorColor: const Color(0xFF000000),
+              onChanged: widget.onChanged,
+              onFieldSubmitted: widget.onSubmitted,
+              onTap: widget.onTap,
+              onEditingComplete: widget.onEditingComplete,
+              style: _getTextStyle(colorScheme),
+              decoration: _buildDecoration(theme, colorScheme),
+            ),
+          ),
+          // Helper text posicionado absolutamente
+          if (widget.helperText != null && _errorText == null)
+            Positioned(
+              left: 0,
+              top: 52, // Abaixo do input
+              child: Text(
+                widget.helperText!,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
+            ),
+          // Error text posicionado absolutamente
+          if (_errorText != null)
+            Positioned(
+              left: 0,
+              top: 52, // Abaixo do input
+              child: Text(
+                _errorText!,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.error,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -169,17 +239,36 @@ class _AppTextFieldState extends State<AppTextField> {
   }
 
   InputDecoration _buildDecoration(ThemeData theme, ColorScheme colorScheme) {
-    final hasError = widget.errorText != null;
+    final hasError = _errorText != null;
     
     return InputDecoration(
       labelText: widget.labelText,
       hintText: widget.hintText,
-      helperText: widget.helperText,
-      errorText: widget.errorText,
+      helperText: null, // Não mostrar inline
+      errorText: null, // Não mostrar inline
       prefixIcon: widget.prefixIcon,
       suffixIcon: widget.suffixIcon,
       prefixText: widget.prefixText,
       suffixText: widget.suffixText,
+      
+      // Estilos do prefix e suffix text
+      prefixStyle: widget.prefixText != null
+          ? TextStyle(
+              fontSize: _getLabelSize(),
+              color: widget.prefixTextColor ?? colorScheme.onSurface.withOpacity(0.5),
+              fontWeight: FontWeight.w400,
+            )
+          : null,
+      suffixStyle: widget.suffixText != null
+          ? TextStyle(
+              fontSize: _getLabelSize(),
+              color: widget.suffixTextColor ?? colorScheme.onSurface.withOpacity(0.6),
+              fontWeight: FontWeight.w400,
+            )
+          : null,
+      
+      // Alinhar label no topo para textarea
+      alignLabelWithHint: (widget.maxLines ?? 1) > 1,
       
       // Cores e preenchimento
       filled: widget.variant != TextFieldVariant.standard,
@@ -190,8 +279,8 @@ class _AppTextFieldState extends State<AppTextField> {
         fontSize: 14,
         color: hasError 
             ? colorScheme.error 
-            : (_isFocused ? colorScheme.primary : colorScheme.onSurface.withOpacity(0.6)),
-        fontWeight: FontWeight.w400,
+            : (_isFocused ? const Color(0xFF000000) : colorScheme.onSurface.withOpacity(0.6)),
+        fontWeight: _isFocused ? FontWeight.w600 : FontWeight.w400,
       ),
       
       // Estilo do hint
@@ -201,17 +290,19 @@ class _AppTextFieldState extends State<AppTextField> {
         fontWeight: FontWeight.w400,
       ),
       
-      // Helper text
-      helperStyle: TextStyle(
-        fontSize: 12,
-        color: colorScheme.onSurface.withOpacity(0.6),
+      // Helper text - oculto (será mostrado com Positioned)
+      helperStyle: const TextStyle(
+        fontSize: 0,
+        height: 0,
       ),
+      helperMaxLines: 1,
       
-      // Error text
-      errorStyle: TextStyle(
-        fontSize: 12,
-        color: colorScheme.error,
+      // Error text - oculto (será mostrado com Positioned)
+      errorStyle: const TextStyle(
+        fontSize: 0,
+        height: 0,
       ),
+      errorMaxLines: 1,
       
       // Padding
       contentPadding: _getContentPadding(),
@@ -277,16 +368,16 @@ class _AppTextFieldState extends State<AppTextField> {
     // Determinar cor da borda
     switch (type) {
       case BorderType.focused:
-        borderColor = widget.focusedBorderColor ?? colorScheme.primary;
-        borderWidth = 2.0;
+        borderColor = widget.focusedBorderColor ?? const Color(0xFF000000);
+        borderWidth = 1.0;
         break;
       case BorderType.error:
         borderColor = widget.errorBorderColor ?? colorScheme.error;
-        borderWidth = 1.5;
+        borderWidth = 1.0;
         break;
       case BorderType.focusedError:
         borderColor = widget.errorBorderColor ?? colorScheme.error;
-        borderWidth = 2.0;
+        borderWidth = 1.0;
         break;
       case BorderType.disabled:
         borderColor = colorScheme.outline.withOpacity(0.12);
@@ -295,7 +386,7 @@ class _AppTextFieldState extends State<AppTextField> {
       case BorderType.enabled:
       case BorderType.normal:
       default:
-        borderColor = widget.borderColor ?? colorScheme.outline.withOpacity(0.23);
+        borderColor = widget.borderColor ?? const Color(0xFFDFE3E8);
         borderWidth = 1.0;
     }
 
@@ -314,12 +405,8 @@ class _AppTextFieldState extends State<AppTextField> {
         return OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(
-            color: type == BorderType.error || type == BorderType.focusedError
-                ? borderColor
-                : type == BorderType.focused
-                    ? borderColor
-                    : colorScheme.outline.withOpacity(0.2),
-            width: type == BorderType.focused || type == BorderType.focusedError ? 2 : 1,
+            color: borderColor,
+            width: borderWidth,
           ),
         );
       

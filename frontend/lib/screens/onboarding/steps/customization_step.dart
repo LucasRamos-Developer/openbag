@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../../../widgets/onboarding/image_picker_card.dart';
+import '../../../widgets/onboarding/compact_image_picker.dart';
 import '../../../widgets/onboarding/color_picker_field.dart';
-import '../../../widgets/onboarding/category_selector.dart';
 import '../../../models/onboarding/layout_config.dart';
+import '../../../models/restaurant.dart';
+import '../../../services/category_service.dart';
+import '../../../core/ui/ui.dart';
 
-/// Step 3: Personalização (Imagens + Cores + Categorias + Resumo)
+/// Step 4: Personalização (Logo + Cores + Categorias)
 class CustomizationStep extends StatefulWidget {
   final Map<String, dynamic> initialData;
   final ValueChanged<Map<String, dynamic>> onDataChanged;
@@ -28,10 +30,13 @@ class CustomizationStep extends StatefulWidget {
 
 class _CustomizationStepState extends State<CustomizationStep> {
   File? _logoFile;
-  File? _bannerFile;
   String _primaryColor = LayoutConfig.defaultConfig.primaryColor;
   String _secondaryColor = LayoutConfig.defaultConfig.secondaryColor;
   List<int> _selectedCategoryIds = [];
+  
+  final CategoryService _categoryService = CategoryService();
+  List<Category>? _categories;
+  bool _isLoadingCategories = true;
 
   @override
   void initState() {
@@ -39,7 +44,6 @@ class _CustomizationStepState extends State<CustomizationStep> {
     
     // Restaurar dados salvos
     _logoFile = widget.initialData['logoFile'];
-    _bannerFile = widget.initialData['bannerFile'];
     
     // Carregar cores do layoutConfig se existir
     if (widget.initialData['layoutConfig'] != null) {
@@ -54,25 +58,42 @@ class _CustomizationStepState extends State<CustomizationStep> {
 
     // Registrar callback de validação
     widget.onValidationCallback?.call(validate);
+    
+    // Carregar categorias
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final categories = await _categoryService.getAllCategories();
+      if (mounted) {
+        setState(() {
+          _categories = categories;
+          _isLoadingCategories = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingCategories = false;
+        });
+        AppToast.show(
+          context,
+          message: 'Erro ao carregar categorias: $e',
+          type: ToastType.error,
+        );
+      }
+    }
   }
 
   bool validate() {
-    if (_selectedCategoryIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Selecione pelo menos uma categoria'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return false;
-    }
+    // Por enquanto, sem validações obrigatórias
     return true;
   }
 
   void _notifyChanges() {
     widget.onDataChanged({
       'logoFile': _logoFile,
-      'bannerFile': _bannerFile,
       'layoutConfig': {
         'primaryColor': _primaryColor,
         'secondaryColor': _secondaryColor,
@@ -83,350 +104,134 @@ class _CustomizationStepState extends State<CustomizationStep> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header
-          Text(
-            'Personalização',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Customize a aparência do seu restaurante',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          // SEÇÃO 1: IMAGENS
-          _buildSectionHeader('Imagens', Icons.collections),
-          const SizedBox(height: 16),
-
-          ImagePickerCard(
-            label: 'Logo do Restaurante (opcional)',
-            imageFile: _logoFile,
-            onImageSelected: (file) {
-              setState(() {
-                _logoFile = file;
-                _notifyChanges();
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-
-          ImagePickerCard(
-            label: 'Banner de Capa (opcional)',
-            imageFile: _bannerFile,
-            onImageSelected: (file) {
-              setState(() {
-                _bannerFile = file;
-                _notifyChanges();
-              });
-            },
-          ),
-
-          const SizedBox(height: 32),
-
-          // SEÇÃO 2: CORES
-          _buildSectionHeader('Cores da Marca', Icons.palette),
-          const SizedBox(height: 16),
-
-          ColorPickerField(
-            label: 'Cor Primária',
-            value: _primaryColor,
-            onColorChanged: (color) {
-              setState(() {
-                _primaryColor = color;
-                _notifyChanges();
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-
-          ColorPickerField(
-            label: 'Cor Secundária',
-            value: _secondaryColor,
-            onColorChanged: (color) {
-              setState(() {
-                _secondaryColor = color;
-                _notifyChanges();
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-
-          // Preview das cores
-          _buildColorPreview(),
-
-          const SizedBox(height: 32),
-
-          // SEÇÃO 3: CATEGORIAS
-          _buildSectionHeader('Categorias', Icons.category),
-          const SizedBox(height: 16),
-
-          CategorySelector(
-            selectedCategoryIds: _selectedCategoryIds,
-            onSelectionChanged: (ids) {
-              setState(() {
-                _selectedCategoryIds = ids;
-                _notifyChanges();
-              });
-            },
-          ),
-
-          const SizedBox(height: 32),
-
-          // SEÇÃO 4: RESUMO
-          _buildSectionHeader('Resumo do Cadastro', Icons.summarize),
-          const SizedBox(height: 16),
-
-          _buildSummary(),
-
-          const SizedBox(height: 32),
-
-          // Botão de submissão
-          ElevatedButton(
-            onPressed: widget.isSubmitting ? null : widget.onSubmit,
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.all(16),
-              textStyle: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            child: widget.isSubmitting
-                ? const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Text('Cadastrando...'),
-                    ],
-                  )
-                : const Text('Finalizar Cadastro'),
-          ),
-
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, color: Theme.of(context).primaryColor),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).primaryColor,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildColorPreview() {
-    final primaryColor = Color(
-      int.parse(_primaryColor.substring(1), radix: 16) + 0xFF000000,
-    );
-    final secondaryColor = Color(
-      int.parse(_secondaryColor.substring(1), radix: 16) + 0xFF000000,
-    );
-
-    return Card(
+      padding: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Header
             Text(
-              'Preview das Cores',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+              'Personalização',
+              style: textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+                color: colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
+            Text(
+              'Customize a aparência do seu restaurante',
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Logo | Cores (Primária e Secundária em coluna)
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Logo
                 Expanded(
-                  child: Container(
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: primaryColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Primária',
-                        style: TextStyle(
-                          color: _getContrastColor(primaryColor),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                  flex: 2,
+                  child: CompactImagePicker(
+                    label: '',
+                    imageFile: _logoFile,
+                    onImageSelected: (file) {
+                      setState(() {
+                        _logoFile = file;
+                        _notifyChanges();
+                      });
+                    },
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
+                
+                // Cores (coluna)
                 Expanded(
-                  child: Container(
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: secondaryColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Secundária',
-                        style: TextStyle(
-                          color: _getContrastColor(secondaryColor),
-                          fontWeight: FontWeight.bold,
-                        ),
+                  child: Column(
+                    children: [
+                      // Cor Primária
+                      ColorPickerField(
+                        label: 'Cor Primária',
+                        value: _primaryColor,
+                        onColorChanged: (color) {
+                          setState(() {
+                            _primaryColor = color;
+                            _notifyChanges();
+                          });
+                        },
                       ),
-                    ),
+                      const SizedBox(height: 20),
+                      
+                      // Cor Secundária
+                      ColorPickerField(
+                        label: 'Cor Secundária',
+                        value: _secondaryColor,
+                        onColorChanged: (color) {
+                          setState(() {
+                            _secondaryColor = color;
+                            _notifyChanges();
+                          });
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 20),
+
+            // Categorias (Select multiselect)
+            if (_isLoadingCategories)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (_categories != null && _categories!.isNotEmpty)
+              AppSelect<int>(
+                labelText: 'Categorias',
+                hintText: 'Selecione as categorias do seu restaurante',
+                variant: TextFieldVariant.filled,
+                multiSelect: true,
+                values: _selectedCategoryIds,
+                items: _categories!
+                    .map((c) => SelectItem(
+                          value: c.id,
+                          label: c.name,
+                          description: c.description,
+                        ))
+                    .toList(),
+                onMultiChanged: (ids) {
+                  setState(() {
+                    _selectedCategoryIds = ids;
+                    _notifyChanges();
+                  });
+                },
+                validator: (value) {
+                  if (_selectedCategoryIds.isEmpty) {
+                    return 'Selecione pelo menos uma categoria';
+                  }
+                  return null;
+                },
+              )
+            else
+              AppTextField(
+                labelText: 'Categorias',
+                hintText: 'Erro ao carregar categorias',
+                variant: TextFieldVariant.filled,
+                enabled: false,
+              ),
           ],
         ),
       ),
-    );
-  }
-
-  Color _getContrastColor(Color color) {
-    final luminance = (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
-    return luminance > 0.5 ? Colors.black : Colors.white;
-  }
-
-  Widget _buildSummary() {
-    return ExpansionTile(
-      title: const Text('Ver todos os dados'),
-      subtitle: const Text('Clique para expandir o resumo completo'),
-      leading: const Icon(Icons.info_outline),
-      initiallyExpanded: false,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Dados do proprietário (se não logado)
-              if (widget.initialData['ownerFullName'] != null) ...[
-                _buildSummarySection(
-                  'Proprietário',
-                  [
-                    'Nome: ${widget.initialData['ownerFullName']}',
-                    'Email: ${widget.initialData['ownerEmail']}',
-                    'Telefone: ${widget.initialData['ownerPhoneNumber']}',
-                  ],
-                ),
-                const Divider(height: 32),
-              ],
-
-              // Dados do restaurante
-              _buildSummarySection(
-                'Restaurante',
-                [
-                  'Nome: ${widget.initialData['restaurantName']}',
-                  'Slug: ${widget.initialData['restaurantSlug']}',
-                  'CNPJ: ${widget.initialData['restaurantCNPJ']}',
-                  'Telefone: ${widget.initialData['restaurantPhoneNumber']}',
-                  'Taxa de entrega: R\$ ${widget.initialData['deliveryFee']?.toStringAsFixed(2) ?? '0,00'}',
-                  'Pedido mínimo: R\$ ${widget.initialData['minimumOrder']?.toStringAsFixed(2) ?? '0,00'}',
-                  'Tempo de entrega: ${widget.initialData['deliveryTimeMin']} min',
-                ],
-              ),
-              const Divider(height: 32),
-
-              // Endereço
-              _buildSummarySection(
-                'Endereço',
-                [
-                  '${widget.initialData['addressStreet']}, ${widget.initialData['addressNumber']}',
-                  if (widget.initialData['addressComplement']?.isNotEmpty == true)
-                    widget.initialData['addressComplement'],
-                  '${widget.initialData['addressNeighborhood']} - ${widget.initialData['addressCity']}/${widget.initialData['addressState']}',
-                  'CEP: ${widget.initialData['addressZipCode']}',
-                ],
-              ),
-              const Divider(height: 32),
-
-              // Horários
-              _buildSummarySection(
-                'Horários de Funcionamento',
-                (widget.initialData['openingHours'] as List? ?? []).map((h) {
-                  final weekdays = ['', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
-                  final label = h['label']?.isNotEmpty == true ? '${h['label']} - ' : '';
-                  return '$label${weekdays[h['weekday']]}: ${h['openTime'].substring(0, 5)} - ${h['closeTime'].substring(0, 5)}';
-                }).toList(),
-              ),
-              const Divider(height: 32),
-
-              // Personalização
-              _buildSummarySection(
-                'Personalização',
-                [
-                  'Logo: ${_logoFile != null ? 'Selecionado' : 'Não selecionado'}',
-                  'Banner: ${_bannerFile != null ? 'Selecionado' : 'Não selecionado'}',
-                  'Cor primária: $_primaryColor',
-                  'Cor secundária: $_secondaryColor',
-                  'Categorias: ${_selectedCategoryIds.length} selecionada(s)',
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSummarySection(String title, List<String> items) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-        const SizedBox(height: 8),
-        ...items.where((item) => item.isNotEmpty).map((item) => Padding(
-          padding: const EdgeInsets.only(left: 8, bottom: 4),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('• ', style: TextStyle(fontSize: 16)),
-              Expanded(
-                child: Text(
-                  item,
-                  style: TextStyle(
-                    color: Colors.grey[700],
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        )),
-      ],
     );
   }
 }

@@ -81,29 +81,34 @@ class AppTheme {
       
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.borderLine),
+        borderSide: BorderSide(color: Color(0xFFDFE3E8), width: 1),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.borderLine.withOpacity(0.23)),
+        borderSide: BorderSide(color: Color(0xFFDFE3E8), width: 1),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.primary, width: 2),
+        borderSide: BorderSide(color: Color(0xFF000000), width: 1),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.error, width: 1.5),
+        borderSide: BorderSide(color: AppColors.error, width: 1),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.error, width: 2),
+        borderSide: BorderSide(color: AppColors.error, width: 1),
       ),
       
       labelStyle: TextStyle(
         fontSize: 14,
         color: AppColors.textBody,
         fontWeight: FontWeight.w400,
+      ),
+      floatingLabelStyle: TextStyle(
+        fontSize: 14,
+        color: Color(0xFF000000),
+        fontWeight: FontWeight.w600,
       ),
       hintStyle: TextStyle(
         fontSize: 14,

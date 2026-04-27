@@ -9,11 +9,11 @@ class AppColors {
 
   // ========== PRIMARY (Verde) ==========
   
-  static const Color primaryLighter = Color(0xFFC8E6C9);
-  static const Color primaryLight = Color(0xFF81C784);
-  static const Color primary = Color(0xFF4CAF50);
-  static const Color primaryDark = Color(0xFF388E3C);
-  static const Color primaryDarker = Color(0xFF1B5E20);
+  static const Color primaryLighter = Color(0xFFB3F0D9);
+  static const Color primaryLight = Color(0xFF52D4A0);
+  static const Color primary = Color(0xFF00A76F);
+  static const Color primaryDark = Color(0xFF008558);
+  static const Color primaryDarker = Color(0xFF006341);
   
   // ========== SECONDARY (Roxo) ==========
   
@@ -33,11 +33,11 @@ class AppColors {
   
   // ========== SUCCESS (Verde) ==========
   
-  static const Color successLighter = Color(0xFFC8E6C9);
-  static const Color successLight = Color(0xFF81C784);
-  static const Color success = Color(0xFF4CAF50);
-  static const Color successDark = Color(0xFF388E3C);
-  static const Color successDarker = Color(0xFF1B5E20);
+  static const Color successLighter = Color(0xFFB3F0D9);
+  static const Color successLight = Color(0xFF52D4A0);
+  static const Color success = Color(0xFF00A76F);
+  static const Color successDark = Color(0xFF008558);
+  static const Color successDarker = Color(0xFF006341);
   
   // ========== WARNING (Laranja/Amarelo) ==========
   
