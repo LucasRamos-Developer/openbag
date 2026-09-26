@@ -5,6 +5,7 @@ class User {
   final String phoneNumber;
   final UserType userType;
   final bool isActive;
+  final List<String> roles;
 
   User({
     required this.id,
@@ -13,7 +14,14 @@ class User {
     required this.phoneNumber,
     required this.userType,
     required this.isActive,
+    this.roles = const [],
   });
+
+  bool hasRole(String role) => roles.contains(role);
+
+  bool get isAdmin => hasRole(UserRoles.admin);
+  bool get isAssociationManager => hasRole(UserRoles.associationManager);
+  bool get isDeliveryPerson => hasRole(UserRoles.deliveryPerson);
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
@@ -22,9 +30,11 @@ class User {
       email: json['email'],
       phoneNumber: json['phoneNumber'],
       userType: UserType.values.firstWhere(
-        (e) => e.toString().split('.').last == json['userType'],
+        (e) => e.name == json['userType'],
+        orElse: () => UserType.CUSTOMER,
       ),
-      isActive: json['isActive'],
+      isActive: json['isActive'] ?? json['active'] ?? true,
+      roles: List<String>.from(json['roleNames'] ?? const []),
     );
   }
 
@@ -34,8 +44,9 @@ class User {
       'fullName': fullName,
       'email': email,
       'phoneNumber': phoneNumber,
-      'userType': userType.toString().split('.').last,
+      'userType': userType.name,
       'isActive': isActive,
+      'roleNames': roles,
     };
   }
 }
@@ -45,4 +56,14 @@ enum UserType {
   RESTAURANT_OWNER,
   DELIVERY_PERSON,
   ADMIN,
+  ORGANIZATION,
+}
+
+/// Nomes das roles do backend
+class UserRoles {
+  static const admin = 'ADMIN';
+  static const customer = 'CUSTOMER';
+  static const restaurantOwner = 'RESTAURANT_OWNER';
+  static const deliveryPerson = 'DELIVERY_PERSON';
+  static const associationManager = 'ASSOCIATION_MANAGER';
 }

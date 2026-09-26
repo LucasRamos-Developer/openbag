@@ -44,11 +44,4 @@ public class RegisterRequest {
     @Deprecated
     @Schema(description = "Tipo de usuário (deprecated, use roles)", deprecated = true)
     private UserType userType = UserType.CUSTOMER;
-
-    /**
-     * Lista de roles para o usuário (opcional)
-     * Se não fornecido, o usuário receberá a role CUSTOMER por padrão
-     */
-    @Schema(description = "Lista de roles do usuário", example = "[\"CUSTOMER\", \"RESTAURANT\"]", required = false)
-    private List<String> roles;
 }

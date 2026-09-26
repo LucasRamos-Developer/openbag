@@ -19,7 +19,7 @@ import java.util.List;
  * Acesso: ADMIN para modificações, RESTAURANT_OWNER para consultas
  */
 @RestController
-@RequestMapping("/api/global-products")
+@RequestMapping("/global-products")
 @Tag(name = "Global Products", description = "API de gerenciamento do catálogo global de produtos")
 public class GlobalProductController {
 

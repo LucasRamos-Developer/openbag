@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
@@ -63,6 +64,13 @@ final phoneFormatter = MaskTextInputFormatter(
 /// Formatter para telefone brasileiro alternativo: (XX) XXXXX-XXXX
 final phoneFormatterShort = MaskTextInputFormatter(
   mask: '(##) #####-####',
+  filter: {"#": RegExp(r'[0-9]')},
+  type: MaskAutoCompletionType.lazy,
+);
+
+/// Formatter para CPF: XXX.XXX.XXX-XX
+final cpfFormatter = MaskTextInputFormatter(
+  mask: '###.###.###-##',
   filter: {"#": RegExp(r'[0-9]')},
   type: MaskAutoCompletionType.lazy,
 );
@@ -135,3 +143,37 @@ class IntegerFormatter extends TextInputFormatter {
     );
   }
 }
+
+String _twoDigits(int value) => value.toString().padLeft(2, '0');
+
+/// Data no formato dd/MM/aaaa ('-' se nula)
+String formatDate(DateTime? date) {
+  if (date == null) return '-';
+  return '${_twoDigits(date.day)}/${_twoDigits(date.month)}/${date.year}';
+}
+
+/// Hora no formato HH:mm ('-' se nula)
+String formatTime(DateTime? date) {
+  if (date == null) return '-';
+  return '${_twoDigits(date.hour)}:${_twoDigits(date.minute)}';
+}
+
+/// Data e hora no formato dd/MM/aaaa HH:mm ('-' se nula)
+String formatDateTime(DateTime? date) {
+  if (date == null) return '-';
+  return '${formatDate(date)} ${formatTime(date)}';
+}
+
+final _currency = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+
+/// Valor em reais: R$ 12,90
+String formatMoney(num value) => _currency.format(value);
+
+/// Lê o texto de um campo com [MoneyFormatter] ("12,90") como número; null se vazio
+double? parseMoney(String text) {
+  final normalized = text.trim().replaceAll('.', '').replaceAll(',', '.');
+  return normalized.isEmpty ? null : double.tryParse(normalized);
+}
+
+/// Valor para preencher um campo com [MoneyFormatter] ("12,90")
+String moneyInput(num value) => value.toStringAsFixed(2).replaceAll('.', ',');

@@ -53,6 +53,7 @@ public class Address {
     @Column(name = "is_default")
     private boolean isDefault = false;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

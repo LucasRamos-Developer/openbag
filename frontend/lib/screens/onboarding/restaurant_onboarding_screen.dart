@@ -1,10 +1,12 @@
 import 'dart:ui';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../services/auth_service.dart';
 import '../../services/onboarding_service.dart';
 import '../../models/onboarding/restaurant_onboarding_data.dart';
-import '../../widgets/onboarding/step_indicator.dart';
+import '../../widgets/onboarding/step_dots.dart';
 import '../../core/ui/ui.dart';
 import 'steps/user_info_step.dart';
 import 'steps/organization_step.dart';
@@ -245,7 +247,17 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
 
     try {
       final authService = Provider.of<AuthService>(context, listen: false);
+      
+      // Extrair arquivos antes de criar o objeto (XFiles não são serializáveis em JSON)
+      final logoFile = _formData['logoFile'] as XFile?;
+      final bannerFile = _formData['bannerFile'] as XFile?;
+      
+      // Criar objeto com os dados JSON
       final data = RestaurantOnboardingData.fromJson(_formData);
+      
+      // Adicionar os arquivos ao objeto
+      data.logoFile = logoFile;
+      data.bannerFile = bannerFile;
 
       final result = await _onboardingService.submitOnboarding(
         data: data,
@@ -261,13 +273,13 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
         // Mostrar sucesso e navegar
         AppToast.show(
           context,
-          message: result['message'] ?? 'Restaurante cadastrado com sucesso!',
+          message: result['message'] ?? 'Restaurante cadastrado com sucesso! Faça login para continuar.',
           type: ToastType.success,
         );
 
-        // Navegar para home ou dashboard do restaurante
+        // Navegar para login
         if (mounted) {
-          Navigator.of(context).pushReplacementNamed('/');
+          context.go('/login');
         }
       } else {
         throw Exception(result['message'] ?? 'Erro ao cadastrar restaurante');
@@ -363,7 +375,7 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
                             ),
                             const SizedBox(height: 24),
                             // Wizard dots simplificados
-                            _buildSimpleStepIndicator(),
+                            StepDots(currentStep: _currentStep, totalSteps: _totalSteps),
                           ],
                         ),
                       ),
@@ -397,29 +409,6 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildSimpleStepIndicator() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(_totalSteps, (index) {
-        final isActive = index == _currentStep;
-        final isCompleted = index < _currentStep;
-        
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: (isActive || isCompleted)
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.outline.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(4),
-          ),
-        );
-      }),
     );
   }
 
@@ -491,18 +480,24 @@ class _RestaurantOnboardingScreenState extends State<RestaurantOnboardingScreen>
 
   Widget _buildNavigationButtons() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        if (_currentStep > 0) ...[
+        if (_currentStep > 0)
           AppButton(
             text: 'ANTERIOR',
             onPressed: _isSubmitting ? null : _goToPreviousStep,
             variant: ButtonVariant.text,
             textColor: Colors.grey[900],
             size: ButtonSize.large,
+          )
+        else
+          AppButton(
+            text: 'FAZER LOGIN',
+            onPressed: _isSubmitting ? null : () => context.go('/login'),
+            variant: ButtonVariant.text,
+            textColor: Colors.grey[900],
+            size: ButtonSize.large,
           ),
-          const SizedBox(width: 12),
-        ],
         AppButton(
           text: _currentStep == _totalSteps - 1 ? 'CONCLUIR' : 'PRÓXIMO',
           onPressed: _isSubmitting ? null : _goToNextStep,

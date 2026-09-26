@@ -38,13 +38,29 @@ public class OrderItem {
     @Column(length = 500)
     private String observations;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
 
+    // Item avulso (product) ou combo (combo): exatamente um dos dois
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "combo_id")
+    private com.openbag.modules.combo.entity.Combo combo;
+
+    // Nome no momento do pedido (o cardápio pode mudar depois)
+    @Column(name = "item_name", length = 200)
+    private String itemName;
+
+    // Complementos escolhidos, com nome e preço congelados
+    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<com.openbag.modules.product.entity.OrderItemCustomization> customizations = new java.util.ArrayList<>();
 
     public OrderItem(Order order, Product product, Integer quantity, BigDecimal unitPrice) {
         this.order = order;

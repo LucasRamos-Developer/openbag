@@ -10,9 +10,13 @@ import com.openbag.modules.restaurant.repository.RestaurantRepository;
 import com.openbag.modules.order.repository.OrderRepository;
 import com.openbag.modules.organization.repository.OrganizationRepository;
 import com.openbag.modules.delivery.repository.DeliveryPersonRepository;
+import com.openbag.security.CustomUserDetailsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -93,6 +97,7 @@ public class AuthorizationService {
      * @param orderId ID do pedido
      * @return true se o usuário é dono do pedido, dono do restaurante do pedido OU é ADMIN
      */
+    @Transactional(readOnly = true)
     public boolean canViewOrder(Long userId, Long orderId) {
         if (userId == null || orderId == null) {
             log.debug("userId ou orderId é null");
@@ -138,6 +143,12 @@ public class AuthorizationService {
                 }
             }
 
+            // Entregador atribuído ao pedido
+            if (order.getDeliveryPerson() != null && order.getDeliveryPerson().getUser() != null
+                    && order.getDeliveryPerson().getUser().getId().equals(userId)) {
+                return true;
+            }
+
             log.debug("Usuário {} não tem permissão para visualizar pedido {}", userId, orderId);
             return false;
 
@@ -145,6 +156,19 @@ public class AuthorizationService {
             log.error("Erro ao verificar permissão de visualização de pedido", e);
             return false;
         }
+    }
+
+    /**
+     * O perfil de entregador pertence ao usuário (tópico de tempo real do entregador)
+     */
+    @Transactional(readOnly = true)
+    public boolean isDeliveryPersonUser(Long userId, Long deliveryPersonId) {
+        if (userId == null || deliveryPersonId == null) {
+            return false;
+        }
+        return deliveryPersonRepository.findById(deliveryPersonId)
+                .map(dp -> dp.getUser() != null && dp.getUser().getId().equals(userId))
+                .orElse(false);
     }
 
     /**
@@ -296,5 +320,28 @@ public class AuthorizationService {
             log.error("Erro ao verificar permissão de gerenciamento de entregador", e);
             return false;
         }
+    }
+
+    /**
+     * Verifica se o usuário autenticado pode gerenciar um restaurante específico
+     * (usado em expressões @PreAuthorize com um único argumento)
+     * @param restaurantId ID do restaurante
+     * @return true se o usuário logado é dono do restaurante OU é ADMIN
+     */
+    public boolean isRestaurantOwner(Long restaurantId) {
+        Long userId = getCurrentUserId();
+        return userId != null && canManageRestaurant(userId, restaurantId);
+    }
+
+    /**
+     * Retorna o ID do usuário autenticado, ou null se não houver autenticação
+     */
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null
+                && authentication.getPrincipal() instanceof CustomUserDetailsService.CustomUserPrincipal principal) {
+            return principal.getId();
+        }
+        return null;
     }
 }

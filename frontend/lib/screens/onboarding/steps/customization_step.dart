@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../widgets/onboarding/compact_image_picker.dart';
 import '../../../widgets/onboarding/color_picker_field.dart';
 import '../../../models/onboarding/layout_config.dart';
@@ -29,7 +29,7 @@ class CustomizationStep extends StatefulWidget {
 }
 
 class _CustomizationStepState extends State<CustomizationStep> {
-  File? _logoFile;
+  XFile? _logoFile;
   String _primaryColor = LayoutConfig.defaultConfig.primaryColor;
   String _secondaryColor = LayoutConfig.defaultConfig.secondaryColor;
   List<int> _selectedCategoryIds = [];

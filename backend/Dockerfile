@@ -1,5 +1,5 @@
-# Use Eclipse Temurin 21 como base
-FROM eclipse-temurin:21-jdk-jammy
+# Use Eclipse Temurin 25 como base
+FROM eclipse-temurin:25-jdk-jammy
 
 # Instalar Maven
 RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*

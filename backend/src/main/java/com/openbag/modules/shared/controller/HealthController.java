@@ -14,7 +14,7 @@ import java.util.Map;
  * Controller para health check da aplicação
  */
 @RestController
-@RequestMapping("/api/health")
+@RequestMapping("/health")
 @Tag(name = "Health", description = "API de health check")
 public class HealthController {
 

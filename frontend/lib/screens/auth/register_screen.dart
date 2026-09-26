@@ -1,8 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/auth_service.dart';
-import '../../models/user.dart';
+import '../../utils/validators.dart';
+import '../../utils/formatters.dart';
+import '../../core/ui/ui.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -20,7 +23,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  UserType _selectedUserType = UserType.CUSTOMER;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -32,8 +35,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _register() async {
-    if (_formKey.currentState!.validate()) {
+  bool _validateForm() {
+    return _formKey.currentState?.validate() ?? false;
+  }
+
+  void _notifyChanges() {
+    // Atualizar estado se necessário
+  }
+
+  Future<void> _register() async {
+    if (!_validateForm()) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
       final authService = Provider.of<AuthService>(context, listen: false);
       
       final success = await authService.register(
@@ -41,264 +56,263 @@ class _RegisterScreenState extends State<RegisterScreen> {
         email: _emailController.text.trim(),
         phoneNumber: _phoneController.text.trim(),
         password: _passwordController.text,
-        userType: _selectedUserType,
       );
 
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Conta criada com sucesso! Faça login para continuar.'),
-            backgroundColor: Colors.green,
-          ),
+      if (!mounted) return;
+
+      if (success) {
+        AppToast.show(
+          context,
+          message: 'Conta criada com sucesso! Faça login para continuar.',
+          type: ToastType.success,
         );
         context.go('/login');
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao criar conta. Tente novamente.'),
-            backgroundColor: Colors.red,
-          ),
+      } else {
+        AppToast.show(
+          context,
+          message: 'Erro ao criar conta. Tente novamente.',
+          type: ToastType.error,
         );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      
+      AppToast.show(
+        context,
+        message: 'Erro: $e',
+        type: ToastType.error,
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Criar Conta'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/login'),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 32),
-                
-                // Title
-                Text(
-                  'Cadastre-se',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                
-                Text(
-                  'Preencha seus dados para criar uma conta',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                
-                // User Type Selection
-                Text(
-                  'Tipo de conta',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                
-                DropdownButtonFormField<UserType>(
-                  value: _selectedUserType,
-                  decoration: const InputDecoration(
-                    hintText: 'Selecione o tipo de conta',
-                    prefixIcon: Icon(Icons.person_outline),
-                  ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: UserType.CUSTOMER,
-                      child: Text('Cliente'),
-                    ),
-                    DropdownMenuItem(
-                      value: UserType.RESTAURANT_OWNER,
-                      child: Text('Dono de Restaurante'),
-                    ),
-                    DropdownMenuItem(
-                      value: UserType.DELIVERY_PERSON,
-                      child: Text('Entregador'),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        _selectedUserType = value;
-                      });
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                
-                // Name Field
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nome completo',
-                    hintText: 'Digite seu nome completo',
-                    prefixIcon: Icon(Icons.person_outlined),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, digite seu nome';
-                    }
-                    if (value.length < 2) {
-                      return 'Nome deve ter pelo menos 2 caracteres';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                
-                // Email Field
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'Digite seu email',
-                    prefixIcon: Icon(Icons.email_outlined),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, digite seu email';
-                    }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                      return 'Digite um email válido';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                
-                // Phone Field
-                TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    labelText: 'Telefone',
-                    hintText: '(11) 99999-9999',
-                    prefixIcon: Icon(Icons.phone_outlined),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, digite seu telefone';
-                    }
-                    if (value.length < 10) {
-                      return 'Digite um telefone válido';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                
-                // Password Field
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: 'Senha',
-                    hintText: 'Digite sua senha',
-                    prefixIcon: const Icon(Icons.lock_outlined),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, digite sua senha';
-                    }
-                    if (value.length < 6) {
-                      return 'A senha deve ter pelo menos 6 caracteres';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                
-                // Confirm Password Field
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: _obscureConfirmPassword,
-                  decoration: InputDecoration(
-                    labelText: 'Confirmar senha',
-                    hintText: 'Digite sua senha novamente',
-                    prefixIcon: const Icon(Icons.lock_outlined),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureConfirmPassword = !_obscureConfirmPassword;
-                        });
-                      },
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, confirme sua senha';
-                    }
-                    if (value != _passwordController.text) {
-                      return 'As senhas não coincidem';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 32),
-                
-                // Register Button
-                Consumer<AuthService>(
-                  builder: (context, authService, child) {
-                    return ElevatedButton(
-                      onPressed: authService.isLoading ? null : _register,
-                      child: authService.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Text('Criar Conta'),
-                    );
-                  },
-                ),
-                const SizedBox(height: 24),
-                
-                // Login Link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Já tem uma conta? ',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    TextButton(
-                      onPressed: () => context.go('/login'),
-                      child: const Text('Faça login'),
-                    ),
+      backgroundColor: colorScheme.background,
+      body: Stack(
+        children: [
+          // Background com blur
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    colorScheme.primary.withOpacity(0.1),
+                    colorScheme.secondary.withOpacity(0.05),
                   ],
                 ),
-              ],
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: Container(
+                  color: colorScheme.primary.withOpacity(0.08),
+                ),
+              ),
             ),
           ),
-        ),
+          
+          // Box centralizada
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: Container(
+                margin: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header da box com título
+                    Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: colorScheme.outline.withOpacity(0.1),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Cadastrar Usuário',
+                            style: textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.primary,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Preencha seus dados para criar uma conta',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurface.withOpacity(0.6),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    // Conteúdo do formulário
+                    Flexible(
+                      child: Container(
+                        constraints: const BoxConstraints(maxHeight: 600),
+                        padding: const EdgeInsets.all(32),
+                        child: Form(
+                          key: _formKey,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Nome completo
+                                AppTextField(
+                                  controller: _nameController,
+                                  labelText: 'Nome completo',
+                                  hintText: 'Digite seu nome completo',
+                                  variant: TextFieldVariant.filled,
+                                  keyboardType: TextInputType.name,
+                                  validator: (value) => validateRequired(value, 'Nome completo'),
+                                  onChanged: (_) => _notifyChanges(),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Email
+                                AppTextField(
+                                  controller: _emailController,
+                                  labelText: 'Email',
+                                  hintText: 'seu@email.com',
+                                  variant: TextFieldVariant.filled,
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: validateEmail,
+                                  onChanged: (_) => _notifyChanges(),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Telefone
+                                AppTextField(
+                                  controller: _phoneController,
+                                  labelText: 'Telefone',
+                                  hintText: '(XX) XXXXX-XXXX',
+                                  variant: TextFieldVariant.filled,
+                                  keyboardType: TextInputType.phone,
+                                  inputFormatters: [phoneFormatterShort],
+                                  validator: (value) => validateRequired(value, 'Telefone'),
+                                  onChanged: (_) => _notifyChanges(),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Senha
+                                AppTextField(
+                                  controller: _passwordController,
+                                  labelText: 'Senha',
+                                  hintText: 'Mínimo 6 caracteres',
+                                  variant: TextFieldVariant.filled,
+                                  obscureText: _obscurePassword,
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Por favor, digite sua senha';
+                                    }
+                                    if (value.length < 6) {
+                                      return 'A senha deve ter pelo menos 6 caracteres';
+                                    }
+                                    return null;
+                                  },
+                                  onChanged: (_) => _notifyChanges(),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Confirmar Senha
+                                AppTextField(
+                                  controller: _confirmPasswordController,
+                                  labelText: 'Confirmar senha',
+                                  hintText: 'Digite sua senha novamente',
+                                  variant: TextFieldVariant.filled,
+                                  obscureText: _obscureConfirmPassword,
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscureConfirmPassword = !_obscureConfirmPassword;
+                                      });
+                                    },
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Por favor, confirme sua senha';
+                                    }
+                                    if (value != _passwordController.text) {
+                                      return 'As senhas não coincidem';
+                                    }
+                                    return null;
+                                  },
+                                  onChanged: (_) => _notifyChanges(),
+                                ),
+                                const SizedBox(height: 32),
+
+                                // Navegação
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    AppButton(
+                                      text: 'FAZER LOGIN',
+                                      onPressed: _isSubmitting ? null : () => context.go('/login'),
+                                      variant: ButtonVariant.text,
+                                      textColor: Colors.grey[900],
+                                      size: ButtonSize.large,
+                                    ),
+                                    AppButton(
+                                      text: 'CRIAR CONTA',
+                                      onPressed: _isSubmitting ? null : _register,
+                                      isLoading: _isSubmitting,
+                                      variant: ButtonVariant.contained,
+                                      size: ButtonSize.large,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

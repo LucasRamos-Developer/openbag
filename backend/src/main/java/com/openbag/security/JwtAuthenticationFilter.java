@@ -33,8 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 Long userId = tokenProvider.getUserIdFromJWT(jwt);
 
-                UserDetails userDetails = customUserDetailsService.loadUserByUsername(
-                    getUserEmailById(userId));
+                UserDetails userDetails = customUserDetailsService.loadUserById(userId);
                 
                 UsernamePasswordAuthenticationToken authentication = 
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -56,11 +55,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7);
         }
         return null;
-    }
-
-    // Método temporário - deveria ser injetado um UserService
-    private String getUserEmailById(Long userId) {
-        // Este é um placeholder - você deve implementar um serviço para buscar o email do usuário
-        return "temp@email.com";
     }
 }

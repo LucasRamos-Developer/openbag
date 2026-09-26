@@ -16,6 +16,17 @@ export 'components/app_button.dart';
 export 'components/app_card.dart';
 export 'components/app_toast.dart';
 export 'components/app_select.dart';
+export 'components/app_responsive_row.dart';
+export 'components/app_section_header.dart';
+export 'components/app_empty_state.dart';
+export 'components/app_status_chip.dart';
+export 'components/app_filter_chips.dart';
+export 'components/app_dialog.dart';
+export 'components/app_panel_scaffold.dart';
+export 'components/app_quantity_stepper.dart';
+export 'components/app_image_avatar.dart';
+export 'components/app_choice_tile.dart';
+export 'components/app_qr_code.dart';
 
 // ========== TEMA ==========
 export 'theme/app_colors.dart';

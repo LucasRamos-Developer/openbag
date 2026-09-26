@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/restaurants")
+@RequestMapping("/restaurants")
 @Tag(name = "Restaurant", description = "API de gerenciamento de restaurantes")
 public class RestaurantController {
 

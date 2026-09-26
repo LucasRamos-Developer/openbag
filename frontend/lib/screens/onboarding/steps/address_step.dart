@@ -10,12 +10,14 @@ class AddressStep extends StatefulWidget {
   final Map<String, dynamic> initialData;
   final ValueChanged<Map<String, dynamic>> onDataChanged;
   final ValueChanged<bool Function()>? onValidationCallback;
+  final String subtitle;
 
   const AddressStep({
     super.key,
     required this.initialData,
     required this.onDataChanged,
     this.onValidationCallback,
+    this.subtitle = 'Localização do seu estabelecimento',
   });
 
   @override
@@ -244,7 +246,7 @@ class _AddressStepState extends State<AddressStep> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Localização do seu estabelecimento',
+              widget.subtitle,
               style: textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurface.withOpacity(0.6),
               ),

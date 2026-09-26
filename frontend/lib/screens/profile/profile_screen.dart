@@ -47,7 +47,7 @@ class ProfileScreen extends StatelessWidget {
                 leading: const Icon(Icons.receipt_long),
                 title: const Text('Meus Pedidos'),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.push('/orders'),
+                onTap: () => context.push('/pedidos'),
               ),
               const Divider(),
               ListTile(

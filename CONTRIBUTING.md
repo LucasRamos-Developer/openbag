@@ -63,7 +63,7 @@ Existem muitas formas de contribuir com o OpenBag, mesmo sem escrever código:
 
 Certifique-se de ter instalado:
 
-- **Java 21+** (JDK)
+- **Java 25+** (JDK)
 - **Maven 3.6+**
 - **Flutter 3.16+**
 - **Docker & Docker Compose**

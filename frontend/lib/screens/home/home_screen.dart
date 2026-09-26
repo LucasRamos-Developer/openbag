@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/cart/cart_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/restaurant_service.dart';
@@ -17,13 +18,13 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RestaurantService>().fetchRestaurants();
-      context.read<RestaurantService>().fetchCategories();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const CartBar(),
       appBar: AppBar(
         title: const Text('Open Bag'),
         actions: [
@@ -74,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
               final restaurant = restaurants[index];
               return RestaurantCard(
                 restaurant: restaurant,
-                onTap: () => context.push('/restaurant/${restaurant.id}'),
+                onTap: () => context.push('/r/${restaurant.slug}'),
               );
             },
           );

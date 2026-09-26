@@ -6,10 +6,14 @@ import com.openbag.modules.organization.entity.Organization;
 import com.openbag.modules.product.entity.Product;
 import com.openbag.modules.product.entity.Category;
 import com.openbag.modules.order.entity.Order;
+import com.openbag.enums.AcceptanceMode;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import com.openbag.enums.CourierPolicy;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +27,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "restaurants")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -94,6 +99,60 @@ public class Restaurant {
     @Column(name = "total_reviews")
     private Integer totalReviews = 0;
 
+    // ============= Operação =============
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "acceptance_mode", length = 10)
+    private AcceptanceMode acceptanceMode = AcceptanceMode.MANUAL;
+
+    // Prazo para aceitar um pedido no modo MANUAL; depois disso ele é cancelado automaticamente
+    @Column(name = "acceptance_timeout_minutes")
+    private Integer acceptanceTimeoutMinutes = 8;
+
+    @Column(name = "default_preparation_minutes")
+    private Integer defaultPreparationMinutes = 20;
+
+    // Pausa temporária (ex: cozinha sobrecarregada); null = sem pausa
+    @Column(name = "paused_until")
+    private LocalDateTime pausedUntil;
+
+    // Faixa de preço no formato schema.org ($ a $$$$)
+    @Size(max = 4)
+    @Column(name = "price_range", length = 4)
+    private String priceRange;
+
+    @Column(name = "auto_print_ticket")
+    private Boolean autoPrintTicket = false;
+
+    // ============= Entregadores =============
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "courier_policy", length = 20)
+    private CourierPolicy courierPolicy;
+
+    // Com FIXED_ONLY: se nenhum fixo estiver disponível, o pedido é oferecido no modo livre
+    @Column(name = "fallback_to_open")
+    private Boolean fallbackToOpen;
+
+    // O restaurante assume a diferença quando o valor da tabela da associação passa da taxa cobrada do cliente
+    @Column(name = "covers_delivery_difference")
+    private Boolean coversDeliveryDifference;
+
+    @Column(name = "covers_delivery_difference_at")
+    private LocalDateTime coversDeliveryDifferenceAcceptedAt;
+
+    public CourierPolicy getCourierPolicy() {
+        return courierPolicy != null ? courierPolicy : CourierPolicy.OPEN;
+    }
+
+    public boolean isFallbackToOpen() {
+        return Boolean.TRUE.equals(fallbackToOpen);
+    }
+
+    public boolean isCoversDeliveryDifference() {
+        return Boolean.TRUE.equals(coversDeliveryDifference);
+    }
+
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -102,11 +161,13 @@ public class Restaurant {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private User owner;
 
     // Organização à qual o restaurante pode pertencer (opcional)
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id")
     private Organization organization;
@@ -115,10 +176,12 @@ public class Restaurant {
     @JoinColumn(name = "address_id")
     private Address address;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Product> products = new ArrayList<>();
 
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @OneToMany(mappedBy = "restaurant", fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>();
 
     @ManyToMany
@@ -132,6 +195,44 @@ public class Restaurant {
     @OneToOne(mappedBy = "restaurant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private LayoutConfig layoutConfig;
 
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OpeningHour> openingHours = new ArrayList<>();
+
+    // ============= Padrões para linhas criadas antes destas colunas existirem (valores NULL no banco) =============
+
+    public AcceptanceMode getAcceptanceMode() {
+        return acceptanceMode != null ? acceptanceMode : AcceptanceMode.MANUAL;
+    }
+
+    public Integer getAcceptanceTimeoutMinutes() {
+        return acceptanceTimeoutMinutes != null ? acceptanceTimeoutMinutes : 8;
+    }
+
+    public Integer getDefaultPreparationMinutes() {
+        return defaultPreparationMinutes != null ? defaultPreparationMinutes : 20;
+    }
+
+    public boolean isAutoPrintTicket() {
+        return Boolean.TRUE.equals(autoPrintTicket);
+    }
+
+    // ============= Helpers =============
+
+    public boolean isPaused(LocalDateTime now) {
+        return pausedUntil != null && pausedUntil.isAfter(now);
+    }
+
+    /**
+     * Se o restaurante está recebendo pedidos agora: ativo, não fechado manualmente,
+     * sem pausa e dentro de algum horário de funcionamento (sem horários cadastrados, vale só o flag manual)
+     */
+    public boolean isOpenNow(LocalDateTime now) {
+        if (!isActive || !isOpen || isPaused(now)) {
+            return false;
+        }
+        if (openingHours == null || openingHours.isEmpty()) {
+            return true;
+        }
+        return openingHours.stream().anyMatch(hour -> hour.covers(now));
+    }
 }

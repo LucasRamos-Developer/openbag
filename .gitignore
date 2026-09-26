@@ -154,3 +154,6 @@ secrets/
 # Docker (opcional - mantenha apenas se necessário)
 # ========================================
 # docker-compose.override.yml
+
+# Arquivos enviados pelos usuários em desenvolvimento (FileStorageService)
+backend/uploads/

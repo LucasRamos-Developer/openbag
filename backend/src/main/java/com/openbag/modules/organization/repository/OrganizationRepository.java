@@ -1,6 +1,9 @@
 package com.openbag.modules.organization.repository;
 
+import com.openbag.enums.OrganizationStatus;
 import com.openbag.modules.organization.entity.Organization;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,4 +26,8 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
     List<Organization> findByAdminUserId(@Param("adminUserId") Long adminUserId);
 
     boolean existsByCnpj(String cnpj);
+
+    Page<Organization> findByStatus(OrganizationStatus status, Pageable pageable);
+
+    List<Organization> findByStatusOrderByTradingNameAsc(OrganizationStatus status);
 }

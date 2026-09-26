@@ -3,7 +3,9 @@ package com.openbag.modules.order.entity;
 import com.openbag.modules.user.entity.User;
 import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
+import com.openbag.enums.CancelledBy;
 import com.openbag.enums.OrderStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -78,17 +80,97 @@ public class Order {
     @Column(name = "delivered_at")
     private LocalDateTime deliveredAt;
 
+    // ============= Operação =============
+
+    // Número sequencial do dia no restaurante (vira o código curto #0042 da cozinha e da comanda)
+    @Column(name = "daily_number")
+    private Integer dailyNumber;
+
+    @Column(name = "display_code", length = 10)
+    private String displayCode;
+
+    // Prazo para o restaurante aceitar (modo MANUAL); depois disso o pedido é cancelado automaticamente
+    @Column(name = "accept_deadline")
+    private LocalDateTime acceptDeadline;
+
+    @Column(name = "accepted_at")
+    private LocalDateTime acceptedAt;
+
+    @Column(name = "ready_at")
+    private LocalDateTime readyAt;
+
+    @Column(name = "dispatched_at")
+    private LocalDateTime dispatchedAt;
+
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cancelled_by", length = 12)
+    private CancelledBy cancelledBy;
+
+    @Column(name = "cancellation_reason", length = 500)
+    private String cancellationReason;
+
+    // Pagamento em dinheiro: valor que o cliente vai entregar (para o troco)
+    @Column(name = "change_for", precision = 10, scale = 2)
+    private BigDecimal changeFor;
+
+    // Snapshots do cliente e do endereço no momento do pedido
+    @Column(name = "customer_name", length = 100)
+    private String customerName;
+
+    @Column(name = "customer_phone", length = 20)
+    private String customerPhone;
+
+    @Column(name = "delivery_latitude")
+    private Double deliveryLatitude;
+
+    @Column(name = "delivery_longitude")
+    private Double deliveryLongitude;
+
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_person_id")
     private DeliveryPerson deliveryPerson;
+
+    // ============= Entrega pelo entregador do app =============
+
+    // Valor do entregador pela tabela da associação dele (fixado no aceite da oferta)
+    @Column(name = "courier_fee", precision = 10, scale = 2)
+    private BigDecimal courierFee;
+
+    // Distância em linha reta do restaurante até o cliente
+    @Column(name = "delivery_distance_km")
+    private Double deliveryDistanceKm;
+
+    // Parte do valor do entregador assumida pelo restaurante (quando a taxa cobrada é menor)
+    @Column(name = "restaurant_delivery_subsidy", precision = 10, scale = 2)
+    private BigDecimal restaurantDeliverySubsidy;
+
+    @Column(name = "assigned_at")
+    private LocalDateTime assignedAt;
+
+    @Column(name = "picked_up_at")
+    private LocalDateTime pickedUpAt;
+
+    // Quando a entrega foi encerrada para o entregador (entregue ou cancelada): liberação e contadores feitos
+    @Column(name = "courier_settled_at")
+    private LocalDateTime courierSettledAt;
+
+    // Desde quando o pedido espera um entregador sem nenhum disponível
+    @Column(name = "searching_courier_since")
+    private LocalDateTime searchingCourierSince;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> items = new ArrayList<>();

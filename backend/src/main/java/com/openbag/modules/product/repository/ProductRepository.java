@@ -50,4 +50,23 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
            "AND p.category.id = :categoryId AND p.isActive = true AND p.isAvailable = true")
     List<Product> findByRestaurantAndCategory(@Param("restaurantId") Long restaurantId,
                                             @Param("categoryId") Long categoryId);
+    // ============= Cardápio (itens não excluídos) =============
+
+    List<Product> findByRestaurantIdAndDeletedAtIsNullOrderByPositionAscIdAsc(Long restaurantId);
+
+    Optional<Product> findByIdAndRestaurantIdAndDeletedAtIsNull(Long id, Long restaurantId);
+
+    long countByMenuSectionIdAndDeletedAtIsNull(Long menuSectionId);
+
+    @Query("SELECT COALESCE(MAX(p.position), -1) FROM Product p WHERE p.menuSection.id = :sectionId AND p.deletedAt IS NULL")
+    int findMaxPositionInSection(@Param("sectionId") Long sectionId);
+
+    // Itens excluídos logicamente deixam de apontar para a seção (para ela poder ser apagada)
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE Product p SET p.menuSection = null WHERE p.menuSection.id = :sectionId AND p.deletedAt IS NOT NULL")
+    void detachDeletedFromSection(@Param("sectionId") Long sectionId);
+
+    @Query("SELECT COUNT(oi) > 0 FROM OrderItem oi WHERE oi.product.id = :productId")
+    boolean hasOrders(@Param("productId") Long productId);
+
 }

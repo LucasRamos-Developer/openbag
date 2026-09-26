@@ -1,13 +1,13 @@
 package com.openbag.enums;
 
 public enum OrderStatus {
-    PENDING("Pending"),
-    CONFIRMED("Confirmed"),
-    PREPARING("Preparing"),
-    READY_FOR_PICKUP("Ready for Pickup"),
-    OUT_FOR_DELIVERY("Out for Delivery"),
-    DELIVERED("Delivered"),
-    CANCELLED("Cancelled");
+    PENDING("Aguardando aceite"),
+    CONFIRMED("Confirmado"),
+    PREPARING("Em preparo"),
+    READY_FOR_PICKUP("Pronto"),
+    OUT_FOR_DELIVERY("Saiu para entrega"),
+    DELIVERED("Entregue"),
+    CANCELLED("Cancelado");
 
     private final String displayName;
 

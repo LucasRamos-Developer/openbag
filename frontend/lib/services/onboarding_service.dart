@@ -3,11 +3,14 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'api_client.dart';
 import '../models/onboarding/restaurant_onboarding_data.dart';
+import '../models/onboarding/association_onboarding_data.dart';
 
 class OnboardingService {
   static const String baseUrl = 'http://localhost:8080/api';
   static const String draftKey = 'restaurant_onboarding_draft';
+  static const String associationDraftKey = 'association_onboarding_draft';
 
   final Dio _dio = Dio(BaseOptions(
     connectTimeout: const Duration(seconds: 30),
@@ -86,22 +89,24 @@ class OnboardingService {
 
       // Adicionar logo se existir
       if (data.logoFile != null) {
+        final bytes = await data.logoFile!.readAsBytes();
         formData.files.add(MapEntry(
           'logo',
-          await MultipartFile.fromFile(
-            data.logoFile!.path,
-            filename: 'logo${_getFileExtension(data.logoFile!.path)}',
+          MultipartFile.fromBytes(
+            bytes,
+            filename: 'logo${_getFileExtension(data.logoFile!.name)}',
           ),
         ));
       }
 
       // Adicionar banner se existir
       if (data.bannerFile != null) {
+        final bytes = await data.bannerFile!.readAsBytes();
         formData.files.add(MapEntry(
           'banner',
-          await MultipartFile.fromFile(
-            data.bannerFile!.path,
-            filename: 'banner${_getFileExtension(data.bannerFile!.path)}',
+          MultipartFile.fromBytes(
+            bytes,
+            filename: 'banner${_getFileExtension(data.bannerFile!.name)}',
           ),
         ));
       }
@@ -139,6 +144,57 @@ class OnboardingService {
       }
     } catch (e) {
       throw Exception('Erro ao cadastrar restaurante: $e');
+    }
+  }
+
+  /// Salva o progresso do cadastro de associação (sem senha e sem arquivos)
+  Future<void> saveAssociationDraft(Map<String, dynamic> formData) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(associationDraftKey, json.encode(AssociationOnboardingData.draftOf(formData)));
+    } catch (e) {
+      print('Erro ao salvar progresso: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> loadAssociationDraft() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString(associationDraftKey);
+      return jsonString != null ? Map<String, dynamic>.from(json.decode(jsonString)) : null;
+    } catch (e) {
+      print('Erro ao carregar progresso: $e');
+      return null;
+    }
+  }
+
+  Future<void> clearAssociationDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(associationDraftKey);
+  }
+
+  /// Envia o cadastro da associação (multipart: 'data' + 'logo' opcional)
+  /// A associação fica aguardando aprovação de um administrador
+  Future<void> submitAssociationOnboarding(AssociationOnboardingData data) async {
+    try {
+      final formData = FormData.fromMap({
+        'data': MultipartFile.fromString(
+          jsonEncode(data.toApiJson()),
+          contentType: DioMediaType('application', 'json'),
+        ),
+      });
+
+      if (data.logoFile != null) {
+        final bytes = await data.logoFile!.readAsBytes();
+        formData.files.add(MapEntry(
+          'logo',
+          MultipartFile.fromBytes(bytes, filename: 'logo${_getFileExtension(data.logoFile!.name)}'),
+        ));
+      }
+
+      await _dio.post('$baseUrl/auth/register/association', data: formData);
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
     }
   }
 

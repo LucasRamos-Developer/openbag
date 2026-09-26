@@ -2,6 +2,9 @@ package com.openbag.modules.combo.entity;
 
 import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.product.entity.Category;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.openbag.modules.menu.entity.MenuSection;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,6 +26,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "combos")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -53,10 +57,24 @@ public class Combo {
     @Column(name = "is_active")
     private boolean isActive = true;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_section_id")
+    private MenuSection menuSection;
+
+    @Column(name = "position")
+    private Integer position = 0;
+
+    @JsonIgnore
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;

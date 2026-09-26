@@ -51,16 +51,14 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _checkAuthStatus() async {
-    await Future.delayed(const Duration(seconds: 3));
+    final authService = Provider.of<AuthService>(context, listen: false);
+    await Future.wait([
+      Future.delayed(const Duration(seconds: 3)),
+      authService.ready,
+    ]);
     
     if (mounted) {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      
-      if (authService.isAuthenticated) {
-        context.go('/home');
-      } else {
-        context.go('/login');
-      }
+      context.go(authService.isAuthenticated ? authService.homeRoute : '/login');
     }
   }
 
@@ -106,10 +104,22 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.restaurant,
-                      size: 60,
-                      color: AppTheme.primaryColor,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: Image.asset(
+                        'assets/images/openbag.png',
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          // Fallback para ícone caso imagem não exista
+                          return const Icon(
+                            Icons.restaurant,
+                            size: 60,
+                            color: AppTheme.primaryColor,
+                          );
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(height: 30),

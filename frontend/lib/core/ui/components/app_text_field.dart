@@ -136,6 +136,46 @@ class _AppTextFieldState extends State<AppTextField> {
     });
   }
 
+  /// Calcula a posição do helper/error text baseado na altura do campo
+  double _getHelperTextPosition() {
+    // Altura base do label (aproximadamente 20px)
+    const labelHeight = 20.0;
+    
+    // Padding vertical (depende do size)
+    double verticalPadding;
+    switch (widget.size) {
+      case TextFieldSize.small:
+        verticalPadding = 10.0 * 2; // 10 top + 10 bottom
+        break;
+      case TextFieldSize.large:
+        verticalPadding = 18.0 * 2; // 18 top + 18 bottom
+        break;
+      case TextFieldSize.medium:
+      default:
+        verticalPadding = 14.0 * 2; // 14 top + 14 bottom
+    }
+    
+    // Altura da linha de texto
+    double lineHeight;
+    switch (widget.size) {
+      case TextFieldSize.small:
+        lineHeight = 20.0;
+        break;
+      case TextFieldSize.large:
+        lineHeight = 24.0;
+        break;
+      case TextFieldSize.medium:
+      default:
+        lineHeight = 22.0;
+    }
+    
+    // Número de linhas (mínimo 1)
+    final lines = (widget.maxLines ?? 1).toDouble();
+    
+    // Cálculo: label + padding + (lineHeight * lines) + gap
+    return labelHeight + verticalPadding + (lineHeight * lines) + 8;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -189,7 +229,7 @@ class _AppTextFieldState extends State<AppTextField> {
           if (widget.helperText != null && _errorText == null)
             Positioned(
               left: 0,
-              top: 52, // Abaixo do input
+              top: _getHelperTextPosition(), // Calculado dinamicamente
               child: Text(
                 widget.helperText!,
                 style: TextStyle(
@@ -202,7 +242,7 @@ class _AppTextFieldState extends State<AppTextField> {
           if (_errorText != null)
             Positioned(
               left: 0,
-              top: 52, // Abaixo do input
+              top: _getHelperTextPosition(), // Calculado dinamicamente
               child: Text(
                 _errorText!,
                 style: TextStyle(

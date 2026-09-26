@@ -22,6 +22,7 @@ public class OpeningHour {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
@@ -47,4 +48,21 @@ public class OpeningHour {
     @Size(max = 255, message = "Observação deve ter no máximo 255 caracteres")
     @Column(length = 255)
     private String observation;
+
+    /**
+     * Se o horário cobre o instante informado. Horários que viram a noite
+     * (fechamento menor ou igual à abertura, ex: 18:00–02:00) continuam no dia seguinte.
+     */
+    public boolean covers(java.time.LocalDateTime now) {
+        int today = now.getDayOfWeek().getValue();
+        java.time.LocalTime time = now.toLocalTime();
+        boolean overnight = !closeTime.isAfter(openTime);
+
+        if (!overnight) {
+            return weekday == today && !time.isBefore(openTime) && time.isBefore(closeTime);
+        }
+        int yesterday = today == 1 ? 7 : today - 1;
+        return (weekday == today && !time.isBefore(openTime))
+                || (weekday == yesterday && time.isBefore(closeTime));
+    }
 }

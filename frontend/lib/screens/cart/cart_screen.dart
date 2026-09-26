@@ -1,106 +1,147 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/ui/ui.dart';
+import '../../services/auth_service.dart';
 import '../../services/cart_service.dart';
+import '../../utils/formatters.dart';
+import '../../widgets/menu/menu_image.dart';
+import '../../widgets/order/price_summary.dart';
+import '../../widgets/restaurant/restaurant_logo.dart';
 
+/// Carrinho: itens com complementos, quantidades, totais e pedido mínimo
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
+  void _checkout(BuildContext context) {
+    final auth = context.read<AuthService>();
+    if (!auth.isAuthenticated) {
+      AppToast.show(context, message: 'Entre na sua conta para finalizar o pedido', type: ToastType.info);
+      context.go('/login?next=/checkout');
+      return;
+    }
+    context.push('/checkout');
+  }
+
   @override
   Widget build(BuildContext context) {
+    final cart = context.watch<CartService>();
+    final restaurant = cart.restaurant;
+    final muted = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Carrinho'),
+        actions: [
+          if (!cart.isEmpty)
+            AppButton(
+              text: 'Limpar',
+              variant: ButtonVariant.text,
+              onPressed: () async {
+                final ok = await AppDialog.confirm(context,
+                    title: 'Limpar o carrinho?', message: 'Todos os itens serão removidos.', confirmLabel: 'Limpar');
+                if (ok) cart.clear();
+              },
+            ),
+          const SizedBox(width: 8),
+        ],
       ),
-      body: Consumer<CartService>(
-        builder: (context, cartService, child) {
-          if (cartService.items.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.shopping_cart_outlined, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text('Seu carrinho está vazio'),
-                ],
-              ),
-            );
-          }
-
-          return Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
+      body: cart.isEmpty
+          ? AppEmptyState(
+              icon: Icons.shopping_bag_outlined,
+              message: 'Seu carrinho está vazio.',
+              actionLabel: 'Ver restaurantes',
+              onAction: () => context.go('/home'),
+            )
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: ListView(
                   padding: const EdgeInsets.all(16),
-                  itemCount: cartService.items.length,
-                  itemBuilder: (context, index) {
-                    final item = cartService.items[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        title: Text(item.product.name),
-                        subtitle: Text('R\$ ${item.product.currentPrice.toStringAsFixed(2)}'),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.remove),
-                              onPressed: () => cartService.updateQuantity(item.product.id, item.quantity - 1),
-                            ),
-                            Text('${item.quantity}'),
-                            IconButton(
-                              icon: const Icon(Icons.add),
-                              onPressed: () => cartService.updateQuantity(item.product.id, item.quantity + 1),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, -2),
-                    ),
-                  ],
-                ),
-                child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Total:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text(
-                          'R\$ ${cartService.subtotal.toStringAsFixed(2)}',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: Implement checkout
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Funcionalidade em desenvolvimento')),
-                          );
-                        },
-                        child: const Text('Finalizar Pedido'),
+                    if (restaurant != null)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: RestaurantLogo(logoUrl: restaurant.logoUrl, name: restaurant.name, size: 44),
+                        title: Text(restaurant.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        subtitle: const Text('Adicionar mais itens'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => context.go('/r/${restaurant.slug}'),
                       ),
-                    ),
+                    const Divider(),
+                    for (final line in cart.lines) _CartLineTile(line: line),
+                    const SizedBox(height: 16),
+                    PriceSummary(subtotal: cart.subtotal, deliveryFee: cart.deliveryFee, total: cart.total),
+                    if (cart.missingForMinimum > 0) ...[
+                      const SizedBox(height: 12),
+                      AppCard(
+                        padding: const EdgeInsets.all(12),
+                        backgroundColor: AppColors.warningLighter.withValues(alpha: 0.5),
+                        child: Text(
+                          'Faltam ${formatMoney(cart.missingForMinimum)} para o pedido mínimo de '
+                          '${formatMoney(restaurant!.minimumOrder)}.',
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Text('Os preços são confirmados pelo restaurante ao finalizar.', style: TextStyle(color: muted, fontSize: 12)),
                   ],
                 ),
               ),
-            ],
-          );
-        },
+            ),
+      bottomNavigationBar: cart.isEmpty
+          ? null
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: AppButton(
+                  text: cart.missingForMinimum > 0 ? 'Pedido mínimo não atingido' : 'Continuar  ·  ${formatMoney(cart.total)}',
+                  size: ButtonSize.large,
+                  fullWidth: true,
+                  onPressed: cart.missingForMinimum > 0 ? null : () => _checkout(context),
+                ),
+              ),
+            ),
+    );
+  }
+}
+
+class _CartLineTile extends StatelessWidget {
+  final CartLine line;
+
+  const _CartLineTile({required this.line});
+
+  @override
+  Widget build(BuildContext context) {
+    final cart = context.read<CartService>();
+    final muted = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          MenuImage(imageUrl: line.imageUrl, size: 56),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(line.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                if (line.options.isNotEmpty) Text(line.optionsSummary, style: TextStyle(color: muted, fontSize: 13)),
+                if (line.notes != null) Text('Obs.: ${line.notes}', style: TextStyle(color: muted, fontSize: 13)),
+                const SizedBox(height: 6),
+                Text(formatMoney(line.totalPrice), style: const TextStyle(fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+          AppQuantityStepper(
+            value: line.quantity,
+            min: 0,
+            showRemoveIcon: true,
+            onChanged: (v) => cart.updateQuantity(line, v),
+          ),
+        ],
       ),
     );
   }

@@ -1,13 +1,18 @@
 package com.openbag.config;
 
+import com.openbag.enums.UserType;
 import com.openbag.modules.user.entity.Permission;
 import com.openbag.modules.user.entity.Role;
+import com.openbag.modules.user.entity.User;
 import com.openbag.modules.user.repository.PermissionRepository;
 import com.openbag.modules.user.repository.RoleRepository;
+import com.openbag.modules.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,9 +32,23 @@ public class DataInitializer implements ApplicationRunner {
     @Autowired
     private PermissionRepository permissionRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Value("${app.admin.email:}")
+    private String adminEmail;
+
+    @Value("${app.admin.password:}")
+    private String adminPassword;
+
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
+        // Sempre faz upsert (as operações são idempotentes), para que permissões e roles
+        // novas cheguem também a bancos já inicializados
         log.info("=== Iniciando DataInitializer ===");
         
         // Criar permissões
@@ -37,8 +56,43 @@ public class DataInitializer implements ApplicationRunner {
         
         // Criar roles e associar permissões
         createRoles(permissionsMap);
+
+        // Garantir que exista um ADMIN (necessário, por exemplo, para aprovar associações)
+        createDefaultAdmin();
         
         log.info("=== DataInitializer concluído com sucesso ===");
+    }
+
+    /**
+     * Cria o usuário ADMIN inicial a partir de app.admin.email/app.admin.password,
+     * somente se ainda não existir nenhum usuário com a role ADMIN
+     */
+    private void createDefaultAdmin() {
+        if (userRepository.existsByRoleName(Role.RoleName.ADMIN.name())) {
+            return;
+        }
+
+        if (adminEmail.isBlank() || adminPassword.isBlank()) {
+            log.warn("Nenhum ADMIN cadastrado e app.admin.email/app.admin.password não configurados. ADMIN inicial não criado.");
+            return;
+        }
+
+        if (userRepository.existsByEmail(adminEmail)) {
+            log.warn("Email {} já está em uso por um usuário que não é ADMIN. ADMIN inicial não criado.", adminEmail);
+            return;
+        }
+
+        User admin = new User();
+        admin.setFullName("Administrador OpenBag");
+        admin.setEmail(adminEmail);
+        admin.setPhoneNumber("00000000000");
+        admin.setPassword(passwordEncoder.encode(adminPassword));
+        admin.setUserType(UserType.ADMIN);
+        admin.setActive(true);
+        roleRepository.findByName(Role.RoleName.ADMIN.name()).ifPresent(role -> admin.getRoles().add(role));
+        userRepository.save(admin);
+
+        log.info("ADMIN inicial criado: {}", adminEmail);
     }
 
     /**
@@ -138,6 +192,8 @@ public class DataInitializer implements ApplicationRunner {
                 getPermissions(permissionsMap,
                         "ASSOCIATION_MANAGE_DELIVERY_PERSONS",
                         "ASSOCIATION_VIEW_STATS",
+                        "ASSOCIATION_EDIT",
+                        "ASSOCIATION_MANAGE_INVITES",
                         "DELIVERY_VIEW_ALL"
                 )
         );

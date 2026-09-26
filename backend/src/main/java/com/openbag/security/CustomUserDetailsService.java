@@ -28,6 +28,16 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new CustomUserPrincipal(user);
     }
 
+    /**
+     * Carrega o usuário pelo ID (subject do JWT)
+     */
+    public UserDetails loadUserById(Long id) throws UsernameNotFoundException {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + id));
+
+        return new CustomUserPrincipal(user);
+    }
+
     public static class CustomUserPrincipal implements UserDetails {
         private final User user;
 

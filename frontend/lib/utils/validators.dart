@@ -17,6 +17,37 @@ String? validateEmail(String? value) {
   return null;
 }
 
+/// Valida CPF (###.###.###-##) pelos dígitos verificadores
+String? validateCPF(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'CPF é obrigatório';
+  }
+
+  final cpf = value.replaceAll(RegExp(r'\D'), '');
+  if (cpf.length != 11) {
+    return 'CPF deve ter 11 dígitos';
+  }
+
+  // Sequências repetidas (111.111.111-11) passam no cálculo mas são inválidas
+  if (RegExp(r'^(\d)\1{10}$').hasMatch(cpf)) {
+    return 'CPF inválido';
+  }
+
+  final digits = cpf.split('').map(int.parse).toList();
+  for (var check = 9; check <= 10; check++) {
+    var sum = 0;
+    for (var i = 0; i < check; i++) {
+      sum += digits[i] * (check + 1 - i);
+    }
+    final rest = (sum * 10) % 11;
+    if ((rest == 10 ? 0 : rest) != digits[check]) {
+      return 'CPF inválido';
+    }
+  }
+
+  return null;
+}
+
 /// Valida CNPJ no formato ##.###.###/####-00
 /// Os 12 primeiros caracteres são alfanuméricos e os 2 últimos são dígitos verificadores
 String? validateCNPJ(String? value) {

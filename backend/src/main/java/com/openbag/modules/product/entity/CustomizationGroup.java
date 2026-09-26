@@ -41,6 +41,11 @@ public class CustomizationGroup {
     @Column(name = "max_selections")
     private Integer maxSelections = 1;
 
+    // Ordem de exibição dentro do item
+    @Column(name = "position")
+    private Integer position = 0;
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;

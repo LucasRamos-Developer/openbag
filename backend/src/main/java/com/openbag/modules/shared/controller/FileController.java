@@ -8,16 +8,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +30,7 @@ import java.util.Map;
  * Controller para gerenciamento de uploads e downloads de arquivos
  */
 @RestController
-@RequestMapping("/api/files")
+@RequestMapping("/files")
 @Tag(name = "Files", description = "API de gerenciamento de arquivos")
 @Slf4j
 public class FileController {
@@ -52,20 +57,17 @@ public class FileController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{folder}/{fileName:.+}")
-    @Operation(summary = "Download de arquivo", description = "Faz download de um arquivo armazenado")
-    public ResponseEntity<Resource> downloadFile(
-            @PathVariable String folder,
-            @PathVariable String fileName,
-            HttpServletRequest request) {
-        
-        String filePath = folder + "/" + fileName;
+    @GetMapping("/**")
+    @Operation(summary = "Download de arquivo",
+            description = "Serve um arquivo armazenado, inclusive em subpastas (ex: /files/restaurants/logos/x.png)")
+    public ResponseEntity<Resource> downloadFile(HttpServletRequest request) {
+        String filePath = relativePathOf(request);
         Path path = fileStorageService.getFilePath(filePath);
-        
+
         Resource resource;
         try {
             resource = new UrlResource(path.toUri());
-            if (!resource.exists()) {
+            if (!resource.exists() || !resource.isReadable()) {
                 return ResponseEntity.notFound().build();
             }
         } catch (MalformedURLException ex) {
@@ -88,20 +90,20 @@ public class FileController {
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
+                // Nomes são UUIDs: o conteúdo de uma URL nunca muda
+                .cacheControl(CacheControl.maxAge(Duration.ofDays(30)).cachePublic())
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + path.getFileName() + "\"")
                 .body(resource);
     }
 
-    @DeleteMapping("/{folder}/{fileName:.+}")
+    @DeleteMapping("/**")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Deletar arquivo", description = "Remove um arquivo armazenado")
-    public ResponseEntity<?> deleteFile(
-            @PathVariable String folder,
-            @PathVariable String fileName) {
-        
-        String filePath = folder + "/" + fileName;
-        boolean deleted = fileStorageService.deleteFile(filePath);
-        
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Deletar arquivo",
+            description = "Somente ADMIN. Donos removem imagens pelos endpoints do próprio restaurante ou item.")
+    public ResponseEntity<?> deleteFile(HttpServletRequest request) {
+        boolean deleted = fileStorageService.deleteFile(relativePathOf(request));
+
         if (deleted) {
             Map<String, String> response = new HashMap<>();
             response.put("message", "Arquivo deletado com sucesso");
@@ -109,5 +111,14 @@ public class FileController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    /**
+     * Caminho do arquivo depois de /files/ (ex: "restaurants/logos/x.png")
+     */
+    private String relativePathOf(HttpServletRequest request) {
+        String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+        String pattern = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+        return new AntPathMatcher().extractPathWithinPattern(pattern, path);
     }
 }

@@ -98,7 +98,10 @@ public class Permission {
 
         // ASSOCIATION
         ASSOCIATION_MANAGE_DELIVERY_PERSONS("ASSOCIATION", "Gerenciar entregadores da associação"),
-        ASSOCIATION_VIEW_STATS("ASSOCIATION", "Visualizar estatísticas da associação");
+        ASSOCIATION_VIEW_STATS("ASSOCIATION", "Visualizar estatísticas da associação"),
+        ASSOCIATION_EDIT("ASSOCIATION", "Editar dados da própria associação"),
+        ASSOCIATION_MANAGE_INVITES("ASSOCIATION", "Gerenciar convites da associação"),
+        ASSOCIATION_APPROVE("ASSOCIATION", "Aprovar ou recusar associações na plataforma");
 
         private final String category;
         private final String description;

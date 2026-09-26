@@ -1,9 +1,12 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import '../../services/auth_service.dart';
 import '../../utils/theme.dart';
+import '../../utils/validators.dart';
+import '../../core/ui/ui.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -39,13 +42,28 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (success && mounted) {
-        context.go('/home');
+        AppToast.show(
+          context,
+          message: 'Login realizado com sucesso!',
+          type: ToastType.success,
+        );
+        // Volta para onde o usuário estava (ex: ?next=/checkout); só caminhos internos
+        final next = GoRouterState.of(context).uri.queryParameters['next'];
+        context.go(next != null && next.startsWith('/') && !next.startsWith('//') ? next : authService.homeRoute);
       } else if (mounted) {
-        _showErrorSnackBar('Email ou senha incorretos');
+        AppToast.show(
+          context,
+          message: 'Email ou senha incorretos',
+          type: ToastType.error,
+        );
       }
     } catch (e) {
       if (mounted) {
-        _showErrorSnackBar('Erro ao fazer login: ${e.toString()}');
+        AppToast.show(
+          context,
+          message: 'Erro ao fazer login: ${e.toString()}',
+          type: ToastType.error,
+        );
       }
     } finally {
       if (mounted) {
@@ -54,113 +72,109 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).colorScheme.primary.withOpacity(0.05),
-              Theme.of(context).colorScheme.secondary.withOpacity(0.05),
-            ],
+      backgroundColor: colorScheme.background,
+      body: Stack(
+        children: [
+          // Background com blur
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    colorScheme.primary.withOpacity(0.1),
+                    colorScheme.secondary.withOpacity(0.05),
+                  ],
+                ),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: Container(
+                  color: colorScheme.primary.withOpacity(0.08),
+                ),
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(40),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Logo
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.restaurant,
-                              size: 48,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                          const SizedBox(height: 32),
-                          
-                          // Title
-                          Text(
-                            'Bem-vindo!',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          
-                          Text(
-                            'Faça login para continuar',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[600],
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 40),
-                          
-                          // Email Field
-                          TextFormField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(
-                              labelText: 'Email',
-                              hintText: 'Digite seu email',
-                              prefixIcon: const Icon(Icons.email_outlined),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
+          
+          // Conteúdo
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  child: Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(40),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Logo
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: colorScheme.primary.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.restaurant,
+                                size: 48,
+                                color: colorScheme.primary,
                               ),
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Por favor, digite seu email';
-                              }
-                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                                return 'Digite um email válido';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          
-                          // Password Field
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: _obscurePassword,
-                            decoration: InputDecoration(
+                            const SizedBox(height: 32),
+                            
+                            // Title
+                            Text(
+                              'Bem-vindo!',
+                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            
+                            Text(
+                              'Faça login para continuar',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 40),
+                            
+                            // Email Field
+                            AppTextField(
+                              controller: _emailController,
+                              labelText: 'Email',
+                              hintText: 'Digite seu email',
+                              keyboardType: TextInputType.emailAddress,
+                              prefixIcon: const Icon(Icons.email_outlined),
+                              variant: TextFieldVariant.outlined,
+                              validator: validateEmail,
+                            ),
+                            const SizedBox(height: 16),
+                            
+                            // Password Field
+                            AppTextField(
+                              controller: _passwordController,
                               labelText: 'Senha',
                               hintText: 'Digite sua senha',
+                              obscureText: _obscurePassword,
                               prefixIcon: const Icon(Icons.lock_outlined),
                               suffixIcon: IconButton(
                                 icon: Icon(
@@ -172,86 +186,89 @@ class _LoginScreenState extends State<LoginScreen> {
                                   });
                                 },
                               ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Por favor, digite sua senha';
-                              }
-                              if (value.length < 6) {
-                                return 'A senha deve ter pelo menos 6 caracteres';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          
-                          // Forgot Password
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () {
-                                // TODO: Implement forgot password
+                              variant: TextFieldVariant.outlined,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor, digite sua senha';
+                                }
+                                if (value.length < 6) {
+                                  return 'A senha deve ter pelo menos 6 caracteres';
+                                }
+                                return null;
                               },
-                              child: Text(
-                                'Esqueceu a senha?',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(height: 12),
+                            
+                            // Forgot Password
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () {
+                                  // TODO: Implement forgot password
+                                },
+                                child: Text(
+                                  'Esqueceu a senha?',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: colorScheme.primary,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                          
-                          // Login Button
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
+                            const SizedBox(height: 24),
+                            
+                            // Login Button
+                            AppButton(
+                              text: 'Entrar',
                               onPressed: _isLoading ? null : _login,
-                              style: ElevatedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                      ),
-                                    )
-                                  : const Text(
-                                      'Entrar',
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                    ),
+                              isLoading: _isLoading,
+                              variant: ButtonVariant.contained,
+                              size: ButtonSize.large,
+                              fullWidth: true,
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                          
-                          // Register Link
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Não tem uma conta? ',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              TextButton(
-                                onPressed: () => context.go('/register'),
-                                child: const Text(
-                                  'Cadastre-se',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                            const SizedBox(height: 24),
+                            
+                            // Register Link
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Não tem uma conta? ',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
+                                AppButton(
+                                  text: 'Cadastre-se',
+                                  onPressed: () => context.go('/registrar/usuario'),
+                                  variant: ButtonVariant.text,
+                                  size: ButtonSize.medium,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Center(
+                              child: AppButton(
+                                text: 'Quero ser entregador',
+                                icon: Icons.two_wheeler,
+                                onPressed: () => context.go('/registrar/entregador'),
+                                variant: ButtonVariant.text,
+                                size: ButtonSize.medium,
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                            Text(
+                              'É uma associação ou cooperativa de entregadores?',
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            Center(
+                              child: AppButton(
+                                text: 'Cadastre sua organização',
+                                onPressed: () => context.go('/registrar/associacao'),
+                                variant: ButtonVariant.text,
+                                size: ButtonSize.medium,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -259,7 +276,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -4,6 +4,12 @@ import 'package:flutter/material.dart';
 class AppConstants {
   // API Configuration
   static const String baseUrl = 'http://localhost:8080/api';
+
+  /// URL absoluta de um arquivo enviado ao backend (ex: "associations/abc.png")
+  static String fileUrl(String relativePath) => '$baseUrl/files/$relativePath';
+
+  /// URL absoluta de uma página do app (ex: "/e/joao-silva-ab12"), para links e QR codes
+  static String appUrl(String path) => '${Uri.base.origin}$path';
   
   // App Configuration
   static const String appName = 'Open Bag';

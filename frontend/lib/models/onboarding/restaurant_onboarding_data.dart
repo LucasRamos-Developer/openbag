@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'opening_hour.dart';
 import 'layout_config.dart';
 
@@ -39,8 +39,8 @@ class RestaurantOnboardingData {
   List<int> categoryIds;
 
   // Image files (Step 3) - não salvos no JSON
-  File? logoFile;
-  File? bannerFile;
+  XFile? logoFile;
+  XFile? bannerFile;
 
   RestaurantOnboardingData({
     this.ownerFullName,
@@ -210,8 +210,8 @@ class RestaurantOnboardingData {
     List<OpeningHour>? openingHours,
     LayoutConfig? layoutConfig,
     List<int>? categoryIds,
-    File? logoFile,
-    File? bannerFile,
+    XFile? logoFile,
+    XFile? bannerFile,
   }) {
     return RestaurantOnboardingData(
       ownerFullName: ownerFullName ?? this.ownerFullName,

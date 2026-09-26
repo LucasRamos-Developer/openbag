@@ -84,6 +84,79 @@ AppPaper(
 )
 ```
 
+### AppResponsiveRow
+Campos lado a lado que empilham em coluna quando falta largura (celular).
+
+**Exemplo:**
+```dart
+AppResponsiveRow(
+  flex: const [1, 2], // opcional
+  breakpoint: 480,    // abaixo disso, empilha
+  children: [numeroField, complementoField],
+)
+```
+
+### AppSectionHeader
+Título de seção com subtítulo e ação opcionais.
+
+**Exemplo:**
+```dart
+AppSectionHeader(
+  title: 'Associados',
+  subtitle: '12 encontrados',
+  action: AppButton(text: 'Cadastrar', onPressed: _cadastrar),
+)
+```
+
+### AppEmptyState
+Estado vazio ou de erro, com ação opcional.
+
+**Exemplo:**
+```dart
+AppEmptyState(
+  icon: Icons.cloud_off_outlined,
+  message: 'Não foi possível carregar',
+  actionLabel: 'Tentar novamente',
+  onAction: _carregar,
+)
+```
+
+### AppStatusChip
+Selo de status (texto colorido sobre fundo suave). Prefira tons escuros da paleta para contraste.
+
+**Exemplo:**
+```dart
+AppStatusChip(label: 'Ativo', color: AppColors.successDark)
+```
+
+### AppFilterChips
+Faixa rolável de chips de filtro com seleção única. Usa `SelectItem`; valor `null` representa "Todos".
+
+**Exemplo:**
+```dart
+AppFilterChips<Status?>(
+  items: const [
+    SelectItem(value: null, label: 'Todos'),
+    SelectItem(value: Status.ACTIVE, label: 'Ativos'),
+  ],
+  value: _filtro,
+  onSelected: (valor) => setState(() => _filtro = valor),
+)
+```
+
+### AppDialog
+Diálogos padrão: confirmação e confirmação com motivo.
+
+**Exemplo:**
+```dart
+final ok = await AppDialog.confirm(context,
+    title: 'Aprovar?', message: 'O entregador ficará ativo.', confirmLabel: 'Aprovar');
+
+// Retorna o motivo ou null se cancelado
+final motivo = await AppDialog.reason(context,
+    title: 'Recusar?', confirmLabel: 'Recusar', required: true);
+```
+
 ## 🎨 Sistema de Cores
 
 ### AppColors

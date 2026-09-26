@@ -193,15 +193,6 @@ Escolhemos a AGPL-3.0 por ser uma licença **mais forte que protege contra uso e
 - [Discussões no GitHub](https://github.com/LucasRamos-Developer/openbag/discussions)
 - [Issues no GitHub](https://github.com/LucasRamos-Developer/openbag/issues)
 
-## Apoiadores
-
-Este projeto é possível graças ao apoio de:
-
-- Desenvolvedores voluntários
-- Cooperativas de entregadores parceiras
-- Restaurantes que acreditam em um modelo mais justo
-- A comunidade open source
-
 **Quer apoiar o projeto?** Entre em contato ou contribua diretamente no GitHub!
 
 ---

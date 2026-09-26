@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 @Tag(name = "User", description = "API de gerenciamento de usuários")
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {
@@ -50,7 +50,7 @@ public class UserController {
 
     @GetMapping("/profile")
     @Operation(summary = "Buscar perfil do usuário atual")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<User> getCurrentUserProfile() {
         User user = userService.getCurrentUser();
         return ResponseEntity.ok(user);
@@ -58,7 +58,7 @@ public class UserController {
 
     @PutMapping("/profile")
     @Operation(summary = "Atualizar perfil do usuário")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<User> updateProfile(@Valid @RequestBody User userDetails) {
         User updatedUser = userService.updateUser(userDetails);
         return ResponseEntity.ok(updatedUser);
@@ -66,7 +66,7 @@ public class UserController {
 
     @GetMapping("/addresses")
     @Operation(summary = "Listar endereços do usuário")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<AddressDTO>> getUserAddresses() {
         List<AddressDTO> addresses = userService.getUserAddresses();
         return ResponseEntity.ok(addresses);
@@ -74,7 +74,7 @@ public class UserController {
 
     @PostMapping("/addresses")
     @Operation(summary = "Adicionar novo endereço")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AddressDTO> addAddress(@Valid @RequestBody AddressDTO addressDTO) {
         AddressDTO savedAddress = userService.addAddress(addressDTO);
         return ResponseEntity.ok(savedAddress);
@@ -82,7 +82,7 @@ public class UserController {
 
     @PutMapping("/addresses/{addressId}")
     @Operation(summary = "Atualizar endereço")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AddressDTO> updateAddress(
             @PathVariable Long addressId,
             @Valid @RequestBody AddressDTO addressDTO) {
@@ -92,7 +92,7 @@ public class UserController {
 
     @DeleteMapping("/addresses/{addressId}")
     @Operation(summary = "Remover endereço")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteAddress(@PathVariable Long addressId) {
         userService.deleteAddress(addressId);
         return ResponseEntity.noContent().build();
@@ -100,7 +100,7 @@ public class UserController {
 
     @DeleteMapping("/profile")
     @Operation(summary = "Desativar conta do usuário")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deactivateAccount() {
         userService.deactivateUser();
         return ResponseEntity.noContent().build();

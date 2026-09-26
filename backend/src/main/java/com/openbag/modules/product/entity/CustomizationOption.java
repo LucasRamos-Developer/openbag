@@ -40,6 +40,7 @@ public class CustomizationOption {
     @Column(name = "display_order")
     private Integer displayOrder = 0;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customization_group_id", nullable = false)
     private CustomizationGroup customizationGroup;

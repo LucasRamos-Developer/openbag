@@ -6,6 +6,7 @@ import com.openbag.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -76,9 +77,14 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // Endpoints públicos
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/health").permitAll()
-                .requestMatchers("/api/public/**").permitAll()
+                // Nota: context-path=/api é removido pelo Spring antes de chegar aqui
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/health").permitAll()
+                // WebSocket: a autenticação é feita no frame STOMP CONNECT (StompAuthInterceptor)
+                .requestMatchers("/ws/**", "/ws").permitAll()
+                .requestMatchers("/public/**").permitAll()
+                // Imagens públicas (logos, banners, fotos do cardápio): vistas por visitantes e buscadores
+                .requestMatchers(HttpMethod.GET, "/files/restaurants/**", "/files/products/**", "/files/associations/**", "/files/couriers/**").permitAll()
                 .requestMatchers("/api-docs/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/swagger-ui.html").permitAll()

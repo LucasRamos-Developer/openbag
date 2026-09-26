@@ -1,0 +1,174 @@
+package com.openbag.modules.order.service;
+
+import com.openbag.enums.CancelledBy;
+import com.openbag.enums.OrderStatus;
+import com.openbag.exception.BadRequestException;
+import com.openbag.exception.ResourceNotFoundException;
+import com.openbag.modules.order.dto.OrderDTO;
+import com.openbag.modules.order.entity.Order;
+import com.openbag.modules.order.realtime.OrderChangedEvent;
+import com.openbag.modules.order.repository.OrderRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Operação dos pedidos pelo restaurante: quadro de pedidos ativos, histórico e avanço das etapas
+ */
+@Service
+@Transactional
+@Slf4j
+public class RestaurantOrderService {
+
+    /** Pedidos que aparecem no gestor e na cozinha */
+    public static final Set<OrderStatus> ACTIVE = EnumSet.of(OrderStatus.PENDING, OrderStatus.CONFIRMED,
+            OrderStatus.PREPARING, OrderStatus.READY_FOR_PICKUP, OrderStatus.OUT_FOR_DELIVERY);
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private ApplicationEventPublisher events;
+
+    @Autowired
+    private Clock clock;
+
+    @Transactional(readOnly = true)
+    public List<OrderDTO> getBoard(Long restaurantId) {
+        return orderRepository.findByRestaurantIdAndStatusInOrderByOrderDateAsc(restaurantId, ACTIVE).stream()
+                .map(OrderDTO::from)
+                .toList();
+    }
+
+    /**
+     * Histórico de um dia (padrão: hoje), opcionalmente filtrado por status
+     */
+    @Transactional(readOnly = true)
+    public Page<OrderDTO> getHistory(Long restaurantId, LocalDate date, OrderStatus status, Pageable pageable) {
+        LocalDate day = date != null ? date : LocalDate.now(clock);
+        LocalDateTime start = day.atStartOfDay();
+        LocalDateTime end = day.plusDays(1).atStartOfDay();
+        Page<Order> page = status != null
+                ? orderRepository.findByRestaurantIdAndStatusAndOrderDateBetweenOrderByOrderDateDesc(restaurantId, status, start, end, pageable)
+                : orderRepository.findByRestaurantIdAndOrderDateBetweenOrderByOrderDateDesc(restaurantId, start, end, pageable);
+        return page.map(OrderDTO::from);
+    }
+
+    // ============= Etapas =============
+
+    public OrderDTO accept(Long restaurantId, Long orderId) {
+        return transition(restaurantId, orderId, EnumSet.of(OrderStatus.PENDING), OrderStatus.CONFIRMED,
+                "Pedido confirmado pelo restaurante", (order, now) -> order.setAcceptedAt(now));
+    }
+
+    public OrderDTO start(Long restaurantId, Long orderId) {
+        return transition(restaurantId, orderId, EnumSet.of(OrderStatus.CONFIRMED), OrderStatus.PREPARING,
+                "Pedido em preparo", (order, now) -> {
+                });
+    }
+
+    /** A cozinha pode marcar como pronto direto do "a fazer" (itens que não precisam de preparo) */
+    public OrderDTO ready(Long restaurantId, Long orderId) {
+        return transition(restaurantId, orderId, EnumSet.of(OrderStatus.CONFIRMED, OrderStatus.PREPARING),
+                OrderStatus.READY_FOR_PICKUP, "Pedido pronto", (order, now) -> order.setReadyAt(now));
+    }
+
+    public OrderDTO dispatch(Long restaurantId, Long orderId) {
+        return transition(restaurantId, orderId, EnumSet.of(OrderStatus.READY_FOR_PICKUP), OrderStatus.OUT_FOR_DELIVERY,
+                "Pedido saiu para entrega", (order, now) -> order.setDispatchedAt(now));
+    }
+
+    /** Entregue: o pagamento (na entrega) é considerado recebido */
+    public OrderDTO deliver(Long restaurantId, Long orderId) {
+        return transition(restaurantId, orderId, EnumSet.of(OrderStatus.OUT_FOR_DELIVERY), OrderStatus.DELIVERED,
+                "Pedido entregue", (order, now) -> {
+                    order.setDeliveredAt(now);
+                    order.setPaymentStatus(Order.PaymentStatus.PAID);
+                });
+    }
+
+    /**
+     * Recusa um pedido novo ou cancela um pedido já aceito que ainda não ficou pronto
+     */
+    public OrderDTO reject(Long restaurantId, Long orderId, String reason) {
+        if (reason == null || reason.isBlank()) {
+            throw new BadRequestException("Informe o motivo para o cliente");
+        }
+        String message = "Cancelado pelo restaurante: " + reason.trim();
+        return transition(restaurantId, orderId, EnumSet.of(OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.PREPARING),
+                OrderStatus.CANCELLED, message, (order, now) -> {
+                    order.setCancelledAt(now);
+                    order.setCancelledBy(CancelledBy.RESTAURANT);
+                    order.setCancellationReason(reason.trim());
+                });
+    }
+
+    /**
+     * Cancela os pedidos que o restaurante (modo MANUAL) não aceitou dentro do prazo
+     */
+    @Scheduled(fixedDelayString = "${app.orders.expiration-check-ms:30000}", initialDelay = 30000)
+    public void expireUnansweredOrders() {
+        LocalDateTime now = LocalDateTime.now(clock);
+        for (Order order : orderRepository.findByStatusAndAcceptDeadlineBefore(OrderStatus.PENDING, now)) {
+            order.setStatus(OrderStatus.CANCELLED);
+            order.setCancelledAt(now);
+            order.setCancelledBy(CancelledBy.SYSTEM);
+            order.setCancellationReason("O restaurante não respondeu a tempo");
+            orderService.addTracking(order, OrderStatus.CANCELLED, "Cancelado automaticamente: o restaurante não respondeu a tempo", now);
+            orderRepository.save(order);
+            events.publishEvent(new OrderChangedEvent(order.getId(), OrderChangedEvent.Type.ORDER_UPDATED));
+            log.info("Pedido {} cancelado por falta de resposta do restaurante {}", order.getId(), order.getRestaurant().getId());
+        }
+    }
+
+    // ============= Helpers =============
+
+    @FunctionalInterface
+    public interface StepEffect {
+        void apply(Order order, LocalDateTime now);
+    }
+
+    private OrderDTO transition(Long restaurantId, Long orderId, Set<OrderStatus> allowedFrom, OrderStatus target,
+                                String message, StepEffect effect) {
+        Order order = orderRepository.findByIdAndRestaurantId(orderId, restaurantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
+        return OrderDTO.from(advance(order, allowedFrom, target, message, effect));
+    }
+
+    /**
+     * Avança o pedido de etapa: valida a origem, aplica o efeito, registra no histórico e avisa em tempo real.
+     * Usado também pelo entregador (retirada e entrega).
+     */
+    public Order advance(Order order, Set<OrderStatus> allowedFrom, OrderStatus target, String message,
+                         StepEffect effect) {
+        if (!allowedFrom.contains(order.getStatus())) {
+            throw new BadRequestException(order.getStatus() == OrderStatus.CANCELLED
+                    ? "Este pedido já foi cancelado"
+                    : "Não é possível mudar o pedido de \"" + order.getStatus().getDisplayName() + "\" para \""
+                    + target.getDisplayName() + "\"");
+        }
+
+        LocalDateTime now = LocalDateTime.now(clock);
+        order.setStatus(target);
+        effect.apply(order, now);
+        orderService.addTracking(order, target, message, now);
+        Order saved = orderRepository.save(order);
+        events.publishEvent(new OrderChangedEvent(saved.getId(), OrderChangedEvent.Type.ORDER_UPDATED));
+        return saved;
+    }
+}

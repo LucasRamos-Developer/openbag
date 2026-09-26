@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/products")
 @Tag(name = "Product", description = "API de gerenciamento de produtos")
 public class ProductController {
 
@@ -103,7 +103,7 @@ public class ProductController {
     @PostMapping
     @Operation(summary = "Criar novo produto")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
         Product savedProduct = productService.createProduct(product);
         return ResponseEntity.ok(savedProduct);
@@ -112,7 +112,7 @@ public class ProductController {
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar produto")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Product> updateProduct(
             @PathVariable Long id,
             @Valid @RequestBody Product productDetails) {
@@ -123,7 +123,7 @@ public class ProductController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Remover produto")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
@@ -169,7 +169,7 @@ public class ProductController {
     @PostMapping("/restaurant/{restaurantId}/link-global")
     @Operation(summary = "Vincular produto global ao restaurante com preço customizado")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Product> linkGlobalProduct(
             @PathVariable Long restaurantId,
             @Valid @RequestBody LinkGlobalProductRequest request) {
@@ -180,7 +180,7 @@ public class ProductController {
     @PostMapping("/{id}/upload-image")
     @Operation(summary = "Upload de imagem do produto")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> uploadProductImage(
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file) {
@@ -210,7 +210,7 @@ public class ProductController {
     @DeleteMapping("/{id}/image")
     @Operation(summary = "Remover imagem do produto")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteProductImage(@PathVariable Long id) {
         Product product = productService.getProductById(id);
         

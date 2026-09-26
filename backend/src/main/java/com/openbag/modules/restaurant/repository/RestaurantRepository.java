@@ -4,6 +4,8 @@ import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -56,4 +58,13 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     List<Restaurant> findNearbyRestaurants(@Param("latitude") Double latitude,
                                          @Param("longitude") Double longitude,
                                          @Param("radiusKm") Double radiusKm);
+    List<Restaurant> findByOwnerIdOrderByNameAsc(Long ownerId);
+
+    /**
+     * Restaurante com lock pessimista: serializa a criação de pedidos (numeração do dia)
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT r FROM Restaurant r WHERE r.id = :id")
+    Optional<Restaurant> findByIdForUpdate(@Param("id") Long id);
+
 }

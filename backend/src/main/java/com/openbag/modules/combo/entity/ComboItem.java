@@ -30,6 +30,7 @@ public class ComboItem {
     @Column(nullable = false)
     private Integer quantity = 1;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "combo_id", nullable = false)
     private Combo combo;

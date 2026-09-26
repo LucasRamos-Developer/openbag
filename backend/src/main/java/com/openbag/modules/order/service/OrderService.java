@@ -1,207 +1,238 @@
 package com.openbag.modules.order.service;
 
+import com.openbag.enums.AcceptanceMode;
+import com.openbag.enums.CancelledBy;
+import com.openbag.enums.OrderStatus;
+import com.openbag.exception.BadRequestException;
+import com.openbag.exception.ResourceNotFoundException;
+import com.openbag.modules.combo.entity.Combo;
+import com.openbag.modules.combo.repository.ComboRepository;
+import com.openbag.modules.order.dto.CreateOrderRequest;
+import com.openbag.modules.order.dto.OrderDTO;
 import com.openbag.modules.order.entity.Order;
 import com.openbag.modules.order.entity.OrderItem;
 import com.openbag.modules.order.entity.OrderTracking;
-import com.openbag.modules.product.entity.Product;
-import com.openbag.modules.restaurant.entity.Restaurant;
-import com.openbag.modules.user.entity.User;
-import com.openbag.enums.OrderStatus;
-import com.openbag.modules.shared.exception.BadRequestException;
-import com.openbag.modules.shared.exception.ResourceNotFoundException;
+import com.openbag.modules.order.realtime.OrderChangedEvent;
 import com.openbag.modules.order.repository.OrderRepository;
-import com.openbag.modules.order.repository.OrderTrackingRepository;
+import com.openbag.modules.product.entity.OrderItemCustomization;
+import com.openbag.modules.product.entity.Product;
 import com.openbag.modules.product.repository.ProductRepository;
-import com.openbag.modules.user.service.UserService;
+import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.modules.restaurant.repository.RestaurantRepository;
+import com.openbag.modules.user.entity.User;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+/**
+ * Pedidos do cliente: criação (com preços recalculados no servidor), consulta e cancelamento
+ */
 @Service
 @Transactional
+@Slf4j
 public class OrderService {
+
+    private static final DateTimeFormatter ORDER_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
+    private static final NumberFormat BRL = NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
 
     @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
-    private OrderTrackingRepository orderTrackingRepository;
+    private RestaurantRepository restaurantRepository;
 
     @Autowired
     private ProductRepository productRepository;
 
     @Autowired
-    private UserService userService;
+    private ComboRepository comboRepository;
 
-    public Order createOrder(Order order) {
-        User currentUser = userService.getCurrentUser();
-        order.setUser(currentUser);
-        order.setOrderDate(LocalDateTime.now());
-        order.setStatus(OrderStatus.PENDING);
+    @Autowired
+    private OrderCalculator calculator;
 
-        // Validar e calcular total do pedido
-        BigDecimal totalAmount = BigDecimal.ZERO;
-        Restaurant restaurant = null;
+    @Autowired
+    private Clock clock;
 
-        for (OrderItem item : order.getItems()) {
-            Product product = productRepository.findById(item.getProduct().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado"));
+    @Autowired
+    private ApplicationEventPublisher events;
 
-            if (!product.isActive()) {
-                throw new BadRequestException("Produto não está disponível: " + product.getName());
-            }
+    public OrderDTO createOrder(CreateOrderRequest request, User customer) {
+        LocalDateTime now = LocalDateTime.now(clock);
 
-            if (restaurant == null) {
-                restaurant = product.getRestaurant();
-            } else if (!restaurant.getId().equals(product.getRestaurant().getId())) {
-                throw new BadRequestException("Todos os produtos devem ser do mesmo restaurante");
-            }
-
-            if (!product.getRestaurant().isActive()) {
-                throw new BadRequestException("Restaurante não está ativo");
-            }
-
-            item.setProduct(product);
-            item.setUnitPrice(product.getPrice());
-            item.setSubtotal(product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
-            item.setOrder(order);
-
-            totalAmount = totalAmount.add(item.getSubtotal());
+        // Lock no restaurante: serializa a numeração do dia e a checagem de "aberto"
+        Restaurant restaurant = restaurantRepository.findByIdForUpdate(request.getRestaurantId())
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurante não encontrado"));
+        if (!restaurant.isOpenNow(now)) {
+            throw new BadRequestException(restaurant.isPaused(now)
+                    ? "O restaurante pausou os pedidos por alguns minutos. Tente novamente em breve."
+                    : "O restaurante está fechado no momento");
         }
 
-        if (restaurant == null) {
-            throw new BadRequestException("Nenhum restaurante encontrado nos itens do pedido");
+        var lines = calculator.price(request.getItems(), sellableProducts(restaurant.getId()), sellableCombos(restaurant.getId()));
+        BigDecimal subtotal = calculator.subtotal(lines);
+        if (subtotal.compareTo(restaurant.getMinimumOrder()) < 0) {
+            throw new BadRequestException("O pedido mínimo deste restaurante é " + BRL.format(restaurant.getMinimumOrder()));
         }
-
-        order.setRestaurant(restaurant);
-        
-        // Adicionar taxa de entrega
         BigDecimal deliveryFee = restaurant.getDeliveryFee();
+        BigDecimal total = subtotal.add(deliveryFee);
+
+        BigDecimal changeFor = null;
+        if (request.getPaymentMethod() == Order.PaymentMethod.CASH && request.getChangeFor() != null) {
+            if (request.getChangeFor().compareTo(total) < 0) {
+                throw new BadRequestException("O valor para troco deve ser maior ou igual ao total do pedido");
+            }
+            changeFor = request.getChangeFor();
+        }
+
+        int dailyNumber = orderRepository.findMaxDailyNumber(restaurant.getId(), now.toLocalDate().atStartOfDay()) + 1;
+        CreateOrderRequest.AddressRequest address = request.getAddress();
+
+        Order order = new Order();
+        order.setUser(customer);
+        order.setRestaurant(restaurant);
+        order.setOrderDate(now);
+        order.setDailyNumber(dailyNumber);
+        order.setDisplayCode(String.format("#%04d", dailyNumber));
+        order.setOrderNumber("OB-" + now.format(ORDER_DATE) + "-" + restaurant.getId() + "-" + dailyNumber);
+        order.setSubtotal(subtotal);
         order.setDeliveryFee(deliveryFee);
-        totalAmount = totalAmount.add(deliveryFee);
+        order.setTotalAmount(total);
+        order.setPaymentMethod(request.getPaymentMethod());
+        order.setPaymentStatus(Order.PaymentStatus.PENDING);
+        order.setChangeFor(changeFor);
+        order.setOrderNotes(request.getNotes() != null && !request.getNotes().isBlank() ? request.getNotes().trim() : null);
+        order.setDeliveryAddress(address.format());
+        order.setDeliveryLatitude(address.getLatitude());
+        order.setDeliveryLongitude(address.getLongitude());
+        order.setCustomerName(customer.getFullName());
+        order.setCustomerPhone(request.getCustomerPhone() != null && !request.getCustomerPhone().isBlank()
+                ? request.getCustomerPhone().trim()
+                : customer.getPhoneNumber());
+        order.setEstimatedDeliveryTime(restaurant.getDeliveryTimeMax());
 
-        // Verificar pedido mínimo
-        BigDecimal itemsTotal = totalAmount.subtract(deliveryFee);
-        if (itemsTotal.compareTo(restaurant.getMinimumOrder()) < 0) {
-            throw new BadRequestException("Valor mínimo do pedido é " + restaurant.getMinimumOrder());
+        for (OrderCalculator.PricedLine line : lines) {
+            OrderItem item = new OrderItem();
+            item.setOrder(order);
+            item.setProduct(line.product());
+            item.setCombo(line.combo());
+            item.setItemName(line.name());
+            item.setQuantity(line.quantity());
+            item.setUnitPrice(line.unitPrice());
+            item.setSubtotal(line.totalPrice());
+            item.setTotalPrice(line.totalPrice());
+            item.setObservations(line.notes());
+            for (OrderCalculator.PricedOption option : line.options()) {
+                OrderItemCustomization customization = new OrderItemCustomization();
+                customization.setOrderItem(item);
+                customization.setCustomizationOption(option.option());
+                customization.setGroupName(option.groupName());
+                customization.setOptionName(option.optionName());
+                customization.setPriceAtPurchase(option.price());
+                item.getCustomizations().add(customization);
+            }
+            order.getItems().add(item);
         }
 
-        order.setTotalAmount(totalAmount);
+        addTracking(order, OrderStatus.PENDING, "Pedido recebido", now);
+        if (restaurant.getAcceptanceMode() == AcceptanceMode.AUTO) {
+            order.setStatus(OrderStatus.CONFIRMED);
+            order.setAcceptedAt(now);
+            addTracking(order, OrderStatus.CONFIRMED, "Pedido confirmado pelo restaurante", now);
+        } else {
+            order.setStatus(OrderStatus.PENDING);
+            order.setAcceptDeadline(now.plusMinutes(restaurant.getAcceptanceTimeoutMinutes()));
+        }
 
-        Order savedOrder = orderRepository.save(order);
-
-        // Criar tracking inicial
-        createOrderTracking(savedOrder, OrderStatus.PENDING, "Pedido criado");
-
-        return savedOrder;
+        Order saved = orderRepository.save(order);
+        events.publishEvent(new OrderChangedEvent(saved.getId(), OrderChangedEvent.Type.ORDER_CREATED));
+        log.info("Pedido {} ({}) criado no restaurante {} com status {}", saved.getId(), saved.getDisplayCode(),
+                restaurant.getId(), saved.getStatus());
+        return OrderDTO.from(saved);
     }
 
-    public Order getOrderById(Long id) {
-        User currentUser = userService.getCurrentUser();
-        return orderRepository.findByIdAndUserId(id, currentUser.getId())
+    @Transactional(readOnly = true)
+    public Page<OrderDTO> getMyOrders(User customer, Pageable pageable) {
+        return orderRepository.findByUserIdOrderByOrderDateDesc(customer.getId(), pageable).map(OrderDTO::from);
+    }
+
+    /**
+     * Pedido por id; a autorização (cliente, dono do restaurante ou ADMIN) é feita no controller
+     */
+    @Transactional(readOnly = true)
+    public OrderDTO getOrder(Long orderId) {
+        return OrderDTO.from(findOrder(orderId));
+    }
+
+    /**
+     * O cliente só cancela enquanto o restaurante não aceitou
+     */
+    public OrderDTO cancelByCustomer(Long orderId, User customer) {
+        Order order = orderRepository.findByIdAndUserId(orderId, customer.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
-    }
-
-    public Page<Order> getUserOrders(Pageable pageable) {
-        User currentUser = userService.getCurrentUser();
-        return orderRepository.findByUserIdOrderByOrderDateDesc(currentUser.getId(), pageable);
-    }
-
-    public List<Order> getRestaurantOrders(Long restaurantId) {
-        return orderRepository.findByRestaurantIdOrderByOrderDateDesc(restaurantId);
-    }
-
-    public Order updateOrderStatus(Long orderId, OrderStatus newStatus) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
-
-        // Validar transição de status
-        if (!isValidStatusTransition(order.getStatus(), newStatus)) {
-            throw new BadRequestException("Transição de status inválida de " + 
-                    order.getStatus() + " para " + newStatus);
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new BadRequestException("O restaurante já aceitou o pedido. Para cancelar, fale com o restaurante.");
         }
-
-        order.setStatus(newStatus);
-        Order updatedOrder = orderRepository.save(order);
-
-        // Criar tracking
-        String message = getStatusMessage(newStatus);
-        createOrderTracking(updatedOrder, newStatus, message);
-
-        return updatedOrder;
-    }
-
-    public void cancelOrder(Long orderId) {
-        Order order = getOrderById(orderId);
-
-        if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.CONFIRMED) {
-            throw new BadRequestException("Não é possível cancelar pedido com status: " + order.getStatus());
-        }
-
+        LocalDateTime now = LocalDateTime.now(clock);
         order.setStatus(OrderStatus.CANCELLED);
-        orderRepository.save(order);
-
-        createOrderTracking(order, OrderStatus.CANCELLED, "Pedido cancelado pelo cliente");
+        order.setCancelledAt(now);
+        order.setCancelledBy(CancelledBy.CUSTOMER);
+        order.setCancellationReason("Cancelado pelo cliente");
+        addTracking(order, OrderStatus.CANCELLED, "Pedido cancelado pelo cliente", now);
+        Order saved = orderRepository.save(order);
+        events.publishEvent(new OrderChangedEvent(saved.getId(), OrderChangedEvent.Type.ORDER_UPDATED));
+        return OrderDTO.from(saved);
     }
 
-    public List<OrderTracking> getOrderTracking(Long orderId) {
-        Order order = getOrderById(orderId);
-        return orderTrackingRepository.findByOrderIdOrderByTimestampAsc(order.getId());
+    // ============= Helpers =============
+
+    private Order findOrder(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
     }
 
-    private void createOrderTracking(Order order, OrderStatus status, String message) {
+    /**
+     * Itens que podem ser vendidos agora: não excluídos, visíveis, disponíveis e em seção visível
+     */
+    private Map<Long, Product> sellableProducts(Long restaurantId) {
+        return productRepository.findByRestaurantIdAndDeletedAtIsNullOrderByPositionAscIdAsc(restaurantId).stream()
+                .filter(p -> p.isActive() && p.isAvailable())
+                .filter(p -> p.getMenuSection() != null && p.getMenuSection().isActive())
+                .collect(Collectors.toMap(Product::getId, Function.identity()));
+    }
+
+    /**
+     * Combos vendáveis: além do próprio combo, todos os itens dele precisam estar disponíveis
+     */
+    private Map<Long, Combo> sellableCombos(Long restaurantId) {
+        return comboRepository.findByRestaurantIdAndDeletedAtIsNullOrderByPositionAscIdAsc(restaurantId).stream()
+                .filter(c -> c.isActive() && c.isAvailable())
+                .filter(c -> c.getMenuSection() != null && c.getMenuSection().isActive())
+                .filter(c -> c.getComboItems().stream().allMatch(i ->
+                        i.getProduct().getDeletedAt() == null && i.getProduct().isAvailable()))
+                .collect(Collectors.toMap(Combo::getId, Function.identity()));
+    }
+
+    public void addTracking(Order order, OrderStatus status, String message, LocalDateTime at) {
         OrderTracking tracking = new OrderTracking();
         tracking.setOrder(order);
         tracking.setStatus(status);
         tracking.setMessage(message);
-        tracking.setTimestamp(LocalDateTime.now());
-        orderTrackingRepository.save(tracking);
-    }
-
-    private boolean isValidStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
-        switch (currentStatus) {
-            case PENDING:
-                return newStatus == OrderStatus.CONFIRMED || newStatus == OrderStatus.CANCELLED;
-            case CONFIRMED:
-                return newStatus == OrderStatus.PREPARING || newStatus == OrderStatus.CANCELLED;
-            case PREPARING:
-                return newStatus == OrderStatus.READY_FOR_PICKUP;
-            case READY_FOR_PICKUP:
-                return newStatus == OrderStatus.OUT_FOR_DELIVERY;
-            case OUT_FOR_DELIVERY:
-                return newStatus == OrderStatus.DELIVERED;
-            case DELIVERED:
-            case CANCELLED:
-                return false;
-            default:
-                return false;
-        }
-    }
-
-    private String getStatusMessage(OrderStatus status) {
-        switch (status) {
-            case PENDING:
-                return "Aguardando confirmação";
-            case CONFIRMED:
-                return "Pedido confirmado";
-            case PREPARING:
-                return "Preparando seu pedido";
-            case READY_FOR_PICKUP:
-                return "Pronto para retirada";
-            case OUT_FOR_DELIVERY:
-                return "Saiu para entrega";
-            case DELIVERED:
-                return "Pedido entregue";
-            case CANCELLED:
-                return "Pedido cancelado";
-            default:
-                return "Status atualizado";
-        }
+        tracking.setDescription(message);
+        tracking.setTimestamp(at);
+        order.getTrackings().add(tracking);
     }
 }

@@ -36,6 +36,7 @@ public class OrderTracking {
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;

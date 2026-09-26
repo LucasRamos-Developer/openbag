@@ -2,6 +2,9 @@ package com.openbag.modules.product.entity;
 
 import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.order.entity.OrderItem;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.openbag.modules.menu.entity.MenuSection;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -19,6 +22,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "products")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -58,6 +62,7 @@ public class Product {
     @Column(name = "product_type", length = 20)
     private ProductType productType = ProductType.CUSTOM;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "global_product_id")
     private GlobalProduct globalProduct;
@@ -70,15 +75,34 @@ public class Product {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
+    // Seção do cardápio definida pelo restaurante
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_section_id")
+    private MenuSection menuSection;
+
+    // Ordem dentro da seção
+    @Column(name = "position")
+    private Integer position = 0;
+
+    // Exclusão lógica: itens com pedidos não podem ser apagados de fato
+    @JsonIgnore
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // Sem cascade: itens de pedidos já feitos nunca podem ser apagados junto com o produto
+    @JsonIgnore
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<OrderItem> orderItems = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

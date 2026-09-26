@@ -1,7 +1,9 @@
 package com.openbag.modules.delivery.repository;
 
 import com.openbag.modules.delivery.entity.DeliveryPerson;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,6 +15,38 @@ import java.util.Optional;
 public interface DeliveryPersonRepository extends JpaRepository<DeliveryPerson, Long> {
 
     Optional<DeliveryPerson> findByUserId(Long userId);
+
+    /**
+     * Busca o entregador com lock pessimista, para serializar mudanças de vínculo com associações
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT dp FROM DeliveryPerson dp WHERE dp.user.id = :userId")
+    Optional<DeliveryPerson> findByUserIdForUpdate(@Param("userId") Long userId);
+
+    @Query("SELECT dp FROM DeliveryPerson dp JOIN FETCH dp.user WHERE dp.slug = :slug")
+    Optional<DeliveryPerson> findBySlug(@Param("slug") String slug);
+
+    boolean existsBySlug(String slug);
+
+    /**
+     * Perfis criados antes do perfil público/veículos: sem slug ou sem veículo em uso
+     */
+    @Query("SELECT dp FROM DeliveryPerson dp WHERE dp.slug IS NULL OR dp.activeVehicle IS NULL")
+    List<DeliveryPerson> findProfilesToInitialize();
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT dp FROM DeliveryPerson dp WHERE dp.id = :id")
+    Optional<DeliveryPerson> findByIdForUpdate(@Param("id") Long id);
+
+    /**
+     * Entregadores online no modo livre com localização recente: candidatos às ofertas
+     */
+    @Query("SELECT dp FROM DeliveryPerson dp JOIN FETCH dp.user JOIN FETCH dp.organization org "
+            + "JOIN dp.currentShift s "
+            + "WHERE dp.workStatus = com.openbag.enums.CourierWorkStatus.ONLINE AND dp.isActive = true "
+            + "AND s.mode = com.openbag.enums.ShiftMode.FREE AND s.endedAt IS NULL "
+            + "AND dp.lastSeenAt >= :seenSince AND dp.lastLatitude IS NOT NULL AND dp.lastLongitude IS NOT NULL")
+    List<DeliveryPerson> findFreeOnlineCouriers(@Param("seenSince") java.time.LocalDateTime seenSince);
 
     Optional<DeliveryPerson> findByDocumentNumber(String documentNumber);
 

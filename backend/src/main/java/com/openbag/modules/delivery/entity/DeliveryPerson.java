@@ -3,12 +3,15 @@ package com.openbag.modules.delivery.entity;
 import com.openbag.modules.user.entity.User;
 import com.openbag.modules.organization.entity.Organization;
 import com.openbag.modules.order.entity.Order;
+import com.openbag.enums.CourierWorkStatus;
 import com.openbag.enums.VehicleType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -87,7 +90,80 @@ public class DeliveryPerson {
     @JoinColumn(name = "organization_id")
     private Organization organization;
 
+    // ============= Perfil público =============
+
+    // Identificador do perfil público (/e/{slug}), usado também no QR code da placa de verificação
+    @Column(name = "slug", length = 80, unique = true)
+    private String slug;
+
+    @Size(max = 500)
+    @Column(name = "bio", length = 500)
+    private String bio;
+
+    @Column(name = "photo_url")
+    private String photoUrl;
+
+    @Column(name = "show_work_history")
+    private Boolean showWorkHistory;
+
+    @ElementCollection
+    @CollectionTable(name = "delivery_person_social_links", joinColumns = @JoinColumn(name = "delivery_person_id"))
+    @OrderColumn(name = "position")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<CourierSocialLink> socialLinks = new ArrayList<>();
+
+    // Veículo em uso; os campos vehicle* acima espelham este veículo (legado usado pelo painel da associação)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "active_vehicle_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Vehicle activeVehicle;
+
+    // ============= Trabalho =============
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "work_status", length = 10)
+    private CourierWorkStatus workStatus;
+
+    @Column(name = "last_latitude")
+    private Double lastLatitude;
+
+    @Column(name = "last_longitude")
+    private Double lastLongitude;
+
+    // Último envio de localização; online sem sinal há muito tempo não recebe ofertas
+    @Column(name = "last_seen_at")
+    private LocalDateTime lastSeenAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "current_shift_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private CourierShift currentShift;
+
+    public CourierWorkStatus getWorkStatus() {
+        return workStatus != null ? workStatus : CourierWorkStatus.OFFLINE;
+    }
+
     // Pedidos que o entregador está responsável por entregar
     @OneToMany(mappedBy = "deliveryPerson", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Order> orders = new ArrayList<>();
+
+    public boolean isShowWorkHistory() {
+        return showWorkHistory == null || showWorkHistory;
+    }
+
+    /**
+     * Copia os dados do veículo em uso para os campos legados
+     */
+    public void useVehicle(Vehicle vehicle) {
+        this.activeVehicle = vehicle;
+        this.vehicleType = vehicle != null ? vehicle.getType() : null;
+        this.vehiclePlate = vehicle != null ? vehicle.getPlate() : null;
+        this.vehicleModel = vehicle != null ? vehicle.getModel() : null;
+        this.vehicleColor = vehicle != null ? vehicle.getColor() : null;
+    }
 }

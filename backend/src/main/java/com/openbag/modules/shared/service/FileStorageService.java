@@ -86,7 +86,7 @@ public class FileStorageService {
         }
 
         try {
-            Path file = this.fileStorageLocation.resolve(filePath).normalize();
+            Path file = getFilePath(filePath);
             Files.deleteIfExists(file);
             log.info("Arquivo deletado: {}", filePath);
             return true;
@@ -141,6 +141,11 @@ public class FileStorageService {
      * Retorna o caminho completo do arquivo
      */
     public Path getFilePath(String relativePath) {
-        return this.fileStorageLocation.resolve(relativePath).normalize();
+        Path path = this.fileStorageLocation.resolve(relativePath).normalize();
+        // Impede path traversal ("../") para fora da pasta de uploads
+        if (!path.startsWith(this.fileStorageLocation)) {
+            throw new com.openbag.exception.ResourceNotFoundException("Arquivo não encontrado");
+        }
+        return path;
     }
 }

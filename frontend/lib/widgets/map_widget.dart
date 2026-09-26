@@ -152,7 +152,7 @@ class _MapWidgetState extends State<MapWidget> {
           point: _currentLocation!,
           width: 40,
           height: 40,
-          builder: (context) => Container(
+          child: Container(
             decoration: BoxDecoration(
               color: Colors.blue,
               shape: BoxShape.circle,
@@ -182,7 +182,7 @@ class _MapWidgetState extends State<MapWidget> {
           point: _selectedLocation!,
           width: 40,
           height: 40,
-          builder: (context) => Container(
+          child: Container(
             decoration: BoxDecoration(
               color: Colors.red,
               shape: BoxShape.circle,
@@ -213,7 +213,7 @@ class _MapWidgetState extends State<MapWidget> {
             point: mapMarker.position,
             width: 40,
             height: 40,
-            builder: (context) => GestureDetector(
+            child: GestureDetector(
               onTap: mapMarker.onTap,
               child: Container(
                 decoration: BoxDecoration(

@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @Tag(name = "Autenticação", description = "Endpoints para autenticação de usuários")
 public class AuthController {
 
@@ -118,28 +118,8 @@ public class AuthController {
 
             User result = userRepository.save(user);
 
-            // Processa roles
-            List<String> rolesToAdd = new ArrayList<>();
-            if (signUpRequest.getRoles() != null && !signUpRequest.getRoles().isEmpty()) {
-                // Valida que não está tentando se registrar como ADMIN via API pública
-                for (String roleName : signUpRequest.getRoles()) {
-                    if ("ADMIN".equalsIgnoreCase(roleName)) {
-                        return ResponseEntity.badRequest()
-                            .body(Map.of("error", "Não é possível registrar-se como ADMIN via API pública"));
-                    }
-                    rolesToAdd.add(roleName.toUpperCase());
-                }
-            }
-            
-            // Sempre adiciona CUSTOMER se não tiver nenhuma role
-            if (rolesToAdd.isEmpty()) {
-                rolesToAdd.add("CUSTOMER");
-            } else if (!rolesToAdd.contains("CUSTOMER")) {
-                rolesToAdd.add("CUSTOMER"); // Garante que sempre tem CUSTOMER
-            }
-
-            // Adiciona as roles ao usuário
-            roleService.addRolesToUser(result.getId(), rolesToAdd);
+            // Registro público sempre cria usuário CUSTOMER
+            roleService.addRolesToUser(result.getId(), List.of("CUSTOMER"));
 
             return ResponseEntity.ok(Map.of(
                 "message", "Usuário registrado com sucesso",
@@ -186,16 +166,44 @@ public class AuthController {
         return ResponseEntity.ok(new CheckEmailResponse(available));
     }
 
+    @PostMapping(value = "/register/restaurant", consumes = {"application/json"})
+    @Operation(
+        summary = "Registro de restaurante (JSON)",
+        description = "Registra um novo restaurante sem upload de imagens usando JSON"
+    )
+    public ResponseEntity<?> registerRestaurantJson(@Valid @RequestBody RestaurantOnboardingRequest request) {
+        try {
+            Restaurant restaurant = restaurantOnboardingService.completeOnboarding(request, null, null);
+            
+            RestaurantOnboardingResponse response = new RestaurantOnboardingResponse(
+                restaurant.getId(),
+                "Restaurante cadastrado com sucesso!"
+            );
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (com.openbag.exception.BadRequestException e) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Erro ao cadastrar restaurante: " + e.getMessage()));
+        }
+    }
+
     @PostMapping(value = "/register/restaurant", consumes = {"multipart/form-data"})
     @Operation(
-        summary = "Registro completo de restaurante",
+        summary = "Registro completo de restaurante (com imagens)",
         description = "Registra um novo restaurante com owner, endereço, horários, configurações e upload de logo/banner"
     )
-    public ResponseEntity<?> registerRestaurant(
-            @RequestPart("data") @Valid RestaurantOnboardingRequest request,
+    public ResponseEntity<?> registerRestaurantMultipart(
+            @RequestPart("data") String dataJson,
             @RequestPart(value = "logo", required = false) MultipartFile logo,
             @RequestPart(value = "banner", required = false) MultipartFile banner) {
         try {
+            // Parse manual do JSON da parte "data"
+            com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            RestaurantOnboardingRequest request = objectMapper.readValue(dataJson, RestaurantOnboardingRequest.class);
+            
             Restaurant restaurant = restaurantOnboardingService.completeOnboarding(request, logo, banner);
             
             RestaurantOnboardingResponse response = new RestaurantOnboardingResponse(

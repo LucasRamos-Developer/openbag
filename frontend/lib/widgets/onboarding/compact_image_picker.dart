@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -6,8 +5,8 @@ import 'package:image_picker/image_picker.dart';
 /// Widget compacto de upload de imagem (56px altura)
 class CompactImagePicker extends StatefulWidget {
   final String label;
-  final File? imageFile;
-  final ValueChanged<File?> onImageSelected;
+  final XFile? imageFile;
+  final ValueChanged<XFile?> onImageSelected;
 
   const CompactImagePicker({
     super.key,
@@ -49,35 +48,27 @@ class _CompactImagePickerState extends State<CompactImagePicker> {
       );
 
       if (pickedFile != null) {
+        // Validar tamanho (funciona em todas as plataformas)
+        final bytes = await pickedFile.readAsBytes();
+        final sizeInMB = bytes.length / (1024 * 1024);
+        
+        if (sizeInMB > 5) {
+          return;
+        }
+        
         if (kIsWeb) {
-          // Para web, usar bytes
-          final bytes = await pickedFile.readAsBytes();
-          final sizeInMB = bytes.length / (1024 * 1024);
-          
-          if (sizeInMB > 5) {
-            return;
-          }
-          
           setState(() {
             _webImage = bytes;
             _fileName = _getCleanFileName(pickedFile.name);
           });
-          widget.onImageSelected(File(pickedFile.path));
         } else {
-          // Para mobile/desktop, usar File
-          final file = File(pickedFile.path);
-          final sizeInBytes = await file.length();
-          final sizeInMB = sizeInBytes / (1024 * 1024);
-
-          if (sizeInMB > 5) {
-            return;
-          }
-
           setState(() {
             _fileName = _getCleanFileName(pickedFile.name);
           });
-          widget.onImageSelected(file);
         }
+        
+        // Passar XFile para callback
+        widget.onImageSelected(pickedFile);
       }
     } catch (e) {
       debugPrint('Erro ao selecionar imagem: $e');
@@ -132,7 +123,7 @@ class _CompactImagePickerState extends State<CompactImagePicker> {
                       // Nome do arquivo
                       Expanded(
                         child: Text(
-                          _fileName ?? widget.imageFile?.path.split('/').last ?? 'image.jpg',
+                          _fileName ?? widget.imageFile?.name ?? 'image.jpg',
                           style: TextStyle(
                             fontSize: 16,
                             color: colorScheme.onSurface.withOpacity(0.87),

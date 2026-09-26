@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/combos")
+@RequestMapping("/combos")
 @Tag(name = "Combos", description = "Gerenciamento de combos promocionais (pacotes de produtos)")
 public class ComboController {
 
@@ -46,7 +46,7 @@ public class ComboController {
     @PostMapping
     @Operation(summary = "Criar combo promocional")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Combo> createCombo(@Valid @RequestBody ComboRequest request) {
         Combo combo = comboService.createCombo(request);
         return ResponseEntity.ok(combo);
@@ -55,7 +55,7 @@ public class ComboController {
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar combo")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Combo> updateCombo(
             @PathVariable Long id,
             @Valid @RequestBody ComboRequest request) {
@@ -66,7 +66,7 @@ public class ComboController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Deletar combo (soft delete)")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteCombo(@PathVariable Long id) {
         comboService.deleteCombo(id);
         return ResponseEntity.noContent().build();
@@ -75,7 +75,7 @@ public class ComboController {
     @PatchMapping("/{id}/toggle-availability")
     @Operation(summary = "Alternar disponibilidade do combo")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Combo> toggleAvailability(@PathVariable Long id) {
         Combo combo = comboService.toggleAvailability(id);
         return ResponseEntity.ok(combo);

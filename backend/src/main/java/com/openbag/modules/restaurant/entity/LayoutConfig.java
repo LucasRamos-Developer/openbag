@@ -24,6 +24,7 @@ public class LayoutConfig {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id", nullable = false, unique = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Restaurant restaurant;
 
     @NotBlank(message = "Cor primária é obrigatória")

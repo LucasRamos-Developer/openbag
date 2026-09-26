@@ -23,16 +23,16 @@ Documentação técnica completa para desenvolvedores que desejam contribuir com
 
 ### Obrigatórios
 
-- **Java Development Kit (JDK) 21+**
+- **Java Development Kit (JDK) 25+**
   ```bash
   # Verificar versão instalada
   java -version
   
   # Instalar no Ubuntu/Debian
-  sudo apt install openjdk-21-jdk
+  sudo apt install openjdk-25-jdk
   
   # Instalar no macOS (via Homebrew)
-  brew install openjdk@21
+  brew install openjdk@25
   ```
 
 - **Apache Maven 3.6+**
@@ -216,7 +216,7 @@ docs/
 
 ### Tecnologias
 
-- **Spring Boot 3.3.0** (Java 21)
+- **Spring Boot 3.3.0** (Java 25)
 - **Spring Security** + JWT Authentication
 - **Spring Data JPA** (Hibernate)
 - **PostgreSQL** (Database)

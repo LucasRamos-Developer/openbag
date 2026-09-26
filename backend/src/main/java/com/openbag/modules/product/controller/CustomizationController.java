@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/customizations")
+@RequestMapping("/customizations")
 @Tag(name = "Customizações", description = "Gerenciamento de customizações de produtos (ex: Tamanho, Adicionais)")
 public class CustomizationController {
 
@@ -34,7 +34,7 @@ public class CustomizationController {
     @PostMapping("/groups")
     @Operation(summary = "Criar grupo de customização para um produto")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CustomizationGroup> createCustomizationGroup(
             @Valid @RequestBody CustomizationGroupRequest request) {
         CustomizationGroup group = customizationService.createCustomizationGroup(request);
@@ -44,7 +44,7 @@ public class CustomizationController {
     @PutMapping("/groups/{id}")
     @Operation(summary = "Atualizar grupo de customização")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CustomizationGroup> updateCustomizationGroup(
             @PathVariable Long id,
             @Valid @RequestBody CustomizationGroupRequest request) {
@@ -55,7 +55,7 @@ public class CustomizationController {
     @DeleteMapping("/groups/{id}")
     @Operation(summary = "Deletar grupo de customização")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteCustomizationGroup(@PathVariable Long id) {
         customizationService.deleteCustomizationGroup(id);
         return ResponseEntity.noContent().build();
@@ -64,7 +64,7 @@ public class CustomizationController {
     @PostMapping("/groups/{groupId}/options")
     @Operation(summary = "Adicionar opção a um grupo de customização")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CustomizationOption> addOption(
             @PathVariable Long groupId,
             @Valid @RequestBody CustomizationOptionRequest request) {
@@ -82,7 +82,7 @@ public class CustomizationController {
     @PutMapping("/options/{optionId}")
     @Operation(summary = "Atualizar opção de customização")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CustomizationOption> updateOption(
             @PathVariable Long optionId,
             @Valid @RequestBody CustomizationOptionRequest request) {
@@ -93,7 +93,7 @@ public class CustomizationController {
     @DeleteMapping("/options/{optionId}")
     @Operation(summary = "Deletar opção de customização")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteOption(@PathVariable Long optionId) {
         customizationService.deleteCustomizationOption(optionId);
         return ResponseEntity.noContent().build();

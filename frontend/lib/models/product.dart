@@ -1,3 +1,6 @@
+import 'category.dart';
+export 'category.dart';
+
 class Product {
   final int id;
   final String name;
@@ -42,27 +45,4 @@ class Product {
   bool get hasPromotion => promotionalPrice != null && promotionalPrice! < price;
   String get formattedPrice => 'R\$ ${currentPrice.toStringAsFixed(2).replaceAll('.', ',')}';
   String get formattedOriginalPrice => 'R\$ ${price.toStringAsFixed(2).replaceAll('.', ',')}';
-}
-
-class Category {
-  final int id;
-  final String name;
-  final String? description;
-  final String? iconUrl;
-
-  Category({
-    required this.id,
-    required this.name,
-    this.description,
-    this.iconUrl,
-  });
-
-  factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      iconUrl: json['iconUrl'],
-    );
-  }
 }

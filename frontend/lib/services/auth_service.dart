@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../models/user.dart';
+import 'api_client.dart';
 
 class AuthService extends ChangeNotifier {
   static const String baseUrl = 'http://localhost:8080/api';
@@ -10,17 +11,49 @@ class AuthService extends ChangeNotifier {
   User? _currentUser;
   String? _token;
   bool _isLoading = false;
+  bool _isInitialized = false;
+  late final Future<void> ready;
+
+  /// Cliente HTTP que envia o token do usuário logado; em 401 encerra a sessão
+  late final ApiClient apiClient = ApiClient(
+    tokenProvider: () => _token,
+    onUnauthorized: logout,
+  );
 
   User? get currentUser => _currentUser;
   String? get token => _token;
   bool get isLoading => _isLoading;
+  bool get isInitialized => _isInitialized;
   bool get isAuthenticated => _token != null && _currentUser != null;
 
+  /// Rota inicial de acordo com o perfil do usuário logado
+  String get homeRoute {
+    final user = _currentUser;
+    if (user == null) return '/login';
+    if (user.isAdmin) return '/admin/associacoes';
+    if (user.isAssociationManager) return '/associacao';
+    if (user.hasRole(UserRoles.restaurantOwner)) return '/restaurante';
+    if (user.isDeliveryPerson) return '/entregador';
+    return '/home';
+  }
+
   AuthService() {
-    _loadStoredAuth();
+    ready = _loadStoredAuth();
   }
 
   Future<void> _loadStoredAuth() async {
+    try {
+      await _restoreSession();
+    } catch (e) {
+      // Sessão salva corrompida ou em formato antigo: descarta
+      await logout();
+    } finally {
+      _isInitialized = true;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _restoreSession() async {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('auth_token');
     
@@ -77,22 +110,28 @@ class AuthService extends ChangeNotifier {
     required String email,
     required String phoneNumber,
     required String password,
-    UserType userType = UserType.CUSTOMER,
+    UserType? userType,
   }) async {
     _isLoading = true;
     notifyListeners();
 
     try {
+      final body = {
+        'fullName': fullName,
+        'email': email,
+        'phoneNumber': phoneNumber,
+        'password': password,
+      };
+
+      // Só adicionar userType se foi fornecido
+      if (userType != null) {
+        body['userType'] = userType.toString().split('.').last;
+      }
+
       final response = await http.post(
         Uri.parse('$baseUrl/auth/register'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'fullName': fullName,
-          'email': email,
-          'phoneNumber': phoneNumber,
-          'password': password,
-          'userType': userType.toString().split('.').last,
-        }),
+        body: json.encode(body),
       );
 
       _isLoading = false;

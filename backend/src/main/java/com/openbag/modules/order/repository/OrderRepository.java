@@ -3,10 +3,13 @@ package com.openbag.modules.order.repository;
 import com.openbag.modules.order.entity.Order;
 import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
+import com.openbag.enums.OrderStatus;
 import com.openbag.modules.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -52,4 +55,56 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByRestaurantAndDateRange(@Param("restaurant") Restaurant restaurant,
                                            @Param("startDate") LocalDateTime startDate,
                                            @Param("endDate") LocalDateTime endDate);
+    @Query("SELECT COALESCE(MAX(o.dailyNumber), 0) FROM Order o WHERE o.restaurant.id = :restaurantId AND o.orderDate >= :startOfDay")
+    int findMaxDailyNumber(@Param("restaurantId") Long restaurantId, @Param("startOfDay") java.time.LocalDateTime startOfDay);
+
+    // ============= Gestão de pedidos do restaurante =============
+
+    Optional<Order> findByIdAndRestaurantId(Long id, Long restaurantId);
+
+    List<Order> findByRestaurantIdAndStatusInOrderByOrderDateAsc(Long restaurantId, java.util.Collection<OrderStatus> statuses);
+
+    Page<Order> findByRestaurantIdAndOrderDateBetweenOrderByOrderDateDesc(Long restaurantId, java.time.LocalDateTime start,
+                                                                         java.time.LocalDateTime end, Pageable pageable);
+
+    Page<Order> findByRestaurantIdAndStatusAndOrderDateBetweenOrderByOrderDateDesc(Long restaurantId, OrderStatus status,
+                                                                                   java.time.LocalDateTime start,
+                                                                                   java.time.LocalDateTime end, Pageable pageable);
+
+    // Pedidos que o restaurante não aceitou dentro do prazo
+    List<Order> findByStatusAndAcceptDeadlineBefore(OrderStatus status, java.time.LocalDateTime now);
+
+    // ============= Entregas pelo entregador do app =============
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT o FROM Order o WHERE o.id = :id")
+    Optional<Order> findByIdForUpdate(@Param("id") Long id);
+
+    /**
+     * Pedidos aceitos que ainda esperam entregador
+     */
+    @Query("SELECT o.id FROM Order o WHERE o.deliveryPerson IS NULL AND o.status IN :statuses")
+    List<Long> findIdsAwaitingCourier(@Param("statuses") java.util.Collection<OrderStatus> statuses);
+
+    /**
+     * Entrega em andamento do entregador (aceita e ainda não entregue)
+     */
+    @Query("SELECT o FROM Order o WHERE o.deliveryPerson.id = :deliveryPersonId AND o.status IN :statuses "
+            + "ORDER BY o.assignedAt DESC")
+    List<Order> findByCourierAndStatusIn(@Param("deliveryPersonId") Long deliveryPersonId,
+                                         @Param("statuses") java.util.Collection<OrderStatus> statuses);
+
+    /**
+     * Soma do valor das entregas concluídas por entregador no período: [deliveryPersonId, soma]
+     */
+    @Query("SELECT o.deliveryPerson.id, COALESCE(SUM(o.courierFee), 0) FROM Order o "
+            + "WHERE o.deliveryPerson.id IN :ids AND o.status = com.openbag.enums.OrderStatus.DELIVERED "
+            + "AND o.deliveredAt >= :start AND o.deliveredAt < :end GROUP BY o.deliveryPerson.id")
+    List<Object[]> sumCourierFeesBetween(@Param("ids") java.util.Collection<Long> ids,
+                                         @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.deliveryPerson.id = :deliveryPersonId "
+            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end")
+    long countDeliveredBetween(@Param("deliveryPersonId") Long deliveryPersonId,
+                               @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }
