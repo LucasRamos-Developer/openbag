@@ -6,6 +6,7 @@ import '../../models/courier/courier_public.dart';
 import '../../services/api_client.dart';
 import '../../services/courier_service.dart';
 import '../../widgets/courier/social_links_row.dart';
+import '../../widgets/courier/work_history_list.dart';
 import '../../widgets/courier/verification_badge_card.dart';
 
 /// Perfil público do entregador (/e/:slug), aberto pelo QR code da placa de verificação. Não exige login.
@@ -105,6 +106,11 @@ class _PublicProfileBody extends StatelessWidget {
                 if (courier.socialLinks.isNotEmpty) ...[
                   const SizedBox(height: 24),
                   SocialLinksRow(links: courier.socialLinks),
+                ],
+                if (courier.workHistory.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  Text('Onde já trabalhou', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                  WorkHistoryList(restaurants: courier.workHistory),
                 ],
                 const SizedBox(height: 24),
                 Text(

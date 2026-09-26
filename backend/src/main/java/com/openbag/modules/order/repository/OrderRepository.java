@@ -107,4 +107,21 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end")
     long countDeliveredBetween(@Param("deliveryPersonId") Long deliveryPersonId,
                                @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    /**
+     * Entregas concluídas pelo entregador no período (mais recentes primeiro)
+     */
+    @Query("SELECT o FROM Order o JOIN FETCH o.restaurant WHERE o.deliveryPerson.id = :deliveryPersonId "
+            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end "
+            + "ORDER BY o.deliveredAt DESC")
+    List<Order> findDeliveredByCourierBetween(@Param("deliveryPersonId") Long deliveryPersonId,
+                                              @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    /**
+     * Restaurantes em que o entregador fez entregas: [restaurantId, quantidade, primeira, última]
+     */
+    @Query("SELECT o.restaurant.id, COUNT(o), MIN(o.deliveredAt), MAX(o.deliveredAt) FROM Order o "
+            + "WHERE o.deliveryPerson.id = :deliveryPersonId AND o.status = com.openbag.enums.OrderStatus.DELIVERED "
+            + "GROUP BY o.restaurant.id ORDER BY MAX(o.deliveredAt) DESC")
+    List<Object[]> summarizeRestaurantsByCourier(@Param("deliveryPersonId") Long deliveryPersonId);
 }

@@ -7,6 +7,7 @@ import '../../models/association/member.dart';
 import '../../services/association_service.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/association/association_logo.dart';
+import 'tabs/delivery_rate_tab.dart';
 import 'tabs/invites_tab.dart';
 import 'tabs/members_tab.dart';
 import 'tabs/overview_tab.dart';
@@ -41,6 +42,12 @@ class _AssociationPanelScreenState extends State<AssociationPanelScreen> {
           icon: Icons.confirmation_number_outlined,
           selectedIcon: Icons.confirmation_number,
           label: 'Convites',
+        ),
+        AppPanelDestination(
+          icon: Icons.local_shipping_outlined,
+          selectedIcon: Icons.local_shipping,
+          label: 'Entregas',
+          badge: service.association?.deliveryRate.configured == false ? 1 : 0,
         ),
         const AppPanelDestination(icon: Icons.apartment_outlined, selectedIcon: Icons.apartment, label: 'Dados'),
       ];
@@ -105,6 +112,7 @@ class _AssociationPanelScreenState extends State<AssociationPanelScreen> {
         OverviewTab(onOpenMembers: _openMembers, onOpenInvites: () => setState(() => _tabIndex = 2)),
         MembersTab(key: ValueKey(_membersFilter), initialFilter: _membersFilter),
         const InvitesTab(),
+        const DeliveryRateTab(),
         const ProfileTab(),
       ],
     );

@@ -3,9 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/ui/ui.dart';
 import '../../services/auth_service.dart';
+import '../../services/restaurant_delivery_service.dart';
 import '../../services/restaurant_orders_service.dart';
 import '../../services/restaurant_panel_service.dart';
 import '../../widgets/restaurant/store_status_chip.dart';
+import 'tabs/couriers_tab.dart';
 import 'tabs/menu_tab.dart';
 import 'tabs/orders_tab.dart';
 import 'tabs/store_tab.dart';
@@ -29,6 +31,7 @@ class _RestaurantPanelScreenState extends State<RestaurantPanelScreen> {
           badge: newOrders,
         ),
         const AppPanelDestination(icon: Icons.restaurant_menu_outlined, selectedIcon: Icons.restaurant_menu, label: 'Cardápio'),
+        const AppPanelDestination(icon: Icons.two_wheeler_outlined, selectedIcon: Icons.two_wheeler, label: 'Entregadores'),
         const AppPanelDestination(icon: Icons.storefront_outlined, selectedIcon: Icons.storefront, label: 'Loja'),
       ];
 
@@ -62,11 +65,20 @@ class _RestaurantPanelScreenState extends State<RestaurantPanelScreen> {
       appBar: _buildAppBar(service),
       destinations: _destinations(context.watch<RestaurantOrdersService>().pending.length),
       selectedIndex: _tabIndex,
-      onDestinationSelected: (index) => setState(() => _tabIndex = index),
+      onDestinationSelected: (index) {
+        // A taxa de entrega pode ter mudado na aba Loja
+        if (index == 2 && service.selectedId != null) context.read<RestaurantDeliveryService>().load(service.selectedId!);
+        setState(() => _tabIndex = index);
+      },
       body: IndexedStack(
         index: _tabIndex,
         // A chave recria a aba de pedidos ao trocar de restaurante
-        children: [OrdersTab(key: ValueKey(service.selectedId)), const MenuTab(), const StoreTab()],
+        children: [
+          OrdersTab(key: ValueKey(service.selectedId)),
+          const MenuTab(),
+          CouriersTab(key: ValueKey('couriers-${service.selectedId}')),
+          const StoreTab(),
+        ],
       ),
     );
   }

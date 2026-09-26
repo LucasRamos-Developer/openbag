@@ -3,11 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/association/association_summary.dart';
 import '../models/association/member.dart';
+import '../models/courier/courier_earnings.dart';
 import '../models/courier/courier_profile.dart';
+import '../models/delivery/courier_link.dart';
 import '../models/courier/courier_public.dart';
 import '../models/courier/social_link.dart';
 import '../models/courier/vehicle.dart';
 import 'api_client.dart';
+import 'association_directory.dart' as association_directory;
 
 /// Estado e operações do painel do entregador: perfil, foto e veículos
 class CourierService extends ChangeNotifier {
@@ -37,6 +40,7 @@ class CourierService extends ChangeNotifier {
       final results = await Future.wait([_api.get(_base), _api.get('$_base/vehicles')]);
       _profile = CourierProfile.fromJson(results[0]);
       _vehicles = _parseVehicles(results[1]);
+      _links = [for (final l in await _api.get('$_base/restaurants') as List) CourierLink.fromJson(l)];
     } on ApiException catch (e) {
       _error = e.message;
     } finally {
@@ -46,6 +50,7 @@ class CourierService extends ChangeNotifier {
   }
 
   void clear() {
+    _links = [];
     _profile = null;
     _vehicles = [];
     _error = null;
@@ -103,10 +108,7 @@ class CourierService extends ChangeNotifier {
 
   // ============= Associação =============
 
-  Future<List<AssociationSummary>> fetchActiveAssociations() async {
-    final data = await _api.get('/public/associations') as List;
-    return [for (final a in data) AssociationSummary.fromJson(a)];
-  }
+  Future<List<AssociationSummary>> fetchActiveAssociations() => association_directory.fetchActiveAssociations(_api);
 
   /// Associação do código de convite (erro se o código for inválido ou expirado)
   Future<AssociationSummary> validateInvite(String code) async {
@@ -127,6 +129,38 @@ class CourierService extends ChangeNotifier {
     await _api.post('/me/association/leave', data: reason != null && reason.isNotEmpty ? {'reason': reason} : null);
     await _reloadProfile();
   }
+
+  // ============= Restaurantes (fixo) =============
+
+  List<CourierLink> _links = [];
+  List<CourierLink> get links => _links;
+  List<CourierLink> get activeLinks => _links.where((l) => l.isActive).toList();
+
+  Future<void> loadLinks() async {
+    _links = [for (final l in await _api.get('$_base/restaurants') as List) CourierLink.fromJson(l)];
+    notifyListeners();
+  }
+
+  /// Pede para ser fixo pelo link (ou slug) da página do restaurante
+  Future<void> requestLink(String restaurantLink) async {
+    await _api.post('$_base/restaurants/link', data: {'target': restaurantLink});
+    await loadLinks();
+  }
+
+  /// accept, decline ou end
+  Future<void> linkAction(CourierLink link, String action) async {
+    await _api.post('$_base/restaurants/${link.id}/$action');
+    await loadLinks();
+  }
+
+  // ============= Ganhos e histórico =============
+
+  Future<CourierEarnings> fetchEarnings({required DateTime from, required DateTime to}) async {
+    String day(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    return CourierEarnings.fromJson(await _api.get('$_base/earnings', query: {'from': day(from), 'to': day(to)}));
+  }
+
+  Future<WorkHistory> fetchHistory() async => WorkHistory.fromJson(await _api.get('$_base/history'));
 
   // ============= Público =============
 

@@ -1,4 +1,5 @@
 import '../association/association.dart' show parseDate;
+import 'courier_earnings.dart';
 import 'courier_profile.dart';
 import 'social_link.dart';
 import 'vehicle_type.dart';
@@ -16,6 +17,7 @@ class CourierPublic {
   final int totalDeliveries;
   final CourierAssociation? association;
   final PublicVehicle? vehicle;
+  final List<WorkedRestaurant> workHistory;
 
   CourierPublic({
     required this.slug,
@@ -29,6 +31,7 @@ class CourierPublic {
     required this.totalDeliveries,
     this.association,
     this.vehicle,
+    this.workHistory = const [],
   });
 
   factory CourierPublic.fromJson(Map<String, dynamic> json) => CourierPublic(
@@ -43,6 +46,7 @@ class CourierPublic {
         totalDeliveries: json['totalDeliveries'] ?? 0,
         association: json['association'] != null ? CourierAssociation.fromJson(json['association']) : null,
         vehicle: json['vehicle'] != null ? PublicVehicle.fromJson(json['vehicle']) : null,
+        workHistory: [for (final r in (json['workHistory'] as List? ?? [])) WorkedRestaurant.fromJson(r)],
       );
 }
 

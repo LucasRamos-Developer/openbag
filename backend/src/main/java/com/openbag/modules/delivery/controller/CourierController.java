@@ -1,6 +1,7 @@
 package com.openbag.modules.delivery.controller;
 
 import com.openbag.modules.delivery.dto.*;
+import com.openbag.modules.delivery.service.CourierEarningsService;
 import com.openbag.modules.delivery.service.CourierLinkService;
 import com.openbag.modules.delivery.service.CourierProfileService;
 import com.openbag.modules.user.service.UserService;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -30,6 +33,9 @@ public class CourierController {
 
     @Autowired
     private CourierLinkService linkService;
+
+    @Autowired
+    private CourierEarningsService earningsService;
 
     @Autowired
     private UserService userService;
@@ -124,5 +130,21 @@ public class CourierController {
     @Operation(summary = "Deixar de ser fixo (ou cancelar pedido)")
     public ResponseEntity<CourierLinkDTO> endLink(@PathVariable Long linkId) {
         return ResponseEntity.ok(linkService.endByCourier(userService.getCurrentUser(), linkId));
+    }
+
+    // ============= Ganhos e histórico =============
+
+    @GetMapping("/earnings")
+    @Operation(summary = "Ganhos", description = "Hoje, semana e mês, mais a série diária e as entregas do período (padrão: 7 dias)")
+    public ResponseEntity<CourierEarningsDTO> getEarnings(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return ResponseEntity.ok(earningsService.getEarnings(userService.getCurrentUser(), from, to));
+    }
+
+    @GetMapping("/history")
+    @Operation(summary = "Onde trabalhei: restaurantes e turnos recentes")
+    public ResponseEntity<WorkHistoryDTO> getHistory() {
+        return ResponseEntity.ok(earningsService.getHistory(userService.getCurrentUser()));
     }
 }

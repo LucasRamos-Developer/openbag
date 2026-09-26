@@ -57,6 +57,9 @@ public class CourierProfileService {
     @Autowired
     private FileStorageService fileStorageService;
 
+    @Autowired
+    private CourierEarningsService earningsService;
+
     // ============= Perfil =============
 
     @Transactional(readOnly = true)
@@ -223,6 +226,7 @@ public class CourierProfileService {
                         .color(vehicle.getColor())
                         .maskedPlate(maskPlate(vehicle.getPlate()))
                         .build())
+                .workHistory(deliveryPerson.isShowWorkHistory() ? earningsService.restaurantsWorked(deliveryPerson) : List.of())
                 .build();
     }
 

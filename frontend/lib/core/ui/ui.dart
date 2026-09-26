@@ -27,6 +27,7 @@ export 'components/app_quantity_stepper.dart';
 export 'components/app_image_avatar.dart';
 export 'components/app_choice_tile.dart';
 export 'components/app_qr_code.dart';
+export 'components/app_countdown.dart';
 
 // ========== TEMA ==========
 export 'theme/app_colors.dart';

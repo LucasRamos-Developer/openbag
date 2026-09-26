@@ -62,7 +62,8 @@ Future<Uint8List> buildBadgePdf(VerificationBadgeData data) async {
             child: pw.Container(
               width: 90,
               height: 90,
-              color: PdfColor.fromInt(0x1F00A76F),
+              // O PDF não tem transparência aqui: tom claro opaco atrás das iniciais
+              color: PdfColor.fromInt(data.verified ? 0xFFE0F5EC : 0xFFFFF1E0),
               alignment: pw.Alignment.center,
               child: photo != null
                   ? pw.Image(photo, width: 90, height: 90, fit: pw.BoxFit.cover)

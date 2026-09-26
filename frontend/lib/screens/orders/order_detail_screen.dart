@@ -11,6 +11,7 @@ import '../../utils/feedback.dart';
 import '../../utils/formatters.dart';
 import '../../widgets/order/order_items_list.dart';
 import '../../widgets/order/order_status_chip.dart';
+import '../../widgets/courier/order_courier_card.dart';
 import '../../widgets/order/order_status_timeline.dart';
 import '../../widgets/order/price_summary.dart';
 import '../../widgets/restaurant/restaurant_logo.dart';
@@ -163,6 +164,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ),
               ],
             ),
+            if (order.courier != null) ...[
+              const AppSectionHeader(title: 'Seu entregador', padding: EdgeInsets.only(top: 24, bottom: 8)),
+              OrderCourierCard(courier: order.courier!),
+            ],
             if (order.deliveryAddress != null) ...[
               const AppSectionHeader(title: 'Endereço de entrega', padding: EdgeInsets.only(top: 24, bottom: 8)),
               Text(order.deliveryAddress!),

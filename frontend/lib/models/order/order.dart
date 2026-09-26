@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../courier/vehicle_type.dart';
 
 double _money(dynamic value) => (value as num?)?.toDouble() ?? 0;
 DateTime? _date(dynamic value) => value is String ? DateTime.tryParse(value) : null;
@@ -65,6 +66,12 @@ class Order {
   final String? cancelledBy;
   final String? cancellationReason;
   final List<OrderTimelineEntry> timeline;
+  final OrderCourier? courier;
+  final DateTime? assignedAt;
+  final DateTime? pickedUpAt;
+
+  /// Aceito e sem entregador disponível desde este momento
+  final DateTime? searchingCourierSince;
 
   Order({
     required this.id,
@@ -92,7 +99,15 @@ class Order {
     this.cancelledBy,
     this.cancellationReason,
     required this.timeline,
+    this.courier,
+    this.assignedAt,
+    this.pickedUpAt,
+    this.searchingCourierSince,
   });
+
+  /// Aceito e ainda sem entregador do app
+  bool get awaitingCourier =>
+      courier == null && (status == OrderStatus.CONFIRMED || status == OrderStatus.PREPARING || status == OrderStatus.READY_FOR_PICKUP);
 
   int get itemCount => items.fold(0, (sum, i) => sum + i.quantity);
 
@@ -126,7 +141,51 @@ class Order {
         cancelledBy: json['cancelledBy'],
         cancellationReason: json['cancellationReason'],
         timeline: (json['timeline'] as List? ?? []).map((e) => OrderTimelineEntry.fromJson(e)).toList(),
+        courier: json['courier'] != null ? OrderCourier.fromJson(json['courier']) : null,
+        assignedAt: _date(json['assignedAt']),
+        pickedUpAt: _date(json['pickedUpAt']),
+        searchingCourierSince: _date(json['searchingCourierSince']),
       );
+}
+
+/// Entregador do app atribuído ao pedido
+class OrderCourier {
+  final int deliveryPersonId;
+  final String fullName;
+  final String? photoUrl;
+  final String? slug;
+  final String? phoneNumber;
+  final VehicleType? vehicleType;
+  final String? vehicleDescription;
+  final String? vehiclePlate;
+
+  OrderCourier({
+    required this.deliveryPersonId,
+    required this.fullName,
+    this.photoUrl,
+    this.slug,
+    this.phoneNumber,
+    this.vehicleType,
+    this.vehicleDescription,
+    this.vehiclePlate,
+  });
+
+  factory OrderCourier.fromJson(Map<String, dynamic> json) => OrderCourier(
+        deliveryPersonId: json['deliveryPersonId'],
+        fullName: json['fullName'] ?? '',
+        photoUrl: json['photoUrl'],
+        slug: json['slug'],
+        phoneNumber: json['phoneNumber'],
+        vehicleType: json['vehicleType'] != null ? VehicleType.fromName(json['vehicleType']) : null,
+        vehicleDescription: json['vehicleDescription'],
+        vehiclePlate: json['vehiclePlate'],
+      );
+
+  String get vehicleLine => [
+        if (vehicleType != null) vehicleType!.label,
+        if (vehicleDescription?.isNotEmpty == true) vehicleDescription!,
+        if (vehiclePlate != null) vehiclePlate!,
+      ].join(' · ');
 }
 
 class OrderRestaurant {

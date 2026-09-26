@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/association/association.dart';
+import '../models/delivery/delivery_rate.dart';
 import '../models/association/association_stats.dart';
 import '../models/association/invite.dart';
 import '../models/association/member.dart';
@@ -77,6 +78,11 @@ class AssociationService extends ChangeNotifier {
       'file': MultipartFile.fromBytes(bytes, filename: file.name),
     });
     _association = Association.fromJson(await _api.post('$_base/logo', data: form));
+    notifyListeners();
+  }
+
+  Future<void> updateDeliveryRate(DeliveryRate rate) async {
+    _association = Association.fromJson(await _api.put('$_base/delivery-rate', data: rate.toJson()));
     notifyListeners();
   }
 

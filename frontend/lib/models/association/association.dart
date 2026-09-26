@@ -1,3 +1,5 @@
+import '../delivery/delivery_rate.dart';
+
 /// Associação/cooperativa de entregadores
 class Association {
   final int id;
@@ -15,6 +17,7 @@ class Association {
   final DateTime? createdAt;
   final AssociationAddress? address;
   final AssociationManager? manager;
+  final DeliveryRate deliveryRate;
 
   Association({
     required this.id,
@@ -32,6 +35,7 @@ class Association {
     this.createdAt,
     this.address,
     this.manager,
+    this.deliveryRate = const DeliveryRate(),
   });
 
   bool get isActive => status == AssociationStatus.ACTIVE;
@@ -60,6 +64,7 @@ class Association {
       createdAt: parseDate(json['createdAt']),
       address: json['address'] != null ? AssociationAddress.fromJson(json['address']) : null,
       manager: json['manager'] != null ? AssociationManager.fromJson(json['manager']) : null,
+      deliveryRate: DeliveryRate.fromJson(json['deliveryRate']),
     );
   }
 }

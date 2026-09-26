@@ -6,11 +6,16 @@ import '../../models/courier/courier_profile.dart';
 import '../../services/auth_service.dart';
 import '../../services/courier_service.dart';
 import '../../widgets/courier/courier_avatar.dart';
+import '../../models/delivery/courier_link.dart';
 import 'tabs/badge_tab.dart';
+import 'tabs/earnings_tab.dart';
 import 'tabs/profile_tab.dart';
+import 'tabs/restaurants_tab.dart';
 import 'tabs/vehicles_tab.dart';
+import 'tabs/work_tab.dart';
 
-/// Painel do entregador: perfil, veículos e placa de verificação
+/// Painel do entregador: trabalhar (online, check-in, ofertas, entrega), ganhos, lojas (fixo e onde trabalhou),
+/// veículos, perfil e placa de verificação
 class CourierPanelScreen extends StatefulWidget {
   const CourierPanelScreen({super.key});
 
@@ -21,11 +26,26 @@ class CourierPanelScreen extends StatefulWidget {
 class _CourierPanelScreenState extends State<CourierPanelScreen> {
   int _tabIndex = 0;
 
-  static const _destinations = [
-    AppPanelDestination(icon: Icons.person_outline, selectedIcon: Icons.person, label: 'Perfil'),
-    AppPanelDestination(icon: Icons.two_wheeler_outlined, selectedIcon: Icons.two_wheeler, label: 'Veículos'),
-    AppPanelDestination(icon: Icons.qr_code_2_outlined, selectedIcon: Icons.qr_code_2, label: 'Placa'),
-  ];
+  static const _earningsTab = 1;
+  static const _storesTab = 2;
+  static const _vehiclesTab = 3;
+  final _earningsKey = GlobalKey<EarningsTabState>();
+  final _storesKey = GlobalKey<CourierRestaurantsTabState>();
+
+  List<AppPanelDestination> _destinations(CourierService service) => [
+        const AppPanelDestination(icon: Icons.bolt_outlined, selectedIcon: Icons.bolt, label: 'Trabalhar'),
+        const AppPanelDestination(icon: Icons.payments_outlined, selectedIcon: Icons.payments, label: 'Ganhos'),
+        AppPanelDestination(
+          icon: Icons.storefront_outlined,
+          selectedIcon: Icons.storefront,
+          label: 'Lojas',
+          // Convites de restaurantes aguardando resposta
+          badge: service.links.where((l) => l.isPending && l.requestedBy == LinkRequester.RESTAURANT).length,
+        ),
+        const AppPanelDestination(icon: Icons.two_wheeler_outlined, selectedIcon: Icons.two_wheeler, label: 'Veículos'),
+        const AppPanelDestination(icon: Icons.person_outline, selectedIcon: Icons.person, label: 'Perfil'),
+        const AppPanelDestination(icon: Icons.qr_code_2_outlined, selectedIcon: Icons.qr_code_2, label: 'Placa'),
+      ];
 
   @override
   void initState() {
@@ -63,15 +83,23 @@ class _CourierPanelScreenState extends State<CourierPanelScreen> {
 
     return AppPanelScaffold(
       appBar: _buildAppBar(profile),
-      destinations: _destinations,
+      destinations: _destinations(service),
       selectedIndex: _tabIndex,
-      onDestinationSelected: (index) => setState(() => _tabIndex = index),
+      onDestinationSelected: (index) {
+        // Ganhos e histórico mudam a cada entrega: recarrega ao abrir
+        if (index == _earningsTab) _earningsKey.currentState?.refresh();
+        if (index == _storesTab) _storesKey.currentState?.refresh();
+        setState(() => _tabIndex = index);
+      },
       body: IndexedStack(
         index: _tabIndex,
-        children: const [
-          CourierProfileTab(),
-          VehiclesTab(),
-          BadgeTab(),
+        children: [
+          WorkTab(onOpenVehicles: () => setState(() => _tabIndex = _vehiclesTab)),
+          EarningsTab(key: _earningsKey),
+          CourierRestaurantsTab(key: _storesKey),
+          const VehiclesTab(),
+          const CourierProfileTab(),
+          const BadgeTab(),
         ],
       ),
     );

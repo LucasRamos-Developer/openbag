@@ -1,3 +1,4 @@
+import '../delivery/delivery_rate.dart';
 import 'association.dart';
 
 /// Associação ativa como aparece em listas públicas (cadastro do entregador, parceiros do restaurante)
@@ -9,6 +10,7 @@ class AssociationSummary {
   final String? logoUrl;
   final String? city;
   final String? state;
+  final DeliveryRate deliveryRate;
 
   AssociationSummary({
     required this.id,
@@ -18,6 +20,7 @@ class AssociationSummary {
     this.logoUrl,
     this.city,
     this.state,
+    this.deliveryRate = const DeliveryRate(),
   });
 
   factory AssociationSummary.fromJson(Map<String, dynamic> json) => AssociationSummary(
@@ -28,6 +31,7 @@ class AssociationSummary {
         logoUrl: json['logoUrl'],
         city: json['city'],
         state: json['state'],
+        deliveryRate: DeliveryRate.fromJson(json['deliveryRate']),
       );
 
   String? get location => city == null ? null : [city, state].whereType<String>().join(' - ');

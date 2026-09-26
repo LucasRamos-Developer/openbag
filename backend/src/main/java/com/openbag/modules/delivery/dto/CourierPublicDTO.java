@@ -30,6 +30,8 @@ public class CourierPublicDTO {
     private Integer totalDeliveries;
     private CourierAssociationDTO association;
     private PublicVehicle vehicle;
+    // Só quando o entregador permite (showWorkHistory)
+    private List<WorkHistoryDTO.RestaurantEntry> workHistory;
 
     @Data
     @Builder

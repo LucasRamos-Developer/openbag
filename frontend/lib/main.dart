@@ -38,6 +38,8 @@ import 'screens/courier/courier_panel_screen.dart';
 import 'screens/courier/public_courier_screen.dart';
 import 'screens/onboarding/courier_onboarding_screen.dart';
 import 'services/courier_service.dart';
+import 'services/courier_work_service.dart';
+import 'services/restaurant_delivery_service.dart';
 void main() {
   usePathUrlStrategy(); // Remove o # das URLs (somente para Web)
   // push/pop também atualizam a URL (página do restaurante e pedido ficam compartilháveis)
@@ -66,10 +68,12 @@ class _OpenBagAppState extends State<OpenBagApp> {
         ChangeNotifierProvider(create: (_) => AssociationService(_authService.apiClient)),
         ChangeNotifierProvider(create: (_) => CourierService(_authService.apiClient)),
         ChangeNotifierProvider(create: (_) => RestaurantPanelService(_authService.apiClient)),
+        ChangeNotifierProvider(create: (_) => RestaurantDeliveryService(_authService.apiClient)),
         ChangeNotifierProvider(create: (_) => RestaurantService(_authService.apiClient)),
         Provider(create: (_) => OrderService(_authService.apiClient)),
         ChangeNotifierProvider.value(value: _realtime),
         ChangeNotifierProvider(create: (_) => RestaurantOrdersService(_authService.apiClient, _realtime)),
+        ChangeNotifierProvider(create: (_) => CourierWorkService(_authService.apiClient, _realtime)),
         ChangeNotifierProvider(create: (_) => CartService()),
       ],
       child: MaterialApp.router(

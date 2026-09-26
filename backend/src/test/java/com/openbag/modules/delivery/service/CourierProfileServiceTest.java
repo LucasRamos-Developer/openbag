@@ -40,6 +40,9 @@ class CourierProfileServiceTest {
     @Mock
     private AssociationMembershipRepository membershipRepository;
 
+    @Mock
+    private CourierEarningsService earningsService;
+
     @InjectMocks
     private CourierProfileService service;
 
