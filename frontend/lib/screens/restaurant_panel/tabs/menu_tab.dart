@@ -271,14 +271,12 @@ class _SectionCard extends StatelessWidget {
                 text: 'Adicionar item',
                 icon: Icons.add,
                 variant: ButtonVariant.soft,
-                size: ButtonSize.small,
                 onPressed: () => _openItem(context),
               ),
               AppButton(
                 text: 'Adicionar combo',
                 icon: Icons.add,
                 variant: ButtonVariant.text,
-                size: ButtonSize.small,
                 onPressed: section.items.isEmpty && context.read<RestaurantPanelService>().menu!.allItems.isEmpty
                     ? null
                     : () => _openCombo(context),

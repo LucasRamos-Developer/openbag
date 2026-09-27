@@ -3,10 +3,13 @@ import '../constants/app_constants.dart';
 import '../core/ui/ui.dart';
 import '../models/restaurant.dart';
 import '../utils/formatters.dart';
+import 'restaurant/open_in_maps_button.dart';
+import 'restaurant/restaurant_hours_label.dart';
 import 'restaurant/restaurant_logo.dart';
 
-/// Card em caixa da vitrine: imagem de destaque, logo sobreposto, nome, categorias,
-/// nota, prazo e taxa de entrega. Loja fechada fica esmaecida com o selo "Fechado".
+/// Card em caixa da vitrine: imagem de destaque, logo sobreposto, nome e nota, situação com horário
+/// ("Aberto · fecha às 23:00"), endereço com botão para abrir no app de mapas e a linha de
+/// entrega (prazo, taxa e pedido mínimo). Loja fechada tem a imagem esmaecida com o selo.
 class RestaurantCard extends StatelessWidget {
   final Restaurant restaurant;
   final VoidCallback? onTap;
@@ -23,6 +26,7 @@ class RestaurantCard extends StatelessWidget {
       child: Center(child: Icon(Icons.storefront_outlined, size: 40, color: c.primaryText.withValues(alpha: 0.5))),
     );
     final closedLabel = restaurant.paused ? 'Pausado' : 'Fechado';
+    final address = restaurant.address;
 
     return AppCard(
       padding: EdgeInsets.zero,
@@ -30,16 +34,16 @@ class RestaurantCard extends StatelessWidget {
       borderColor: c.border,
       borderWidth: 1,
       onTap: onTap,
-      child: Opacity(
-        opacity: restaurant.openNow ? 1 : 0.62,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                child: Opacity(
+                  opacity: restaurant.openNow ? 1 : 0.55,
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
                     child: restaurant.bannerUrl != null
@@ -51,109 +55,142 @@ class RestaurantCard extends StatelessWidget {
                         : placeholder,
                   ),
                 ),
-                if (!restaurant.openNow)
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        borderRadius: BorderRadius.circular(AppRadius.pill),
-                      ),
-                      child: Text(closedLabel,
-                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
-                    ),
-                  ),
+              ),
+              if (!restaurant.openNow)
                 Positioned(
-                  left: 14,
-                  bottom: -_logoSize / 2,
+                  top: 10,
+                  right: 10,
                   child: Container(
-                    padding: const EdgeInsets.all(3),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: c.surface,
-                      shape: BoxShape.circle,
-                      boxShadow: c.cardShadow,
+                      color: Colors.black.withValues(alpha: 0.65),
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
                     ),
-                    child: RestaurantLogo(logoUrl: restaurant.logoUrl, name: restaurant.name, size: _logoSize),
+                    child: Text(closedLabel,
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
                   ),
+                ),
+              Positioned(
+                left: 14,
+                bottom: -_logoSize / 2,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: c.surface,
+                    shape: BoxShape.circle,
+                    boxShadow: c.cardShadow,
+                  ),
+                  child: RestaurantLogo(logoUrl: restaurant.logoUrl, name: restaurant.name, size: _logoSize),
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, _logoSize / 2 + 10, 14, 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        restaurant.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: c.text),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(Icons.star_rounded, color: c.rating, size: 17),
+                    const SizedBox(width: 3),
+                    Text(
+                      restaurant.totalReviews > 0 ? restaurant.formattedRating : 'Novo',
+                      style: TextStyle(color: c.text, fontSize: 13, fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                RestaurantHoursLabel(restaurant: restaurant),
+                const SizedBox(height: 10),
+                // Endereço sempre em duas linhas: os cards da mesma linha da grade ficam do mesmo tamanho
+                Row(
+                  children: [
+                    Icon(Icons.location_on_outlined, size: 18, color: c.textMuted),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            address == null || address.streetLine.isEmpty ? 'Endereço não informado' : address.streetLine,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: c.text, fontSize: 13, fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            address == null || address.areaLine.isEmpty ? ' ' : address.areaLine,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: c.textMuted, fontSize: 12.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (address != null) ...[
+                      const SizedBox(width: 8),
+                      OpenInMapsButton(address: address, label: restaurant.name),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Divider(height: 1, thickness: 1, color: c.border),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(child: _Info(label: 'Entrega', value: restaurant.deliveryTimeRange)),
+                    Expanded(
+                      child: restaurant.deliveryFee > 0
+                          ? _Info(label: 'Taxa', value: formatMoney(restaurant.deliveryFee))
+                          : _Info(label: 'Taxa', value: 'Grátis', color: c.success),
+                    ),
+                    Expanded(
+                      child: _Info(
+                        label: 'Mínimo',
+                        value: restaurant.minimumOrder > 0 ? formatMoney(restaurant.minimumOrder) : 'Sem mínimo',
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, _logoSize / 2 + 10, 14, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    restaurant.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: c.text),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    restaurant.categories.isEmpty ? ' ' : restaurant.categories.join(' · '),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: c.textMuted, fontSize: 13),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Icon(Icons.star_rounded, color: c.rating, size: 17),
-                      const SizedBox(width: 3),
-                      Text(
-                        restaurant.totalReviews > 0 ? restaurant.formattedRating : 'Novo',
-                        style: TextStyle(color: c.text, fontSize: 13, fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(width: 12),
-                      Flexible(child: _Meta(icon: Icons.schedule_rounded, label: restaurant.deliveryTimeRange)),
-                      const SizedBox(width: 12),
-                      Flexible(
-                        child: restaurant.deliveryFee > 0
-                            ? _Meta(icon: Icons.pedal_bike_outlined, label: formatMoney(restaurant.deliveryFee))
-                            : _Meta(icon: Icons.pedal_bike_outlined, label: 'Grátis', color: c.success),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Ícone + texto curto da linha de informações do card
-class _Meta extends StatelessWidget {
-  final IconData icon;
+/// Rótulo pequeno e valor da linha de entrega do card
+class _Info extends StatelessWidget {
   final String label;
+  final String value;
   final Color? color;
 
-  const _Meta({required this.icon, required this.label, this.color});
+  const _Info({required this.label, required this.value, this.color});
 
   @override
   Widget build(BuildContext context) {
-    final foreground = color ?? context.appColors.textMuted;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    final c = context.appColors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 15, color: foreground),
-        const SizedBox(width: 4),
-        Flexible(
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: foreground,
-              fontSize: 12.5,
-              fontWeight: color == null ? FontWeight.w500 : FontWeight.w700,
-            ),
-          ),
+        Text(label, style: TextStyle(color: c.textMuted, fontSize: 11.5)),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: color ?? c.text, fontSize: 13, fontWeight: FontWeight.w700),
         ),
       ],
     );
@@ -185,6 +222,8 @@ class RestaurantCardSkeleton extends StatelessWidget {
                 AppSkeleton(width: 90, height: 12),
                 SizedBox(height: 12),
                 AppSkeleton(width: 180, height: 12),
+                SizedBox(height: 12),
+                AppSkeleton(height: 32),
               ],
             ),
           ),

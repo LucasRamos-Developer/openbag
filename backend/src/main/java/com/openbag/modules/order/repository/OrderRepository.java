@@ -176,4 +176,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             + "AND o.deliveryPerson IS NULL AND o.staffCourier IS NULL AND o.dispatchReleasedAt IS NULL ORDER BY o.id")
     List<Order> findAwaitingReleaseForUpdate(@Param("restaurantId") Long restaurantId,
                                             @Param("statuses") java.util.Collection<OrderStatus> statuses);
+
+    /** Painel admin: todos os pedidos, com filtro opcional de status */
+    Page<Order> findByStatus(OrderStatus status, Pageable pageable);
+
+    long countByCreatedAtGreaterThanEqual(java.time.LocalDateTime start);
 }

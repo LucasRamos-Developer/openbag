@@ -19,6 +19,8 @@ class AppTheme {
     final fieldRadius = BorderRadius.circular(AppRadius.md);
     final buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md));
     const buttonPadding = EdgeInsets.symmetric(horizontal: 20, vertical: 12);
+    // Mesma altura do AppButton medium
+    const buttonMinSize = Size(64, 44);
     const buttonText = TextStyle(fontFamily: fontFamily, fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: 0.2);
 
     return ThemeData(
@@ -100,6 +102,7 @@ class AppTheme {
           elevation: 0,
           shape: buttonShape,
           padding: buttonPadding,
+          minimumSize: buttonMinSize,
           textStyle: buttonText,
         ),
       ),
@@ -109,6 +112,7 @@ class AppTheme {
           foregroundColor: c.onAction,
           shape: buttonShape,
           padding: buttonPadding,
+          minimumSize: buttonMinSize,
           textStyle: buttonText,
         ),
       ),
@@ -118,6 +122,7 @@ class AppTheme {
           side: BorderSide(color: c.border, width: 1.5),
           shape: buttonShape,
           padding: buttonPadding,
+          minimumSize: buttonMinSize,
           textStyle: buttonText,
         ),
       ),
@@ -126,7 +131,17 @@ class AppTheme {
           foregroundColor: c.primaryText,
           shape: buttonShape,
           padding: buttonPadding,
+          minimumSize: buttonMinSize,
           textStyle: buttonText,
+        ),
+      ),
+
+      // Itens de menus (MenuAnchor): mesma altura mínima dos botões
+      menuButtonTheme: MenuButtonThemeData(
+        style: MenuItemButton.styleFrom(
+          minimumSize: Size(0, buttonMinSize.height),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          textStyle: const TextStyle(fontFamily: fontFamily, fontSize: 14, fontWeight: FontWeight.w500),
         ),
       ),
 

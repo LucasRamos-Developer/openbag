@@ -50,7 +50,8 @@ class AppPageContainer extends StatelessWidget {
   }
 }
 
-/// Lista rolável com o conteúdo centralizado na largura padrão; os filhos ocupam toda a largura útil
+/// Lista rolável com o conteúdo centralizado na largura padrão; os filhos ocupam toda a largura útil.
+/// O [footer] opcional ocupa a largura toda no fim da rolagem e desce até o pé da tela em páginas curtas.
 ///
 /// ```dart
 /// AppPageListView(children: [
@@ -63,6 +64,7 @@ class AppPageListView extends StatelessWidget {
   final double maxWidth;
   final double top;
   final double bottom;
+  final Widget? footer;
 
   const AppPageListView({
     super.key,
@@ -70,15 +72,26 @@ class AppPageListView extends StatelessWidget {
     this.maxWidth = AppLayout.maxContentWidth,
     this.top = 24,
     this.bottom = 32,
+    this.footer,
   });
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) => ListView(
-        padding: AppLayout.contentPadding(constraints.maxWidth, top: top, bottom: bottom, maxWidth: maxWidth),
-        children: children,
-      ),
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      final padding = AppLayout.contentPadding(constraints.maxWidth, top: top, bottom: bottom, maxWidth: maxWidth);
+      if (footer == null) {
+        return ListView(padding: padding, children: children);
+      }
+      return CustomScrollView(
+        slivers: [
+          SliverPadding(padding: padding, sliver: SliverList.list(children: children)),
+          SliverFillRemaining(
+            hasScrollBody: false,
+            fillOverscroll: false,
+            child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [footer!]),
+          ),
+        ],
+      );
+    });
   }
 }

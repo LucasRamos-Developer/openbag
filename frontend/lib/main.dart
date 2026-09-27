@@ -11,7 +11,8 @@ import 'screens/auth/register_screen.dart';
 import 'screens/onboarding/restaurant_onboarding_screen.dart';
 import 'screens/onboarding/association_onboarding_screen.dart';
 import 'screens/association/association_panel_screen.dart';
-import 'screens/admin/admin_associations_screen.dart';
+import 'screens/admin/admin_panel_screen.dart';
+import 'screens/admin/admin_section.dart';
 import 'screens/restaurant_panel/restaurant_panel_screen.dart';
 import 'screens/kitchen/kitchen_screen.dart';
 import 'screens/home/home_screen.dart';
@@ -194,9 +195,10 @@ GoRouter buildRouter(AuthService authService) => GoRouter(
       sections: RestaurantSection.values,
       builder: (section, tab) => RestaurantPanelScreen(section: section, storeSection: StoreSection.fromSlug(tab)),
     ),
-    GoRoute(
-      path: '/admin/associacoes',
-      builder: (context, state) => const AdminAssociationsScreen(),
+    ...panelRoutes(
+      base: '/admin',
+      sections: AdminSection.values,
+      builder: (section, _) => AdminPanelScreen(section: section),
     ),
     GoRoute(
       path: '/ui-showcase',

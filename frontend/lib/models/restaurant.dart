@@ -25,6 +25,12 @@ class Restaurant {
   final String? priceRange;
   final bool openNow;
   final DateTime? pausedUntil;
+
+  /// Quando fecha (se aberto e com horários cadastrados)
+  final DateTime? closesAt;
+
+  /// Próxima abertura (se fechado por horário ou pausa)
+  final DateTime? nextOpenAt;
   final List<String> categories;
   final Address? address;
   final List<OpeningHour> openingHours;
@@ -52,6 +58,8 @@ class Restaurant {
     this.priceRange,
     required this.openNow,
     this.pausedUntil,
+    this.closesAt,
+    this.nextOpenAt,
     this.categories = const [],
     this.address,
     this.openingHours = const [],
@@ -84,6 +92,8 @@ class Restaurant {
       priceRange: json['priceRange'],
       openNow: json['openNow'] ?? false,
       pausedUntil: json['pausedUntil'] != null ? DateTime.tryParse(json['pausedUntil']) : null,
+      closesAt: json['closesAt'] != null ? DateTime.tryParse(json['closesAt']) : null,
+      nextOpenAt: json['nextOpenAt'] != null ? DateTime.tryParse(json['nextOpenAt']) : null,
       categories: List<String>.from(json['categories'] ?? const []),
       address: json['address'] != null ? Address.fromJson(json['address']) : null,
       openingHours: (json['openingHours'] as List? ?? []).map((e) => OpeningHour.fromJson(e)).toList(),
@@ -91,7 +101,7 @@ class Restaurant {
     );
   }
 
-  String get deliveryTimeRange => '$deliveryTimeMin-$deliveryTimeMax min';
+  String get deliveryTimeRange => '$deliveryTimeMin–$deliveryTimeMax min';
   String get formattedRating => rating.toStringAsFixed(1).replaceAll('.', ',');
 }
 
@@ -134,6 +144,14 @@ class Address {
       longitude: (json['longitude'] as num?)?.toDouble(),
     );
   }
+
+  /// "Rua X, 123"
+  String get streetLine => [street, number].where((p) => p.isNotEmpty).join(', ');
+
+  /// "Bairro · Cidade"
+  String get areaLine => [neighborhood, city].where((p) => p.isNotEmpty).join(' · ');
+
+  bool get hasLocation => latitude != null && longitude != null;
 
   String get fullAddress {
     final complement = this.complement?.isNotEmpty == true ? ', ${this.complement}' : '';

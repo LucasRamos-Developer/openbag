@@ -365,12 +365,11 @@ class _RouteCardView extends StatelessWidget {
               runSpacing: 8,
               children: [
                 if (planning && card.status == RouteStatus.PLANNED && onDispatchNow != null)
-                  AppButton(text: 'Chamar agora', icon: Icons.campaign_outlined, size: ButtonSize.small, onPressed: onDispatchNow),
+                  AppButton(text: 'Chamar agora', icon: Icons.campaign_outlined, onPressed: onDispatchNow),
                 AppButton(
                   text: card.hasCourier ? 'Trocar entregador' : 'Escolher entregador',
                   icon: card.hasCourier ? Icons.swap_horiz : Icons.person_search_outlined,
                   variant: ButtonVariant.outlined,
-                  size: ButtonSize.small,
                   onPressed: onPickCourier,
                 ),
               ],

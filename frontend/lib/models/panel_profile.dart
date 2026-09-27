@@ -15,7 +15,7 @@ class PanelProfile {
     role: UserRoles.admin,
     label: 'Administração',
     icon: Icons.admin_panel_settings_outlined,
-    route: '/admin/associacoes',
+    route: '/admin',
   );
   static const association = PanelProfile(
     role: UserRoles.associationManager,

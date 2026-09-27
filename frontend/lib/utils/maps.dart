@@ -1,4 +1,25 @@
+import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+/// Mostra um lugar no app de mapas do próprio aparelho: no Android, o app padrão (ou a escolha do
+/// usuário) via `geo:`; no iPhone, o Mapas da Apple; na web, o Google Maps numa nova aba
+/// (no celular, ele abre o app se estiver instalado). Sem coordenadas, busca pelo endereço.
+Future<void> openPlaceInMaps({double? latitude, double? longitude, String? label, String? address}) {
+  final hasPoint = latitude != null && longitude != null;
+  final query = hasPoint ? '$latitude,$longitude' : (address ?? label ?? '');
+  if (query.isEmpty) return Future.value();
+
+  final Uri uri;
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    final name = label != null && hasPoint ? '$query($label)' : query;
+    uri = Uri.parse('geo:${hasPoint ? query : '0,0'}?q=${Uri.encodeComponent(name)}');
+  } else if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+    uri = Uri.https('maps.apple.com', '/', {'q': label ?? query, if (hasPoint) 'll': query, if (!hasPoint) 'address': query});
+  } else {
+    uri = Uri.https('www.google.com', '/maps/search/', {'api': '1', 'query': query});
+  }
+  return launchUrl(uri, mode: LaunchMode.externalApplication, webOnlyWindowName: '_blank');
+}
 
 /// Abre a rota até o destino no app de mapas (Google Maps na web): pelas coordenadas ou pelo endereço
 Future<void> openDirections({double? latitude, double? longitude, String? address}) {

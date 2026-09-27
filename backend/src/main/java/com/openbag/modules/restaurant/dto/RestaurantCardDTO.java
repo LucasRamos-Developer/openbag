@@ -32,7 +32,13 @@ public class RestaurantCardDTO {
     private Integer deliveryTimeMin;
     private Integer deliveryTimeMax;
     private boolean openNow;
+    private LocalDateTime pausedUntil;
+    /** Quando fecha (se aberto e com horários) */
+    private LocalDateTime closesAt;
+    /** Próxima abertura (se fechado por horário ou pausa) */
+    private LocalDateTime nextOpenAt;
     private List<String> categories;
+    private RestaurantPublicDTO.PublicAddress address;
 
     public static RestaurantCardDTO from(Restaurant restaurant, LocalDateTime now) {
         return RestaurantCardDTO.builder()
@@ -48,6 +54,10 @@ public class RestaurantCardDTO {
                 .deliveryTimeMin(restaurant.getDeliveryTimeMin())
                 .deliveryTimeMax(restaurant.getDeliveryTimeMax())
                 .openNow(restaurant.isOpenNow(now))
+                .pausedUntil(restaurant.isPaused(now) ? restaurant.getPausedUntil() : null)
+                .closesAt(restaurant.closesAt(now))
+                .nextOpenAt(restaurant.nextOpeningAt(now))
+                .address(RestaurantPublicDTO.PublicAddress.from(restaurant))
                 .categories(restaurant.getCategories().stream().map(Category::getName).toList())
                 .build();
     }

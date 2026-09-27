@@ -198,7 +198,8 @@ frontend/
 │   │   ├── kitchen/                # Tela da cozinha
 │   │   ├── courier/                # Painel do entregador (/entregador, em desenvolvimento)
 │   │   ├── association/            # Painel da associação (/associacao, em desenvolvimento)
-│   │   ├── admin/, auth/, onboarding/, profile/
+│   │   ├── admin/                  # Painel do super admin (/admin, somente leitura)
+│   │   ├── auth/, onboarding/, profile/
 │   ├── services/                   # Chamadas à API e ao WebSocket
 │   ├── widgets/                    # Widgets reutilizáveis por domínio
 │   └── utils/                      # Formatadores, mapas, localização
@@ -260,6 +261,24 @@ mvn spring-boot:run -Dspring-boot.run.profiles=docker
 # Rodar JAR diretamente
 java -jar target/openbag-backend-0.2.0.jar
 ```
+
+### Conta de demonstração
+
+Para testar tudo com um login só, suba o backend com a conta demo:
+
+```bash
+OPENBAG_DEMO_ENABLED=true mvn spring-boot:run
+```
+
+Na subida é criada a conta **`demo@openbag.local` / `demo1234`**, que tem todos os perfis: cliente, restaurante, entregador, cooperativa e super admin. Junto com ela vêm:
+
+- a loja **Cantina Demo** (`/r/cantina-demo`), aberta, com horários, endereço em Blumenau e cardápio;
+- a **Cooperativa Demo**, já aprovada e com a tabela de entrega;
+- o perfil de entregador com uma moto ativa e o vínculo com a cooperativa.
+
+A criação é idempotente: cada parte só é criada se ainda não existir. A senha é pública, então **nunca ligue `OPENBAG_DEMO_ENABLED` em produção** (o padrão é `false`).
+
+O ADMIN inicial de produção é outro: ele vem de `OPENBAG_ADMIN_EMAIL` e `OPENBAG_ADMIN_PASSWORD`.
 
 ### Profiles disponíveis
 
@@ -553,6 +572,9 @@ Para produção, defina como variáveis de ambiente:
 export JWT_SECRET=seu_jwt_secret_aqui
 export DB_PASSWORD=senha_segura
 export REDIS_PASSWORD=senha_redis
+export OPENBAG_ADMIN_EMAIL=admin@seu-dominio.com   # ADMIN inicial (só se não houver nenhum)
+export OPENBAG_ADMIN_PASSWORD=senha_forte
+# OPENBAG_DEMO_ENABLED fica desligado em produção (conta demo com senha pública)
 ```
 
 ### Frontend
@@ -573,6 +595,20 @@ Build com variável customizada:
 ```bash
 flutter build web --dart-define=API_URL=https://api.openbag.com/api
 ```
+
+#### Mapa
+
+Os mapas usam o componente `AppMap` (`frontend/lib/core/ui/components/app_map.dart`), desenhado pelo MapLibre (`maplibre_gl`) na web, no Android e no iOS.
+
+- **Estilo:** é nosso e fica em `frontend/assets/map/openbag_style.json`, no formato de estilo do MapLibre. Para mudar cores ou o que aparece (ruas, parques, rótulos), edite o JSON. O [Maputnik](https://maplibre.org/maputnik/) é um editor visual que abre esse arquivo.
+- **Dados e fontes:** vêm do [OpenFreeMap](https://openfreemap.org), sem chave e sem limite de uso. O crédito (OpenFreeMap, OpenMapTiles e OpenStreetMap) aparece no botão de atribuição do mapa.
+- **Base raster no lugar do estilo** (ex: MapTiler com chave):
+
+  ```bash
+  flutter build web \
+    --dart-define=MAP_TILE_URL='https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=SUA_CHAVE' \
+    --dart-define=MAP_TILE_ATTRIBUTION='© MapTiler © OpenStreetMap'
+  ```
 
 ---
 

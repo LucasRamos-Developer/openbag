@@ -276,4 +276,80 @@ public class Restaurant {
         }
         return openingHours.stream().anyMatch(hour -> hour.covers(now));
     }
+
+    /**
+     * Quando fecha, se estiver aberto agora e tiver horários. Turnos colados (ex: 11–15 e 15–23)
+     * contam como um só; uma pausa não muda o fechamento.
+     */
+    public LocalDateTime closesAt(LocalDateTime now) {
+        if (!isOpenNow(now) || openingHours == null || openingHours.isEmpty()) {
+            return null;
+        }
+        LocalDateTime end = null;
+        LocalDateTime cursor = now;
+        // No máximo uma volta na semana: evita laço infinito com turnos cobrindo 24h
+        for (int i = 0; i < openingHours.size() + 1; i++) {
+            LocalDateTime shiftEnd = shiftEndCovering(cursor);
+            if (shiftEnd == null || (end != null && !shiftEnd.isAfter(end))) {
+                break;
+            }
+            end = shiftEnd;
+            cursor = shiftEnd;
+            if (end.isAfter(now.plusDays(7))) {
+                break;
+            }
+        }
+        return end;
+    }
+
+    /**
+     * Próxima abertura, se estiver fechado agora: o início do próximo turno ou o fim da pausa.
+     * Fechada manualmente ou inativa, não há previsão (null).
+     */
+    public LocalDateTime nextOpeningAt(LocalDateTime now) {
+        if (isOpenNow(now) || !isActive || !isOpen) {
+            return null;
+        }
+        LocalDateTime from = isPaused(now) ? pausedUntil : now;
+        if (openingHours == null || openingHours.isEmpty()) {
+            return isPaused(now) ? pausedUntil : null;
+        }
+        if (openingHours.stream().anyMatch(hour -> hour.covers(from))) {
+            return from;
+        }
+        LocalDateTime next = null;
+        for (int day = 0; day <= 7; day++) {
+            java.time.LocalDate date = from.toLocalDate().plusDays(day);
+            for (OpeningHour hour : openingHours) {
+                if (hour.getWeekday() != date.getDayOfWeek().getValue()) {
+                    continue;
+                }
+                LocalDateTime start = hour.startOn(date);
+                if (start.isAfter(from) && (next == null || start.isBefore(next))) {
+                    next = start;
+                }
+            }
+            if (next != null) {
+                return next;
+            }
+        }
+        return null;
+    }
+
+    /** Fim do turno que cobre o instante (o mais longo, se houver mais de um) */
+    private LocalDateTime shiftEndCovering(LocalDateTime at) {
+        LocalDateTime end = null;
+        for (OpeningHour hour : openingHours) {
+            if (!hour.covers(at)) {
+                continue;
+            }
+            // Turno que vira a noite e cobre a madrugada começou ontem
+            boolean startedYesterday = hour.isOvernight() && hour.getWeekday() != at.getDayOfWeek().getValue();
+            LocalDateTime shiftEnd = hour.endOn(startedYesterday ? at.toLocalDate().minusDays(1) : at.toLocalDate());
+            if (end == null || shiftEnd.isAfter(end)) {
+                end = shiftEnd;
+            }
+        }
+        return end;
+    }
 }

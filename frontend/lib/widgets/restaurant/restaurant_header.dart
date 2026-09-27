@@ -4,6 +4,7 @@ import '../../core/ui/ui.dart';
 import '../../models/restaurant.dart';
 import '../../utils/formatters.dart';
 import 'restaurant_logo.dart';
+import 'restaurant_hours_label.dart';
 
 /// Topo da página do restaurante: banner com slogan + card de informações sobreposto
 class RestaurantHeader extends StatelessWidget {
@@ -67,8 +68,9 @@ class RestaurantInfoCard extends StatelessWidget {
       if (restaurant.priceRange != null) restaurant.priceRange!,
     ].join(' · ');
 
-    final status = restaurant.openNow ? 'Aberto agora' : (restaurant.paused ? 'Pausado' : 'Fechado');
-    final statusColor = restaurant.openNow ? c.success : c.danger;
+    final (statusTitle, statusDetail) = RestaurantHoursLabel.textOf(restaurant);
+    final status = statusDetail == null ? statusTitle : '$statusTitle · $statusDetail';
+    final statusColor = RestaurantHoursLabel.colorOf(context, restaurant);
 
     final meta = AppMetaRow(separators: !compact, children: [
       _StatusPill(label: status, color: statusColor),

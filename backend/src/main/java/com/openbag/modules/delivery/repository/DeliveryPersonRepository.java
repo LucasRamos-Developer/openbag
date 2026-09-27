@@ -1,5 +1,7 @@
 package com.openbag.modules.delivery.repository;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -68,4 +70,10 @@ public interface DeliveryPersonRepository extends JpaRepository<DeliveryPerson, 
     boolean existsByDocumentNumber(String documentNumber);
 
     boolean existsByDriverLicense(String driverLicense);
+
+    /** Painel admin: busca por nome ou e-mail do entregador ([q] já em minúsculas com %) */
+    @Query("select d from DeliveryPerson d join d.user u where lower(u.fullName) like :q or lower(u.email) like :q")
+    Page<DeliveryPerson> searchForAdmin(@Param("q") String q, Pageable pageable);
+
+    long countByWorkStatusIn(java.util.Collection<com.openbag.enums.CourierWorkStatus> statuses);
 }

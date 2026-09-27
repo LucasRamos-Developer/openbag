@@ -39,7 +39,6 @@ class AccountMenuButton extends StatelessWidget {
       return AppButton(
         text: 'Entrar',
         icon: Icons.login_rounded,
-        size: ButtonSize.small,
         onPressed: () => context.push(
           Uri(path: '/login', queryParameters: {'next': GoRouterState.of(context).uri.toString()}).toString(),
         ),

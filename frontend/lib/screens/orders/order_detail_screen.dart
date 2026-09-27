@@ -15,6 +15,7 @@ import '../../widgets/courier/order_courier_card.dart';
 import '../../widgets/order/order_status_timeline.dart';
 import '../../widgets/order/price_summary.dart';
 import '../../widgets/restaurant/restaurant_logo.dart';
+import '../../widgets/navigation/storefront_footer.dart';
 import '../../widgets/navigation/storefront_scaffold.dart';
 
 /// Acompanhamento do pedido pelo cliente.
@@ -100,87 +101,91 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget _buildContent(Order order) {
     final muted = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
 
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 720),
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Row(
+    return LayoutBuilder(
+      builder: (context, constraints) => CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: AppLayout.contentPadding(constraints.maxWidth, top: 16, bottom: 16, maxWidth: 720 - 32),
+            sliver: SliverList.list(
               children: [
-                RestaurantLogo(logoUrl: order.restaurant.logoUrl, name: order.restaurant.name, size: 48),
-                const SizedBox(width: 12),
-                Expanded(
+                Row(
+                  children: [
+                    RestaurantLogo(logoUrl: order.restaurant.logoUrl, name: order.restaurant.name, size: 48),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(order.restaurant.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                          Text('Feito em ${formatDateTime(order.createdAt)}', style: TextStyle(color: muted, fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                    OrderStatusChip(status: order.status),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                AppCard(
+                  padding: const EdgeInsets.all(16),
+                  borderColor: Theme.of(context).colorScheme.outline.withValues(alpha: 0.15),
+                  borderWidth: 1,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(order.restaurant.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                      Text('Feito em ${formatDateTime(order.createdAt)}', style: TextStyle(color: muted, fontSize: 13)),
+                      if (!order.status.isFinal && order.estimatedDeliveryTime != null && order.createdAt != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Text(
+                            'Previsão de entrega até ${formatTime(order.createdAt!.add(Duration(minutes: order.estimatedDeliveryTime!)))}',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      OrderStatusTimeline(order: order),
                     ],
                   ),
                 ),
-                OrderStatusChip(status: order.status),
-              ],
-            ),
-            const SizedBox(height: 20),
-            AppCard(
-              padding: const EdgeInsets.all(16),
-              borderColor: Theme.of(context).colorScheme.outline.withValues(alpha: 0.15),
-              borderWidth: 1,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (!order.status.isFinal && order.estimatedDeliveryTime != null && order.createdAt != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        'Previsão de entrega até ${formatTime(order.createdAt!.add(Duration(minutes: order.estimatedDeliveryTime!)))}',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  OrderStatusTimeline(order: order),
+                if (order.status == OrderStatus.PENDING) ...[
+                  const SizedBox(height: 12),
+                  AppButton(text: 'Cancelar pedido', variant: ButtonVariant.outlined, backgroundColor: AppColors.errorDark, onPressed: _cancel),
                 ],
-              ),
-            ),
-            if (order.status == OrderStatus.PENDING) ...[
-              const SizedBox(height: 12),
-              AppButton(text: 'Cancelar pedido', variant: ButtonVariant.outlined, backgroundColor: AppColors.errorDark, onPressed: _cancel),
-            ],
-            const AppSectionHeader(title: 'Itens', padding: EdgeInsets.only(top: 24, bottom: 8)),
-            OrderItemsList(items: order.items),
-            const SizedBox(height: 12),
-            PriceSummary(subtotal: order.subtotal, deliveryFee: order.deliveryFee, total: order.totalAmount),
-            const AppSectionHeader(title: 'Pagamento na entrega', padding: EdgeInsets.only(top: 24, bottom: 8)),
-            Row(
-              children: [
-                Icon(order.paymentMethod.icon, color: muted),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(order.changeFor != null
-                      ? '${order.paymentMethod.label} · troco para ${formatMoney(order.changeFor!)}'
-                      : order.paymentMethod.label),
+                const AppSectionHeader(title: 'Itens', padding: EdgeInsets.only(top: 24, bottom: 8)),
+                OrderItemsList(items: order.items),
+                const SizedBox(height: 12),
+                PriceSummary(subtotal: order.subtotal, deliveryFee: order.deliveryFee, total: order.totalAmount),
+                const AppSectionHeader(title: 'Pagamento na entrega', padding: EdgeInsets.only(top: 24, bottom: 8)),
+                Row(
+                  children: [
+                    Icon(order.paymentMethod.icon, color: muted),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(order.changeFor != null
+                          ? '${order.paymentMethod.label} · troco para ${formatMoney(order.changeFor!)}'
+                          : order.paymentMethod.label),
+                    ),
+                  ],
                 ),
+                if (order.courier != null) ...[
+                  const AppSectionHeader(title: 'Seu entregador', padding: EdgeInsets.only(top: 24, bottom: 8)),
+                  OrderCourierCard(courier: order.courier!),
+                ],
+                if (order.deliveryAddress != null) ...[
+                  const AppSectionHeader(title: 'Endereço de entrega', padding: EdgeInsets.only(top: 24, bottom: 8)),
+                  Text(order.deliveryAddress!),
+                ],
+                if (order.notes != null) ...[
+                  const AppSectionHeader(title: 'Observações', padding: EdgeInsets.only(top: 24, bottom: 8)),
+                  Text(order.notes!),
+                ],
+                if (order.restaurant.phoneNumber != null) ...[
+                  const SizedBox(height: 24),
+                  Text('Dúvidas? Fale com o restaurante: ${order.restaurant.phoneNumber}', style: TextStyle(color: muted)),
+                ],
+                const SizedBox(height: 24),
               ],
             ),
-            if (order.courier != null) ...[
-              const AppSectionHeader(title: 'Seu entregador', padding: EdgeInsets.only(top: 24, bottom: 8)),
-              OrderCourierCard(courier: order.courier!),
-            ],
-            if (order.deliveryAddress != null) ...[
-              const AppSectionHeader(title: 'Endereço de entrega', padding: EdgeInsets.only(top: 24, bottom: 8)),
-              Text(order.deliveryAddress!),
-            ],
-            if (order.notes != null) ...[
-              const AppSectionHeader(title: 'Observações', padding: EdgeInsets.only(top: 24, bottom: 8)),
-              Text(order.notes!),
-            ],
-            if (order.restaurant.phoneNumber != null) ...[
-              const SizedBox(height: 24),
-              Text('Dúvidas? Fale com o restaurante: ${order.restaurant.phoneNumber}', style: TextStyle(color: muted)),
-            ],
-            const SizedBox(height: 24),
-          ],
-        ),
+          ),
+          StorefrontFooter.sliver(),
+        ],
       ),
     );
   }

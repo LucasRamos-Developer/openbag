@@ -91,6 +91,7 @@ class CartScreen extends StatelessWidget {
                 ),
               ),
             ),
+      floatingBottomBar: false,
       bottomNavigationBar: cart.isEmpty
           ? null
           : SafeArea(

@@ -46,7 +46,28 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ## [Não lançado]
 
-Nada ainda.
+### Adicionado
+
+- **Painel do super admin** em `/admin`. É somente leitura e tem Visão geral, Restaurantes, Associações, Entregadores, Usuários e Pedidos. A busca e a paginação usam as rotas `GET /admin/overview|restaurants|couriers|users|orders`. A moderação de associações continua na aba Associações.
+- **Conta de demonstração** com todos os perfis, inclusive ADMIN: `demo@openbag.local` / `demo1234`. Ela vem com a loja Cantina Demo (com cardápio), a Cooperativa Demo aprovada (com tabela de entrega) e o perfil de entregador vinculado. Só é criada com `OPENBAG_DEMO_ENABLED=true`, nunca em produção.
+- **Rodapé da área do cliente**, com a proposta do projeto, os links para clientes e parceiros, o contato e a versão. O carrinho flutua sobre a página e o rodapé reserva o espaço dele, então nada fica escondido.
+- **Card da vitrine com todas as informações**:
+  - endereço no lugar da categoria;
+  - botão que abre o app de mapas do aparelho (Android: app padrão, iPhone: Mapas, web: Google Maps);
+  - situação com horário ("Aberto · fecha às 23:00", "Fechado · abre amanhã às 11:00");
+  - prazo, taxa e pedido mínimo.
+- A lista pública de restaurantes passa a enviar `address`, `pausedUntil`, `closesAt` e `nextOpenAt`.
+- Script de capturas de tela em `tools/screenshots/`.
+
+### Alterado
+
+- **Mapa com estilo próprio**, claro e próximo das cores do Google Maps, sem relevo e com a vegetação discreta. O estilo fica em `frontend/assets/map/openbag_style.json`, no formato do MapLibre. O mapa é desenhado pelo MapLibre (`maplibre_gl`) com os dados do OpenFreeMap, sem chave e sem limite de uso. O componente `AppMap` (`core/ui`) substitui o `flutter_map` nos mapas de rotas e da página da loja. Uma base raster pode entrar no lugar com `--dart-define=MAP_TILE_URL=...`.
+- **Botões maiores e padronizados**: `small` 36px, `medium` 44px (padrão) e `large` 52px. O tema também aplica 44px aos botões do Material. As ações do painel do restaurante (cabeçalho de pedidos, cardápio, loja, rotas e caixa) passaram para o tamanho padrão.
+
+### Corrigido
+
+- O botão `large` tinha fonte menor que a do `medium`.
+- A versão exibida no app era `1.0.0`; agora é `0.2.0`.
 
 ---
 

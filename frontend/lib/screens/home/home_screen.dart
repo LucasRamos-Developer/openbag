@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/ui/ui.dart';
 import '../../services/restaurant_service.dart';
 import '../../widgets/cart/cart_bar.dart';
+import '../../widgets/navigation/storefront_footer.dart';
 import '../../widgets/navigation/storefront_scaffold.dart';
 import '../../widgets/restaurant_card.dart';
 
@@ -30,33 +31,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return StorefrontScaffold(
       current: StorefrontLink.restaurants,
-      bottomNavigationBar: Center(
-        heightFactor: 1,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: AppLayout.maxContentWidth),
-          child: const CartBar(),
-        ),
-      ),
+      bottomNavigationBar: const CartBar(),
       body: LayoutBuilder(builder: (context, constraints) {
         final padding = AppLayout.contentPadding(
           constraints.maxWidth,
           top: StorefrontScaffold.topInset(context) + 28,
-          bottom: 40,
+          bottom: 48,
         );
 
         return RefreshIndicator(
           onRefresh: service.fetchRestaurants,
-          child: ListView(
-            padding: padding,
-            children: [
-              AppSectionHeader(
-                title: 'Restaurantes',
-                subtitle: service.isLoading || service.restaurants.isEmpty
-                    ? 'Peça dos restaurantes da sua cidade'
-                    : '${service.restaurants.length} ${service.restaurants.length == 1 ? 'loja' : 'lojas'} na sua região',
-                leadingIcon: Icons.storefront_outlined,
+          child: CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: padding,
+                sliver: SliverList.list(
+                  children: [
+                    AppSectionHeader(
+                      title: 'Restaurantes',
+                      subtitle: service.isLoading || service.restaurants.isEmpty
+                          ? 'Peça dos restaurantes da sua cidade'
+                          : '${service.restaurants.length} ${service.restaurants.length == 1 ? 'loja' : 'lojas'} na sua região',
+                      leadingIcon: Icons.storefront_outlined,
+                    ),
+                    _buildContent(context, service),
+                  ],
+                ),
               ),
-              _buildContent(context, service),
+              StorefrontFooter.sliver(),
             ],
           ),
         );

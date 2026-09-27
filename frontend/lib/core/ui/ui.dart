@@ -40,6 +40,8 @@ export 'components/app_page_container.dart';
 export 'components/app_responsive_grid.dart';
 export 'components/app_stat_tile.dart';
 export 'components/app_top_nav_bar.dart';
+export 'components/app_map.dart';
+export 'components/app_paged_list.dart';
 
 // ========== TEMA ==========
 export 'theme/app_colors.dart';

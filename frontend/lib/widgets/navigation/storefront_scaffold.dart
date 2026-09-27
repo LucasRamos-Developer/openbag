@@ -9,7 +9,9 @@ import 'panel_profiles.dart';
 enum StorefrontLink { restaurants, orders, none }
 
 /// Estrutura das telas do cliente: barra horizontal de vidro no topo (logo, links, carrinho e conta)
-/// com o conteúdo passando por baixo dela.
+/// com o conteúdo passando por baixo dela, e o [bottomNavigationBar] (ex: `CartBar`) flutuando
+/// sobre o fim da tela. Termine a rolagem com `StorefrontFooter` (ou [bottomInset]) para nada
+/// ficar escondido atrás dele.
 ///
 /// - Sem [title]: o [body] ocupa a tela inteira e deve reservar o topo com [StorefrontScaffold.topInset]
 ///   (ex: banner que começa atrás da barra).
@@ -24,6 +26,10 @@ class StorefrontScaffold extends StatelessWidget {
   final double maxWidth;
   final Widget? bottomNavigationBar;
 
+  /// Se o [bottomNavigationBar] flutua sobre o conteúdo (carrinho). Com `false`, ele fica numa faixa
+  /// própria abaixo do conteúdo (ex: botão "Continuar" do carrinho e do checkout).
+  final bool floatingBottomBar;
+
   /// Ação do voltar do título; padrão: tela anterior ou a vitrine
   final VoidCallback? onBack;
 
@@ -35,11 +41,15 @@ class StorefrontScaffold extends StatelessWidget {
     this.actions = const [],
     this.maxWidth = AppLayout.maxContentWidth,
     this.bottomNavigationBar,
+    this.floatingBottomBar = true,
     this.onBack,
   });
 
   /// Altura ocupada pela barra (e pela área do sistema) sobre o conteúdo
   static double topInset(BuildContext context) => MediaQuery.paddingOf(context).top;
+
+  /// Altura ocupada pela barra flutuante de baixo (e pela área do sistema) sobre o conteúdo
+  static double bottomInset(BuildContext context) => MediaQuery.paddingOf(context).bottom;
 
   static void back(BuildContext context) => context.canPop() ? context.pop() : context.go('/home');
 
@@ -47,6 +57,8 @@ class StorefrontScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
+      // O carrinho flutua sobre o conteúdo; a altura dele entra no padding de baixo (bottomInset)
+      extendBody: floatingBottomBar,
       appBar: AppTopNavBar(
         logo: OpenBagLogo(onTap: () => context.go('/home')),
         links: [

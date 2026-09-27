@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../core/ui/ui.dart';
-import '../../models/association/association.dart';
-import '../../models/panel_profile.dart';
-import '../../services/admin_association_service.dart';
-import '../../services/api_client.dart';
-import '../../services/auth_service.dart';
-import '../../utils/formatters.dart';
-import '../../widgets/association/association_logo.dart';
-import '../../widgets/association/association_status_chip.dart';
-import '../../widgets/navigation/panel_profiles.dart';
+import '../../../core/ui/ui.dart';
+import '../../../models/association/association.dart';
+import '../../../services/admin_association_service.dart';
+import '../../../services/api_client.dart';
+import '../../../services/auth_service.dart';
+import '../../../utils/formatters.dart';
+import '../../../widgets/association/association_logo.dart';
+import '../../../widgets/association/association_status_chip.dart';
 
 /// Moderação de associações pelo ADMIN: aprovar, recusar (com motivo) e suspender
-class AdminAssociationsScreen extends StatefulWidget {
-  const AdminAssociationsScreen({super.key});
+class AssociationsTab extends StatefulWidget {
+  /// Chamado depois de aprovar, recusar ou suspender (atualiza os números do painel)
+  final VoidCallback? onChanged;
+
+  const AssociationsTab({super.key, this.onChanged});
 
   @override
-  State<AdminAssociationsScreen> createState() => _AdminAssociationsScreenState();
+  State<AssociationsTab> createState() => _AssociationsTabState();
 }
 
-class _AdminAssociationsScreenState extends State<AdminAssociationsScreen> {
+class _AssociationsTabState extends State<AssociationsTab> {
   late final AdminAssociationService _service;
   AssociationStatus? _filter = AssociationStatus.PENDING_APPROVAL;
   List<Association>? _associations;
@@ -53,6 +53,7 @@ class _AdminAssociationsScreenState extends State<AdminAssociationsScreen> {
       await action();
       if (!mounted) return;
       AppToast.show(context, message: success, type: ToastType.success);
+      widget.onChanged?.call();
       await _load();
     } on ApiException catch (e) {
       if (mounted) AppToast.show(context, message: e.message, type: ToastType.error);
@@ -89,78 +90,59 @@ class _AdminAssociationsScreenState extends State<AdminAssociationsScreen> {
     }
   }
 
-  Future<void> _logout() async {
-    await context.read<AuthService>().logout();
-    if (mounted) context.go('/login');
-  }
-
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AuthService>().currentUser;
-
-    return AppPanelScaffold(
-      header: AppPanelProfileHeader(
-        avatar: AppImageAvatar(url: null, name: user?.fullName ?? 'Admin', size: 40),
-        title: user?.fullName ?? 'Administração',
-        subtitle: PanelProfile.admin.label,
-        sections: [panelProfilesSection(context, current: PanelProfile.admin)],
-      ),
-      destinations: const [
-        AppPanelDestination(icon: Icons.apartment_outlined, selectedIcon: Icons.apartment, label: 'Associações'),
-      ],
-      onDestinationSelected: (_) {},
-      onLogout: _logout,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: AppLayout.maxContentWidth),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AppFilterChips<AssociationStatus?>(
-                items: [
-                  const SelectItem(value: null, label: 'Todas'),
-                  for (final status in AssociationStatus.values) SelectItem(value: status, label: status.label),
-                ],
-                value: _filter,
-                onSelected: (status) {
-                  setState(() => _filter = status);
-                  _load();
-                },
-              ),
-              Expanded(child: _buildList()),
-            ],
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: AppPageListView(
+        children: [
+          const AppSectionHeader(
+            title: 'Associações',
+            subtitle: 'Aprove, recuse ou suspenda cooperativas e associações de entregadores',
+            leadingIcon: Icons.apartment_outlined,
           ),
-        ),
+          AppFilterChips<AssociationStatus?>(
+            padding: EdgeInsets.zero,
+            items: [
+              const SelectItem(value: null, label: 'Todas'),
+              for (final status in AssociationStatus.values) SelectItem(value: status, label: status.label),
+            ],
+            value: _filter,
+            onSelected: (status) {
+              setState(() => _filter = status);
+              _load();
+            },
+          ),
+          const SizedBox(height: 12),
+          ..._buildList(),
+        ],
       ),
     );
   }
 
-  Widget _buildList() {
+  List<Widget> _buildList() {
     if (_error != null) {
-      return AppEmptyState(
-          icon: Icons.cloud_off_outlined, message: _error!, actionLabel: 'Tentar novamente', onAction: _load);
+      return [
+        AppEmptyState(icon: Icons.cloud_off_outlined, message: _error!, actionLabel: 'Tentar novamente', onAction: _load)
+      ];
     }
     if (_associations == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const [Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator()))];
     }
     if (_associations!.isEmpty) {
-      return AppEmptyState(
-        icon: Icons.inbox_outlined,
-        message: _filter == AssociationStatus.PENDING_APPROVAL
-            ? 'Nenhuma associação aguardando aprovação.'
-            : 'Nenhuma associação encontrada.',
-      );
+      return [
+        AppEmptyState(
+          icon: Icons.inbox_outlined,
+          message: _filter == AssociationStatus.PENDING_APPROVAL
+              ? 'Nenhuma associação aguardando aprovação.'
+              : 'Nenhuma associação encontrada.',
+        ),
+      ];
     }
-
-    return RefreshIndicator(
-      onRefresh: _load,
-      child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-        itemCount: _associations!.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (context, index) => _buildCard(_associations![index]),
-      ),
-    );
+    return [
+      for (final association in _associations!)
+        Padding(padding: const EdgeInsets.only(bottom: 12), child: _buildCard(association)),
+    ];
   }
 
   Widget _buildCard(Association a) {

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import '../../core/ui/ui.dart';
 import '../../models/routes/routes_board.dart';
 
@@ -36,102 +34,43 @@ class RoutesMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final store = LatLng(storeLatitude, storeLongitude);
-    final points = <LatLng>[
-      store,
-      for (final card in cards)
-        for (final s in card.stops)
-          if (s.hasLocation) LatLng(s.latitude!, s.longitude!),
-    ];
+    final store = AppMapPoint(storeLatitude, storeLongitude);
+    AppMapPoint pointOf(RouteStop s) => AppMapPoint(s.latitude!, s.longitude!);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.lg),
-      child: FlutterMap(
-        options: MapOptions(
-          initialCenter: store,
-          initialZoom: 14,
-          initialCameraFit: points.length > 1
-              ? CameraFit.bounds(bounds: LatLngBounds.fromPoints(points), padding: const EdgeInsets.all(48), maxZoom: 16)
-              : null,
-          interactionOptions: const InteractionOptions(flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom | InteractiveFlag.doubleTapZoom),
-        ),
-        children: [
-          TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.openbag.app',
-            maxZoom: 19,
-          ),
-          PolylineLayer(
-            polylines: [
-              for (final card in cards)
-                if (card.stops.any((s) => s.hasLocation))
-                  Polyline(
-                    points: [store, for (final s in card.stops) if (s.hasLocation) LatLng(s.latitude!, s.longitude!)],
-                    color: RouteColors.of(card.routeId).withValues(alpha: card.isRoute ? 0.9 : 0.5),
-                    strokeWidth: card.isRoute ? 3 : 2,
-                  ),
-            ],
-          ),
-          MarkerLayer(
-            markers: [
-              Marker(
-                point: store,
-                width: 40,
-                height: 40,
-                child: Tooltip(
-                  message: 'Sua loja',
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1A1A19),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
-                    ),
-                    child: const Icon(Icons.storefront, color: Colors.white, size: 20),
-                  ),
-                ),
-              ),
-              for (final card in cards)
-                for (var i = 0; i < card.stops.length; i++)
-                  if (card.stops[i].hasLocation)
-                    Marker(
-                      point: LatLng(card.stops[i].latitude!, card.stops[i].longitude!),
-                      width: 32,
-                      height: 32,
-                      child: _StopMarker(
-                        color: RouteColors.of(card.routeId),
-                        label: card.isRoute ? '${i + 1}' : '•',
-                        tooltip: [card.stops[i].displayCode, card.stops[i].neighborhood].whereType<String>().join(' · '),
-                      ),
-                    ),
-            ],
-          ),
+      child: AppMap(
+        center: store,
+        zoom: 14,
+        fitPoints: [
+          store,
+          for (final card in cards)
+            for (final s in card.stops)
+              if (s.hasLocation) pointOf(s),
         ],
-      ),
-    );
-  }
-}
-
-class _StopMarker extends StatelessWidget {
-  final Color color;
-  final String label;
-  final String tooltip;
-
-  const _StopMarker({required this.color, required this.label, required this.tooltip});
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: Container(
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          // Anel branco: separa a cor do fundo do mapa
-          border: Border.all(color: Colors.white, width: 3),
-          boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
-        ),
-        child: Text(label, style: TextStyle(color: RouteColors.onColor(color), fontWeight: FontWeight.w800, fontSize: 13)),
+        lines: [
+          for (final card in cards)
+            if (card.stops.any((s) => s.hasLocation))
+              AppMapLine(
+                points: [store, for (final s in card.stops) if (s.hasLocation) pointOf(s)],
+                color: RouteColors.of(card.routeId),
+                opacity: card.isRoute ? 0.9 : 0.5,
+                width: card.isRoute ? 3 : 2,
+              ),
+        ],
+        markers: [
+          AppMapMarker(point: store, color: const Color(0xFF1A1A19), radius: 11, caption: 'Sua loja'),
+          for (final card in cards)
+            for (var i = 0; i < card.stops.length; i++)
+              if (card.stops[i].hasLocation)
+                AppMapMarker(
+                  point: pointOf(card.stops[i]),
+                  color: RouteColors.of(card.routeId),
+                  label: card.isRoute ? '${i + 1}' : null,
+                  // O código do pedido ao lado do ponto (no lugar da dica ao passar o mouse)
+                  caption: card.stops[i].displayCode,
+                ),
+        ],
       ),
     );
   }

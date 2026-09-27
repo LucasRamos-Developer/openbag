@@ -95,9 +95,11 @@ Botão com diferentes variantes e animações.
 - `soft` - Fundo suave/transparente
 
 **Tamanhos:**
-- `small` - 32px altura
-- `medium` - 40px altura
-- `large` - 48px altura
+- `small` - 36px de altura, fonte 13: só em linhas densas (cards de pedido, item de lista)
+- `medium` - 44px de altura, fonte 14: padrão para toda ação
+- `large` - 52px de altura, fonte 16: ação principal da tela (carrinho, checkout)
+
+Os botões do Material (`FilledButton`, `OutlinedButton`, `TextButton`, `ElevatedButton`) seguem o tema com a mesma altura mínima do `medium` (44px).
 
 **Exemplo:**
 ```dart
@@ -249,6 +251,13 @@ Toda tela limita o conteúdo a `AppLayout.maxContentWidth` (1200px), com margem 
 - `AppPageListView(children: [...])`: lista rolável centralizada; a barra de rolagem fica na borda da tela.
 - `AppPageContainer(child: ...)`: o mesmo sem rolagem (ex: quadro de colunas).
 - `AppLayout.contentPadding(width)`: o padding pronto para `SliverPadding` ou listas próprias.
+- `AppPageListView(footer: ...)`: o rodapé ocupa a largura toda no fim da rolagem e desce até o pé da tela em páginas curtas. Use com `StorefrontFooter` nas telas do cliente.
+
+### AppPagedList
+Lista com título, busca em pílula (opcional), filtros e "Carregar mais", para rotas paginadas do backend (`Page` do Spring → `AppPage.fromJson`). Refaz a busca quando o texto muda (com espera) e quando `filterKey` muda. É usada nas listas do painel admin.
+
+### AppMap
+Mapa do app com o estilo próprio do OpenBag (`assets/map/openbag_style.json`), desenhado pelo MapLibre. Recebe `markers` (`AppMapMarker`: ponto, cor, texto dentro e legenda ao lado), `lines` (`AppMapLine`) e `fitPoints`, que enquadra a câmera. Tudo é declarativo: mudou a lista, o mapa redesenha. Detalhes do estilo e da troca de base estão no README-DEVELOPER.
 
 ### AppTopNavBar
 Barra horizontal de vidro (fundo translúcido desfocado) das telas do cliente, para `Scaffold(extendBodyBehindAppBar: true)`. Tem os espaços `logo`, `links` e `trailing`. Abaixo de 700px os links saem da barra. Nas telas use `StorefrontScaffold` (widgets/navigation), que já monta o logo, os links, o carrinho e a conta, e opcionalmente uma linha de título com o botão voltar.

@@ -306,7 +306,6 @@ class _MenuItemFormScreenState extends State<MenuItemFormScreen> {
                     text: 'Novo grupo',
                     icon: Icons.add,
                     variant: ButtonVariant.soft,
-                    size: ButtonSize.small,
                     onPressed: () => _editGroup(null),
                   ),
                 ),

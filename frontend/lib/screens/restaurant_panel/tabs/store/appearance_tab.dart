@@ -342,12 +342,11 @@ class _ImageRow extends StatelessWidget {
       spacing: 8,
       children: [
         if (hasImage)
-          AppButton(text: 'Remover', variant: ButtonVariant.text, size: ButtonSize.small, onPressed: busy ? null : onRemove),
+          AppButton(text: 'Remover', variant: ButtonVariant.text, onPressed: busy ? null : onRemove),
         AppButton(
           text: hasImage ? 'Trocar' : 'Enviar',
           icon: Icons.upload_outlined,
           variant: ButtonVariant.outlined,
-          size: ButtonSize.small,
           isLoading: busy,
           onPressed: busy ? null : onPick,
         ),

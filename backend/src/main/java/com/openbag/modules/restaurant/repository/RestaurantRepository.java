@@ -67,4 +67,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     @Query("SELECT r FROM Restaurant r WHERE r.id = :id")
     Optional<Restaurant> findByIdForUpdate(@Param("id") Long id);
 
+    /** Painel admin: busca por nome, slug ou e-mail do dono ([q] já em minúsculas com %) */
+    @Query("select r from Restaurant r left join r.owner o " +
+           "where lower(r.name) like :q or lower(r.slug) like :q or lower(coalesce(o.email, '')) like :q")
+    Page<Restaurant> searchForAdmin(@Param("q") String q, Pageable pageable);
 }

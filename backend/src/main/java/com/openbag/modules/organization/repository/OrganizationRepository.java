@@ -30,4 +30,6 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
     Page<Organization> findByStatus(OrganizationStatus status, Pageable pageable);
 
     List<Organization> findByStatusOrderByTradingNameAsc(OrganizationStatus status);
+
+    long countByStatus(OrganizationStatus status);
 }

@@ -1,5 +1,7 @@
 package com.openbag.modules.user.repository;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import com.openbag.modules.user.entity.User;
 import com.openbag.enums.UserType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,4 +31,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     @Query("SELECT u FROM User u WHERE u.userType = 'DELIVERY_PERSON' AND u.isActive = true")
     List<User> findAvailableDeliveryPersons();
+
+    /** Painel admin: busca por nome ou e-mail ([q] já em minúsculas com %) */
+    @Query("select u from User u where lower(u.fullName) like :q or lower(u.email) like :q")
+    Page<User> searchForAdmin(@Param("q") String q, Pageable pageable);
 }

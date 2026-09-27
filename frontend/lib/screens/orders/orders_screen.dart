@@ -8,6 +8,7 @@ import '../../services/order_service.dart';
 import '../../utils/formatters.dart';
 import '../../widgets/order/order_status_chip.dart';
 import '../../widgets/restaurant/restaurant_logo.dart';
+import '../../widgets/navigation/storefront_footer.dart';
 import '../../widgets/navigation/storefront_scaffold.dart';
 
 /// Meus pedidos (mais recentes primeiro)
@@ -64,15 +65,19 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
     return RefreshIndicator(
       onRefresh: _load,
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: _orders!.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, i) => _OrderCard(order: _orders![i]),
-          ),
+      child: LayoutBuilder(
+        builder: (context, constraints) => CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: AppLayout.contentPadding(constraints.maxWidth, top: 16, bottom: 40, maxWidth: 720 - 32),
+              sliver: SliverList.separated(
+                itemCount: _orders!.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, i) => _OrderCard(order: _orders![i]),
+              ),
+            ),
+            StorefrontFooter.sliver(),
+          ],
         ),
       ),
     );

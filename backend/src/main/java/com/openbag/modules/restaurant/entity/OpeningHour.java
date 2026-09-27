@@ -65,4 +65,19 @@ public class OpeningHour {
         return (weekday == today && !time.isBefore(openTime))
                 || (weekday == yesterday && time.isBefore(closeTime));
     }
+
+    /** Se o turno vira a noite (fechamento menor ou igual à abertura) */
+    public boolean isOvernight() {
+        return !closeTime.isAfter(openTime);
+    }
+
+    /** Início do turno numa data em que ele acontece (a data precisa ser do dia da semana do turno) */
+    public java.time.LocalDateTime startOn(java.time.LocalDate date) {
+        return date.atTime(openTime);
+    }
+
+    /** Fim do turno que começou na data informada (turnos que viram a noite terminam no dia seguinte) */
+    public java.time.LocalDateTime endOn(java.time.LocalDate date) {
+        return (isOvernight() ? date.plusDays(1) : date).atTime(closeTime);
+    }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme_colors.dart';
 
 /// Botão reutilizável baseado no design MUI Minimal
 /// 
@@ -136,7 +137,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
         elevation: widget.elevation ?? 2,
         shadowColor: backgroundColor.withOpacity(0.24),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(widget.borderRadius ?? 8),
+          borderRadius: BorderRadius.circular(widget.borderRadius ?? AppRadius.md),
         ),
         minimumSize: Size(64, _getHeight()),
       ),
@@ -159,7 +160,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
           width: widget.borderWidth ?? 1.5,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(widget.borderRadius ?? 8),
+          borderRadius: BorderRadius.circular(widget.borderRadius ?? AppRadius.md),
         ),
         minimumSize: Size(64, _getHeight()),
       ),
@@ -177,7 +178,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
         disabledForegroundColor: colorScheme.onSurface.withOpacity(0.38),
         padding: _getPadding(),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(widget.borderRadius ?? 8),
+          borderRadius: BorderRadius.circular(widget.borderRadius ?? AppRadius.md),
         ),
         minimumSize: Size(64, _getHeight()),
       ),
@@ -201,7 +202,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
         elevation: 0,
         shadowColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(widget.borderRadius ?? 8),
+          borderRadius: BorderRadius.circular(widget.borderRadius ?? AppRadius.md),
         ),
         minimumSize: Size(64, _getHeight()),
       ),
@@ -209,38 +210,39 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
     );
   }
 
+  // Padrão de tamanho (altura mínima / fonte / padding):
+  // small 36 / 13 / 14×8 — linhas densas (cards de pedido)
+  // medium 44 / 14 / 20×12 — padrão
+  // large 52 / 16 / 28×14 — ação principal da tela (carrinho, checkout)
   EdgeInsets _getPadding() {
     switch (widget.size) {
       case ButtonSize.small:
-        return const EdgeInsets.symmetric(horizontal: 12, vertical: 6);
+        return const EdgeInsets.symmetric(horizontal: 14, vertical: 8);
       case ButtonSize.large:
-        return const EdgeInsets.symmetric(horizontal: 30, vertical: 10);
+        return const EdgeInsets.symmetric(horizontal: 28, vertical: 14);
       case ButtonSize.medium:
-      default:
-        return const EdgeInsets.symmetric(horizontal: 20, vertical: 10);
+        return const EdgeInsets.symmetric(horizontal: 20, vertical: 12);
     }
   }
 
   double _getHeight() {
     switch (widget.size) {
       case ButtonSize.small:
-        return 32;
+        return 36;
       case ButtonSize.large:
-        return 48;
+        return 52;
       case ButtonSize.medium:
-      default:
-        return 40;
+        return 44;
     }
   }
 
   double _getFontSize() {
     switch (widget.size) {
       case ButtonSize.small:
-        return 11;
+        return 13;
       case ButtonSize.large:
-        return 12;
+        return 16;
       case ButtonSize.medium:
-      default:
         return 14;
     }
   }
@@ -266,8 +268,8 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
       widget.text,
       style: TextStyle(
         fontSize: _getFontSize(),
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.5,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.2,
       ),
     );
 

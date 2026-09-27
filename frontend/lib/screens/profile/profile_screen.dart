@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/ui/ui.dart';
 import '../../models/panel_profile.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/navigation/storefront_footer.dart';
 import '../../widgets/navigation/storefront_scaffold.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -24,6 +25,7 @@ class ProfileScreen extends StatelessWidget {
           return AppPageListView(
             maxWidth: 720 - 32,
             top: 16,
+            footer: const StorefrontFooter(),
             children: [
               if (user != null) ...[
                 CircleAvatar(

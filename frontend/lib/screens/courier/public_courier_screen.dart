@@ -7,6 +7,7 @@ import '../../services/courier_service.dart';
 import '../../widgets/courier/social_links_row.dart';
 import '../../widgets/courier/work_history_list.dart';
 import '../../widgets/courier/verification_badge_card.dart';
+import '../../widgets/navigation/storefront_footer.dart';
 import '../../widgets/navigation/storefront_scaffold.dart';
 
 /// Perfil público do entregador (/e/:slug), aberto pelo QR code da placa de verificação. Não exige login.
@@ -71,8 +72,10 @@ class _PublicProfileBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
+    return AppPageListView(
+      maxWidth: 480,
+      top: 16,
+      footer: const StorefrontFooter(),
       children: [
         Center(
           child: ConstrainedBox(

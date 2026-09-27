@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../../core/ui/ui.dart';
 import '../../models/menu/menu.dart';
@@ -11,7 +10,6 @@ import '../../services/api_client.dart';
 import '../../services/cart_service.dart';
 import '../../services/restaurant_service.dart';
 import '../../widgets/cart/cart_bar.dart';
-import '../../widgets/map_widget.dart';
 import '../../widgets/menu/item_detail_sheet.dart';
 import '../../widgets/menu/menu_product_card.dart';
 import '../../widgets/menu/menu_section_icons.dart';
@@ -19,7 +17,9 @@ import '../../widgets/restaurant/opening_hours_list.dart';
 import '../../widgets/restaurant/restaurant_header.dart';
 import '../../widgets/restaurant/restaurant_page_skeleton.dart';
 import '../../widgets/restaurant/restaurant_theme_scope.dart';
+import '../../widgets/navigation/storefront_footer.dart';
 import '../../widgets/navigation/storefront_scaffold.dart';
+import '../../widgets/restaurant/open_in_maps_button.dart';
 
 /// Página pública do restaurante (padrão visual: layout/restaurante-padrão.png)
 ///
@@ -212,13 +212,7 @@ class _RestaurantPageScreenState extends State<RestaurantPageScreen> {
         .toList();
 
     return StorefrontScaffold(
-      bottomNavigationBar: Center(
-        heightFactor: 1,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: _maxWidth),
-          child: CartBar(restaurantId: restaurant.id),
-        ),
-      ),
+      bottomNavigationBar: CartBar(restaurantId: restaurant.id),
       body: LayoutBuilder(builder: (context, constraints) {
         _topInset = StorefrontScaffold.topInset(context);
         final side = constraints.maxWidth > _maxWidth ? (constraints.maxWidth - _maxWidth) / 2 : 0.0;
@@ -321,7 +315,8 @@ class _RestaurantPageScreenState extends State<RestaurantPageScreen> {
                 ),
               ),
             ],
-            const SliverToBoxAdapter(child: SizedBox(height: 40)),
+            const SliverToBoxAdapter(child: SizedBox(height: 48)),
+            StorefrontFooter.sliver(),
           ],
         );
       }),
@@ -518,19 +513,28 @@ class _AboutSheet extends StatelessWidget {
           AppSectionHeader(title: restaurant.name, subtitle: restaurant.description),
           if (address != null) ...[
             const AppSectionHeader(title: 'Endereço', padding: EdgeInsets.only(top: 8, bottom: 8)),
-            Text(address.fullAddress),
+            Row(
+              children: [
+                Expanded(child: Text(address.fullAddress)),
+                const SizedBox(width: 12),
+                OpenInMapsButton(address: address, label: restaurant.name),
+              ],
+            ),
             if (hasLocation) ...[
               const SizedBox(height: 12),
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: SizedBox(
                   height: 200,
-                  child: MapWidget(
-                    initialLocation: LatLng(address.latitude!, address.longitude!),
+                  child: AppMap(
+                    center: AppMapPoint(address.latitude!, address.longitude!),
                     zoom: 15,
-                    showCurrentLocation: false,
                     markers: [
-                      MapMarker(position: LatLng(address.latitude!, address.longitude!), title: restaurant.name)
+                      AppMapMarker(
+                        point: AppMapPoint(address.latitude!, address.longitude!),
+                        color: Theme.of(context).colorScheme.primary,
+                        caption: restaurant.name,
+                      ),
                     ],
                   ),
                 ),

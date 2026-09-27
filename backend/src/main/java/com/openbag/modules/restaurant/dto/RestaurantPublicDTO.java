@@ -54,6 +54,10 @@ public class RestaurantPublicDTO {
 
     private boolean openNow;
     private LocalDateTime pausedUntil;
+    /** Quando fecha (se aberto e com horários) */
+    private LocalDateTime closesAt;
+    /** Próxima abertura (se fechado por horário ou pausa) */
+    private LocalDateTime nextOpenAt;
 
     private List<String> categories;
     private PublicAddress address;
@@ -73,10 +77,23 @@ public class RestaurantPublicDTO {
         private String zipCode;
         private Double latitude;
         private Double longitude;
+
+        /** Endereço do restaurante; sem coordenadas no endereço, usa as do restaurante */
+        public static PublicAddress from(Restaurant restaurant) {
+            Address address = restaurant.getAddress();
+            if (address == null) {
+                return null;
+            }
+            return new PublicAddress(address.getStreet(), address.getNumber(), address.getComplement(),
+                    address.getNeighborhood(), address.getCity(), address.getState(), address.getZipCode(),
+                    address.getLatitude() != null ? address.getLatitude()
+                            : restaurant.getLatitude() != null ? restaurant.getLatitude().doubleValue() : null,
+                    address.getLongitude() != null ? address.getLongitude()
+                            : restaurant.getLongitude() != null ? restaurant.getLongitude().doubleValue() : null);
+        }
     }
 
     public static RestaurantPublicDTO from(Restaurant restaurant, LocalDateTime now) {
-        Address address = restaurant.getAddress();
         LayoutConfig layout = restaurant.getLayoutConfig();
         return RestaurantPublicDTO.builder()
                 .id(restaurant.getId())
@@ -101,13 +118,9 @@ public class RestaurantPublicDTO {
                 .openNow(restaurant.isOpenNow(now))
                 .pausedUntil(restaurant.isPaused(now) ? restaurant.getPausedUntil() : null)
                 .categories(restaurant.getCategories().stream().map(Category::getName).toList())
-                .address(address == null ? null : new PublicAddress(address.getStreet(), address.getNumber(),
-                        address.getComplement(), address.getNeighborhood(), address.getCity(), address.getState(),
-                        address.getZipCode(),
-                        address.getLatitude() != null ? address.getLatitude()
-                                : restaurant.getLatitude() != null ? restaurant.getLatitude().doubleValue() : null,
-                        address.getLongitude() != null ? address.getLongitude()
-                                : restaurant.getLongitude() != null ? restaurant.getLongitude().doubleValue() : null))
+                .closesAt(restaurant.closesAt(now))
+                .nextOpenAt(restaurant.nextOpeningAt(now))
+                .address(PublicAddress.from(restaurant))
                 .openingHours(restaurant.getOpeningHours().stream()
                         .sorted(Comparator.comparing(OpeningHour::getWeekday).thenComparing(OpeningHour::getOpenTime))
                         .map(h -> new OpeningHourDTO(h.getLabel(), h.getWeekday(), h.getOpenTime(), h.getCloseTime(), h.getObservation()))

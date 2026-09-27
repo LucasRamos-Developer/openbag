@@ -2,6 +2,8 @@
 
 Capturas de tela de referência da versão **0.2.0**. Veja o que mudou no [CHANGELOG](../CHANGELOG.md).
 
+As capturas são refeitas pelo script [`tools/screenshots`](../tools/screenshots/README.md).
+
 A imagem [`restaurante-padrão.png`](restaurante-padrão.png) é a referência visual da página do restaurante. Os tokens de cor e os componentes ficam em [`frontend/lib/core/ui`](../frontend/lib/core/ui/README.md).
 
 Quer saber mais? Escreva para [lucasramos.developer@gmail.com](mailto:lucasramos.developer@gmail.com).
@@ -56,6 +58,18 @@ Cada restaurante escolhe um dos 8 temas ou usa a cor da marca. O painel de apar�
 |---|---|
 | ![Pedidos](loja-e-vitrine/10-pedidos-titulo.png) | <img src="loja-e-vitrine/07-celular-gaveta.png" alt="Celular com menu" width="260"> |
 
+**Área do cliente: rodapé e carrinho.** O carrinho flutua sobre a página e o rodapé reserva o espaço dele, então dá para ver tudo até o fim.
+
+| Fim da página com o carrinho | No celular |
+|---|---|
+| ![Rodapé com o carrinho](loja-e-vitrine/11-rodape-carrinho.png) | <img src="loja-e-vitrine/12-rodape-celular.png" alt="Rodapé no celular" width="260"> |
+
+| Sobre a loja: endereço, mapa e botão para abrir no app de mapas |
+|---|
+| ![Sobre a loja com o mapa](loja-e-vitrine/13-sobre-a-loja-mapa.png) |
+
+O mapa tem estilo próprio (`frontend/assets/map/openbag_style.json`): é claro, com cores próximas às do Google Maps e sem relevo. Os dados vêm do OpenFreeMap.
+
 ---
 
 ## Caixa e rotas
@@ -71,6 +85,20 @@ Cada restaurante escolhe um dos 8 temas ou usa a cor da marca. O painel de apar�
 **Entregador em rota** (painel em desenvolvimento)
 
 <img src="caixa-e-rotas/05-entregador-rota.png" alt="Entregador em rota" width="260">
+
+---
+
+## Painel do super admin
+
+Somente leitura: números da plataforma e listas de restaurantes, associações, entregadores, usuários e pedidos. A conta demo (`demo@openbag.local`) tem todos os perfis.
+
+| Visão geral | Usuários |
+|---|---|
+| ![Visão geral do admin](admin/01-visao-geral.png) | ![Usuários](admin/02-usuarios.png) |
+
+| Seletor com os cinco perfis da conta demo |
+|---|
+| ![Seletor de perfis](admin/03-seletor-de-perfis.png) |
 
 ---
 

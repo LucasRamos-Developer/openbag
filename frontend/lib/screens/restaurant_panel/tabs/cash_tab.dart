@@ -357,7 +357,6 @@ class _CourierRow extends StatelessWidget {
       text: 'Acertar',
       icon: Icons.handshake_outlined,
       variant: ButtonVariant.outlined,
-      size: ButtonSize.small,
       isLoading: busy,
       onPressed: line.hasPending && !busy ? onSettle : null,
     );
