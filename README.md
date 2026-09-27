@@ -1,203 +1,190 @@
-# OpenBag
+<p align="center">
+  <img src="openbag.png" alt="OpenBag" height="96">
+</p>
 
-> **Uma plataforma open source de delivery que conecta associações e cooperativas de entregadores com restaurantes, promovendo taxas justas e impacto social positivo.**
+<h1 align="center">OpenBag</h1>
 
----
+<p align="center">
+  <strong>Plataforma open source que dá visibilidade a pequenos negócios de comida e, quando possível, fortalece as cooperativas de entregadores da cidade.</strong>
+</p>
 
-## Nossa Missão
+<p align="center">
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/vers%C3%A3o-0.2.0-16a34a" alt="Versão 0.2.0"></a>
+  <a href="LICENSE.md"><img src="https://img.shields.io/badge/licen%C3%A7a-AGPL--3.0-blue" alt="Licença AGPL-3.0"></a>
+  <a href="layout/"><img src="https://img.shields.io/badge/layout-ver%20telas-0f766e" alt="Ver o layout"></a>
+</p>
 
-O OpenBag nasceu para **combater o monopólio** das grandes plataformas de delivery e oferecer uma alternativa justa, transparente e socialmente responsável.
+<p align="center">
+  <img src="layout/temas/01-fresh-green.png" alt="Página de um restaurante no OpenBag" width="860">
+</p>
 
-### O Problema
-
-Grandes empresas dominam o mercado de delivery e implementam taxas abusivas sem transparência:
-
-- **Taxas elevadas** que sufocam restaurantes pequenos e médios
-- **Comissões que chegam a 30%** sobre cada pedido
-- **Mudanças unilaterais** de regras e preços (exemplo: taxa implementada sem aviso)
-- **Falta de proteção social** para entregadores autônomos
-- **Centralização de lucros** em detrimento de quem realmente trabalha
-
-### Nossa Solução
-
-O OpenBag propõe um modelo **justo, transparente e cooperativo**:
-
-| Característica | Similares | OpenBag |
-|---------------|-------------------|---------|
-| **Comissão** | Até 30% por pedido | Taxa fixa de R$ 3,98 por pedido |
-| **Transparência** | Mudanças unilaterais | Open source, auditável |
-| **Proteção Social** | Nenhuma | Modelo cooperativo viabiliza benefícios |
-| **Quem lucra?** | Acionistas | Restaurantes e entregadores |
-| **Controle** | Centralizado | Descentralizado (cooperativas) |
-
-**Como funciona a nossa taxa de R$ 3,98:**
-- **R$ 1,99 cobrado do Restaurante:** Valor destinado a manter a infraestrutura técnica do OpenBag rodando.
-- **R$ 1,99 cobrado do Entregador/Cooperativa:** A plataforma não lucra com isso. Esse valor é repassado integralmente para a cooperativa, que terá acesso a esse fundo exclusivo para dar suporte, proteção e benefícios ao seu entregador cooperado.
-
-O resto do valor do pedido e da entrega é todo de quem trabalha. Diferente de modelos que cobram um percentual alto, nossa taxa fixa garante que o lucro real fique com os restaurantes e entregadores, reduzindo os custos até mesmo para o consumidor final.
+> Esta documentação descreve a versão **0.2.0**. Veja o que mudou no [CHANGELOG](CHANGELOG.md).
 
 ---
 
-## Impacto Social
+## Nossa proposta
 
-O OpenBag foi pensado para fortalecer **associações e cooperativas de entregadores**. Diferente de plataformas que trabalham com autônomos isolados, **exigimos que entregadores sejam vinculados a uma cooperativa ou associação**.
+Muitos restaurantes, lanchonetes e cozinhas de bairro fazem comida boa e têm dificuldade de ser encontrados. O OpenBag dá a esses negócios uma **página própria**, um **cardápio online** e as ferramentas para **receber pedidos e controlar a operação** do dia a dia.
 
-### Por Que Apenas Cooperativas?
+Ao mesmo tempo, queremos **ajudar as associações e cooperativas de entregadores** a organizar o trabalho, com ganho justo e rotas que economizam tempo e combustível.
 
-O modelo cooperativo permite que aquele repasse de R$ 1,99 da entrega seja administrado de forma coletiva para oferecer:
+### Duas formas de usar
 
-- **Seguro de vida e acidentes pessoais** para os membros  
-- **Planos de previdência e aposentadoria** coletivos  
-- **Suporte jurídico** compartilhado  
-- **Capacitação e treinamento** profissional  
-- **Representação coletiva** e voz ativa  
-- **Gestão democrática** das decisões
+| | Com uma associação ou cooperativa | Só o seu negócio |
+|---|---|---|
+| **Para quem** | Lojas que querem entregadores parceiros | Lojas que querem divulgar e se organizar |
+| **O que você usa** | Página da loja, cardápio, pedidos, cozinha, caixa, rotas e chamada de entregadores da cooperativa | Página da loja, cardápio, pedidos, cozinha e caixa, com a sua própria equipe de entrega |
+| **O que combinar** | Um **acordo com a associação ou cooperativa**: tabela de entrega, quem atende a loja e como fica o acerto | Nada. É só se cadastrar e montar a página |
 
-Nota: A plataforma não fornece esses serviços diretamente, ela viabiliza financeiramente para que as cooperativas possam oferecê-los aos seus associados. A cooperativa também é livre para definir taxas adicionais se os membros concordarem.
+> **Recomendamos o acordo com a associação ou cooperativa.** É ele que garante entregadores disponíveis e condições justas para os dois lados. Mesmo sem esse acordo, você pode usar o OpenBag **só para divulgar e controlar o seu negócio**.
 
-### Para Restaurantes
+### O que não negociamos
 
-- **Custos previsíveis:** sem surpresas de comissões variáveis.
-- **Maior margem de lucro** por pedido.
-- **Controle sobre seus dados** e de seus clientes.
-- **Parcerias locais** com cooperativas da região.
-- **Visibilidade justa:** sem leilão de posições no aplicativo.
-
-### Para Consumidores
-
-- **Preços mais baixos:** a redução da intermediação barateia o cardápio.
-- **Transparência total** sobre quem está recebendo as taxas.
-- **Apoio à economia local** e ao cooperativismo.
-- **Contribuição para direitos trabalhistas** dos entregadores.
+- **O entregador nunca ganha menos por causa de uma rota.** Quando pedidos saem juntos, ele recebe o valor cheio de cada entrega e roda menos.
+- **A vitrine não vende posição.** A ordem das lojas não é um produto.
+- **Os dados da loja são da loja.**
+- **O código é aberto e auditável** (AGPL-3.0).
 
 ---
 
-## Como Funciona
+## Telas da versão 0.2.0
 
-### 1. Restaurante se cadastra na plataforma
-Processo simples e gratuito, sem burocracias desnecessárias.
+As capturas abaixo mostram o estado atual. Todas estão na pasta **[`layout/`](layout/)**.
 
-### 2. Cooperativa de entregadores faz parceria
-Associações e cooperativas locais se cadastram e conectam aos restaurantes da região.
+### Sua loja, do seu jeito
 
-### 3. Cliente faz pedido pelo app
-Interface simples e intuitiva, via web ou mobile.
+O restaurante personaliza a própria página: **8 temas** (5 claros e 3 escuros) ou a **cor da marca**, além de imagem de destaque, logo e slogan. Tudo tem prévia ao vivo antes de salvar.
 
-### 4. Entregador associado realiza a entrega
-O entregador vinculado à cooperativa aceita e entrega usando rotas otimizadas (via OpenStreetMap).
+<p align="center">
+  <img src="layout/temas/painel-aparencia.png" alt="Painel de aparência da loja" width="420">
+</p>
 
-### 5. Taxas transparentes beneficiam todos
-- **R$ 1,99** do restaurante (manutenção da plataforma OpenBag).
-- **R$ 1,99** do entregador (repassado para a cooperativa dar suporte ao cooperado).
-- **Todo o resto** fica com quem trabalhou (restaurante e entregador).
+| Fresh Green | Midnight Blue | Berry Pink |
+|---|---|---|
+| ![Tema Fresh Green](layout/temas/01-fresh-green.png) | ![Tema Midnight Blue](layout/temas/07-midnight-blue.png) | ![Tema Berry Pink](layout/temas/03-berry-pink.png) |
 
----
+### Operação do restaurante
 
-## Para Desenvolvedores
+Pedidos em tempo real, tela da cozinha, comanda impressa, cardápio com complementos e combos, horários, rotas de entrega e caixa com o acerto de cada entregador.
 
-Toda a parte técnica, arquitetura detalhada (Flutter, Spring Boot, PostgreSQL, Docker) e o guia completo para rodar o projeto localmente foram documentados separadamente para manter este repositório limpo.
+| Rotas | Caixa |
+|---|---|
+| ![Rotas de entrega](layout/caixa-e-rotas/01-rotas-montando.png) | ![Caixa e acerto com entregadores](layout/caixa-e-rotas/03-caixa.png) |
 
-**Consulte o [Guia de Desenvolvimento (README-DEVELOPER.md)](README-DEVELOPER.md)** para instruções de setup, variáveis de ambiente e padrões de código.
+### Cliente (em testes)
 
-### Para Usuários (em breve)
+A vitrine, a página da loja, o carrinho, o checkout com pagamento na entrega e o acompanhamento do pedido já funcionam e estão **em fase de testes**.
 
-- **App Android**: Google Play Store (em desenvolvimento)
-- **App iOS**: Apple App Store (em desenvolvimento)
-- **Web**: https://openbag.app (em desenvolvimento)
+| Vitrine | No celular |
+|---|---|
+| ![Vitrine de restaurantes](layout/loja-e-vitrine/08-vitrine-grade.png) | <img src="layout/temas/mobile-fresh-green.png" alt="Loja no celular" width="260"> |
 
----
+### Entregador (em desenvolvimento)
 
-## Roadmap
+O painel do entregador **está sendo construído**. Hoje ele já permite ficar online, receber ofertas em tempo real, seguir a rota, ver os ganhos e mostrar o perfil público com a placa QR.
 
-### Fase 1 - MVP (Atual)
-- [x] Cadastro de restaurantes
-- [x] Cadastro de clientes
-- [x] Carrinho de compras
-- [x] Sistema de pedidos
-- [x] Integração com OpenStreetMap
-- [x] Autenticação JWT
+<p align="center">
+  <img src="layout/caixa-e-rotas/05-entregador-rota.png" alt="Entregador em rota" width="260">
+</p>
 
-### Fase 2 - Cooperativas (Q2 2026)
-- [ ] Painel de gestão para cooperativas
-- [ ] Sistema de alocação de entregas
-- [ ] Relatórios financeiros
-- [ ] Integração com sistemas de pagamento
-- [ ] Dashboard de métricas sociais
+### Associação e cooperativa (em desenvolvimento)
 
-### Fase 3 - Expansão (Q3 2026)
-- [ ] App nativo para entregadores
-- [ ] Sistema de avaliações
-- [ ] Programa de fidelidade
-- [ ] Multi-idiomas
-- [ ] Expansão para outras cidades
-
-### Fase 4 - Governança (Q4 2026)
-- [ ] DAO (Organização Autônoma Descentralizada)
-- [ ] Votação democrática de features
-- [ ] Modelo de franquia cooperativa
-- [ ] Federação de cooperativas
+O painel da associação **está sendo construído**. Hoje ele já tem cadastro com aprovação, gestão de membros, convites e tabela de entrega. Parcerias com lojas e relatórios para os cooperados estão a caminho.
 
 ---
 
-## Como Contribuir
+## Como funciona
 
-O OpenBag é **100% open source** e depende da comunidade!
+1. **A loja se cadastra** e monta a página e o cardápio.
+2. **Se quiser, faz um acordo com uma associação ou cooperativa** de entregadores da região.
+3. **O cliente pede** pela página da loja, no navegador ou no celular.
+4. **A loja recebe o pedido na hora** e prepara na cozinha.
+5. **A entrega sai** com um entregador da cooperativa, um entregador fixo da loja ou a equipe própria da loja.
 
-### Formas de Contribuir
+---
 
-- **Código**: Backend (Java), Frontend (Flutter), DevOps
-- **Documentação**: Tradução, tutoriais, guias
-- **Design**: UI/UX, branding, materiais de divulgação
-- **Testes**: Reportar bugs, testar features
-- **Ideias**: Sugerir funcionalidades, melhorias
-- **Divulgação**: Compartilhar o projeto, recrutar cooperativas
+## Versões e roadmap
 
-**Leia nosso [guia de contribuição](CONTRIBUTING.md)** para começar.
+Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto estivermos em `0.x`, cada etapa do roadmap é uma nova versão `MENOR`. As regras completas e o histórico estão no **[CHANGELOG](CHANGELOG.md)**.
 
-1. Faça um Fork do projeto
-2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
-3. Faça o Commit de suas mudanças (`git commit -am 'Adiciona nova funcionalidade'`)
-4. Faça o Push para a branch (`git push origin feature/nova-funcionalidade`)
-5. Abra um Pull Request
+| Versão | Etapa | Status |
+|--------|-------|--------|
+| 0.1.0 | MVP: cadastro, onboarding, carrinho, pedidos, mapas | Lançada |
+| **0.2.0** | **Operação do restaurante, associações e personalização da loja** | **Atual** |
+| 0.3.0 | Entregador, cooperativa e cliente | Em andamento |
+| 0.4.0 | Segurança e integridade dos dados | Planejada |
+| 0.5.0 | Auditoria de dados | Planejada |
+| 1.0.0 | Primeira versão estável, com piloto real | Planejada |
+
+**0.3.0: Entregador, cooperativa e cliente**
+- [ ] Concluir as telas do entregador
+- [ ] Painel da cooperativa: parcerias com lojas, acordos e relatórios
+- [ ] Fluxo do cliente fora da fase de testes, com avaliações
+- [ ] Página da loja otimizada para buscadores e vitrine por avaliações e proximidade
+
+**0.4.0: Segurança e integridade dos dados**
+- [ ] Verificação de **race conditions** (ofertas, status do pedido, caixa)
+- [ ] **Rate limiting** no login, no cadastro, nos pedidos e nos envios de arquivo
+- [ ] **Throttling** de localização, de WebSocket e dos jobs agendados
+- [ ] **Idempotência** em pedidos, aceite de oferta e acerto de caixa
+- [ ] Integridade dos dados: migrações versionadas e restrições no banco
+- [ ] Revisão de segurança (permissões, OWASP Top 10, segredos)
+
+**0.5.0: Auditoria de dados**
+- [ ] Trilha de auditoria (quem, o quê, quando, antes e depois)
+- [ ] Histórico que não pode ser alterado para caixa e ganhos
+- [ ] Relatórios exportáveis para a loja e para a cooperativa
+- [ ] LGPD: exportação, exclusão e retenção de dados
+
+---
+
+## Para desenvolvedores
+
+- **[Guia de desenvolvimento](README-DEVELOPER.md)**: setup, Docker, variáveis e testes.
+- **[Arquitetura](docs/architecture/README.md)**: módulos, tempo real, despacho e rotas.
+- **[API](docs/api/README.md)**: endpoints REST.
+- **[Design system](frontend/lib/core/ui/README.md)**: componentes e temas do app.
+- **[Layout](layout/)**: capturas de tela de referência.
+
+Stack: **Java 25 + Spring Boot**, **Flutter** (web e mobile), **PostgreSQL**, **Redis**, **WebSocket/STOMP** e **OpenStreetMap**.
+
+---
+
+## Como contribuir
+
+O OpenBag é **100% open source** e depende da comunidade. Dá para ajudar com código (Java, Flutter), design, testes, documentação ou divulgação, e também trazendo uma cooperativa ou um restaurante da sua cidade.
+
+Leia o **[guia de contribuição](CONTRIBUTING.md)** para começar.
 
 ---
 
 ## Licença
 
-Este projeto é licenciado sob a **AGPL-3.0 License** - veja o arquivo [LICENSE](LICENSE) para detalhes.
+Licenciado sob a **AGPL-3.0**. Veja o arquivo [LICENSE](LICENSE.md).
 
-Escolhemos a AGPL-3.0 por ser uma licença **mais forte que protege contra uso em SaaS** sem o compartilhamento do código-fonte. Isso significa que é permitido:
-
-- Usar comercialmente
-- Modificar o código
-- Distribuir
-- Usar em projetos privados
-
-**Aviso Importante:** Se você modificar o código e usar a plataforma como um serviço (SaaS) na rede, você é obrigado a disponibilizar o código-fonte das suas modificações. Isso garante que o OpenBag permaneça sempre aberto e beneficie toda a comunidade.
+Você pode usar comercialmente, modificar e distribuir o OpenBag. Se você modificar o código e oferecer a plataforma como serviço na rede, precisa publicar o código-fonte das suas modificações. Assim o OpenBag continua aberto para todos.
 
 ---
 
-## Equipe
+## Contato
 
-- **Desenvolvedor Principal**: Lucas Ramos
-- **Contribuidores**: [Lista de contribuidores]
+**Quer saber mais, usar o OpenBag na sua cidade ou trazer a sua cooperativa?**
+Escreva para **[lucasramos.developer@gmail.com](mailto:lucasramos.developer@gmail.com)**.
 
----
-
-## Sobre o Nome
-
-**"OpenBag"** é um nome **provisório** e estamos totalmente abertos a sugestões que reflitam melhor nossa missão cooperativista e social!
-
-**Dúvidas e questões?** Entre em contato através:
-- Email: contato@openbag.dev ou lucasramos-developer@gmail.com
 - [Discussões no GitHub](https://github.com/LucasRamos-Developer/openbag/discussions)
 - [Issues no GitHub](https://github.com/LucasRamos-Developer/openbag/issues)
+- [Site do projeto](https://lucasramos-developer.github.io/openbag/)
 
-**Quer apoiar o projeto?** Entre em contato ou contribua diretamente no GitHub!
+**Desenvolvedor principal:** Lucas Ramos
+
+> "OpenBag" é um nome provisório. Sugestões são bem-vindas.
 
 ---
 
-Desenvolvido pela comunidade OpenBag.
-Porque delivery justo é possível.
-
-[Documentação Técnica](README-DEVELOPER.md) | [Como Contribuir](CONTRIBUTING.md) | [Reportar Bug](https://github.com/LucasRamos-Developer/openbag/issues) | [Sugerir Feature](https://github.com/LucasRamos-Developer/openbag/discussions)
+<p align="center">
+  <a href="CHANGELOG.md">Changelog</a> ·
+  <a href="docs/architecture/README.md">Arquitetura</a> ·
+  <a href="README-DEVELOPER.md">Desenvolvimento</a> ·
+  <a href="CONTRIBUTING.md">Contribuir</a> ·
+  <a href="layout/">Layout</a>
+</p>

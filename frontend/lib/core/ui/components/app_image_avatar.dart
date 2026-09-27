@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme_colors.dart';
 
 /// Imagem quadrada arredondada (logo, avatar) com as iniciais do nome como fallback
 class AppImageAvatar extends StatelessWidget {
@@ -23,15 +24,15 @@ class AppImageAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colors = context.appColors;
     final fallback = Container(
       width: size,
       height: size,
       alignment: Alignment.center,
-      color: colorScheme.primary.withValues(alpha: 0.12),
+      color: colors.secondary,
       child: Text(
         initialsOf(name),
-        style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold, fontSize: size * 0.36),
+        style: TextStyle(color: colors.onSecondary, fontWeight: FontWeight.w800, fontSize: size * 0.36),
       ),
     );
 

@@ -3,10 +3,8 @@ import 'package:provider/provider.dart';
 import '../../core/ui/ui.dart';
 import '../../models/order/order.dart';
 import '../../utils/formatters.dart';
-import '../../services/restaurant_delivery_service.dart';
-import '../../utils/feedback.dart';
-import '../courier/courier_avatar.dart';
-import '../courier/order_courier_card.dart';
+import '../../services/restaurant_orders_service.dart';
+import '../delivery/order_courier_section.dart';
 import 'order_items_list.dart';
 import 'order_status_chip.dart';
 import 'order_timers.dart';
@@ -55,7 +53,8 @@ class _RestaurantOrderSheetState extends State<_RestaurantOrderSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final order = widget.order;
+    // Versão em tempo real do pedido: a ficha acompanha a atribuição e as mudanças de etapa
+    final order = context.watch<RestaurantOrdersService>().byId(widget.order.id) ?? widget.order;
     final muted = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
     final next = OrderAction.nextFor(order.status);
 
@@ -101,12 +100,9 @@ class _RestaurantOrderSheetState extends State<_RestaurantOrderSheet> {
                 if (order.customerName != null) Text(order.customerName!, style: const TextStyle(fontWeight: FontWeight.w600)),
                 if (order.customerPhone != null) Text(order.customerPhone!),
                 if (order.deliveryAddress != null) Text(order.deliveryAddress!),
-                if (order.courier != null) ...[
+                if (order.courierName != null || order.awaitingCourier) ...[
                   const AppSectionHeader(title: 'Entregador', padding: EdgeInsets.only(top: 20, bottom: 8)),
-                  OrderCourierCard(courier: order.courier!),
-                ] else if (order.awaitingCourier) ...[
-                  const AppSectionHeader(title: 'Entregador', padding: EdgeInsets.only(top: 20, bottom: 8)),
-                  _AwaitingCourier(order: order),
+                  OrderCourierSection(order: order),
                 ],
               ],
             ),
@@ -146,80 +142,6 @@ class _RestaurantOrderSheetState extends State<_RestaurantOrderSheet> {
             ),
         ],
       ),
-    );
-  }
-}
-
-/// Pedido aceito sem entregador: "procurando" e, se houver fixos em check-in, escolher um deles
-class _AwaitingCourier extends StatefulWidget {
-  final Order order;
-
-  const _AwaitingCourier({required this.order});
-
-  @override
-  State<_AwaitingCourier> createState() => _AwaitingCourierState();
-}
-
-class _AwaitingCourierState extends State<_AwaitingCourier> {
-  int? _assigning;
-
-  @override
-  void initState() {
-    super.initState();
-    // Quem está em check-in agora
-    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<RestaurantDeliveryService>().refreshLinks());
-  }
-
-  Future<void> _assign(int deliveryPersonId, String name) async {
-    setState(() => _assigning = deliveryPersonId);
-    await runWithFeedback(
-      context,
-      () => context.read<RestaurantDeliveryService>().assignOrder(widget.order.id, deliveryPersonId),
-      success: 'Oferta enviada para $name',
-    );
-    if (mounted) setState(() => _assigning = null);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final since = widget.order.searchingCourierSince;
-    final checkedIn = context.watch<RestaurantDeliveryService>().checkedIn;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(since != null
-                  ? 'Nenhum entregador disponível desde ${formatTime(since)}. Continuamos procurando.'
-                  : 'Procurando entregador…'),
-            ),
-          ],
-        ),
-        if (checkedIn.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Text('Oferecer a um fixo em check-in:', style: textTheme.bodySmall),
-          const SizedBox(height: 6),
-          for (final link in checkedIn)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: CourierAvatar(photoUrl: link.courier.photoUrl, name: link.courier.fullName, size: 36),
-              title: Text(link.courier.fullName),
-              trailing: AppButton(
-                text: 'Oferecer',
-                variant: ButtonVariant.outlined,
-                isLoading: _assigning == link.courier.deliveryPersonId,
-                onPressed: _assigning != null
-                    ? null
-                    : () => _assign(link.courier.deliveryPersonId, link.courier.fullName),
-              ),
-            ),
-        ],
-      ],
     );
   }
 }

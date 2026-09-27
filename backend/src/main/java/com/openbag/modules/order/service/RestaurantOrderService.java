@@ -73,7 +73,10 @@ public class RestaurantOrderService {
 
     public OrderDTO accept(Long restaurantId, Long orderId) {
         return transition(restaurantId, orderId, EnumSet.of(OrderStatus.PENDING), OrderStatus.CONFIRMED,
-                "Pedido confirmado pelo restaurante", (order, now) -> order.setAcceptedAt(now));
+                "Pedido confirmado pelo restaurante", (order, now) -> {
+                    order.setAcceptedAt(now);
+                    order.setExpectedReadyAt(now.plusMinutes(order.getRestaurant().getDefaultPreparationMinutes()));
+                });
     }
 
     public OrderDTO start(Long restaurantId, Long orderId) {
@@ -90,7 +93,13 @@ public class RestaurantOrderService {
 
     public OrderDTO dispatch(Long restaurantId, Long orderId) {
         return transition(restaurantId, orderId, EnumSet.of(OrderStatus.READY_FOR_PICKUP), OrderStatus.OUT_FOR_DELIVERY,
-                "Pedido saiu para entrega", (order, now) -> order.setDispatchedAt(now));
+                "Pedido saiu para entrega", (order, now) -> {
+                    order.setDispatchedAt(now);
+                    // Equipe própria: a loja marca a saída no lugar do entregador
+                    if (order.getStaffCourier() != null) {
+                        order.setPickedUpAt(now);
+                    }
+                });
     }
 
     /** Entregue: o pagamento (na entrega) é considerado recebido */

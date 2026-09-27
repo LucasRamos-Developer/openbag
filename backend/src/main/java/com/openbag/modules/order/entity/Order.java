@@ -3,6 +3,9 @@ package com.openbag.modules.order.entity;
 import com.openbag.modules.user.entity.User;
 import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
+import com.openbag.modules.delivery.entity.CourierSettlement;
+import com.openbag.modules.delivery.entity.DeliveryRoute;
+import com.openbag.modules.delivery.entity.StaffCourier;
 import com.openbag.enums.CancelledBy;
 import com.openbag.enums.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -143,6 +146,49 @@ public class Order {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_person_id")
     private DeliveryPerson deliveryPerson;
+
+    // ============= Rotas =============
+
+    // Bairro do endereço de entrega (para agrupar entregas)
+    @Column(name = "delivery_neighborhood", length = 100)
+    private String deliveryNeighborhood;
+
+    // Previsão de ficar pronto: aceite + tempo médio de preparo da loja
+    @Column(name = "expected_ready_at")
+    private LocalDateTime expectedReadyAt;
+
+    // Liberado para chamar entregador (com rotas ligadas, o planejador libera perto de ficar pronto)
+    @Column(name = "dispatch_released_at")
+    private LocalDateTime dispatchReleasedAt;
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "route_id")
+    private DeliveryRoute route;
+
+    // Posição na rota (1 = primeira entrega)
+    @Column(name = "route_sequence")
+    private Integer routeSequence;
+
+    // A loja separou o pedido de uma rota: sai sozinho
+    @Column(name = "solo_dispatch")
+    private Boolean soloDispatch;
+
+    public boolean isSoloDispatch() {
+        return Boolean.TRUE.equals(soloDispatch);
+    }
+
+    // Acerto do caixa que fechou este pedido com o entregador (nulo = ainda não acertado)
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "settlement_id")
+    private CourierSettlement settlement;
+
+    // Entregador da equipe própria da loja (sem o app); exclusivo com deliveryPerson
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staff_courier_id")
+    private StaffCourier staffCourier;
 
     // ============= Entrega pelo entregador do app =============
 

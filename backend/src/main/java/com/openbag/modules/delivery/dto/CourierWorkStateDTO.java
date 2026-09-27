@@ -25,6 +25,8 @@ public class CourierWorkStateDTO {
     private Shift shift;
     private CourierOfferDTO pendingOffer;
     private CourierOrderDTO activeOrder;
+    // Todas as entregas em andamento (rota), na ordem de entrega; activeOrder é a primeira
+    private List<CourierOrderDTO> activeOrders;
     private BigDecimal earnedToday;
     private int deliveriesToday;
     // Motivos que impedem ficar online (sem associação ativa, sem tabela, sem veículo)

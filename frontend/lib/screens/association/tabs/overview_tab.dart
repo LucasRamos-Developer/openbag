@@ -24,8 +24,7 @@ class OverviewTab extends StatelessWidget {
 
     return RefreshIndicator(
       onRefresh: service.refreshStats,
-      child: ListView(
-        padding: const EdgeInsets.all(24),
+      child: AppPageListView(
         children: [
           const AppSectionHeader(title: 'Visão geral', subtitle: 'Acompanhe os associados da sua organização'),
 

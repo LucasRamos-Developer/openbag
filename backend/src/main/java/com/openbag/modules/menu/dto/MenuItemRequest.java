@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -35,6 +36,9 @@ public class MenuItemRequest {
     @Min(value = 0, message = "Tempo de preparo não pode ser negativo")
     @Max(value = 240, message = "Tempo de preparo máximo de 240 minutos")
     private Integer preparationTime;
+
+    // Selos livres; normalizados no serviço (máximo 2, até 20 caracteres)
+    private List<String> badges;
 
     private Boolean available;
 

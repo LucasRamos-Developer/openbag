@@ -92,8 +92,7 @@ class _InvitesTabState extends State<InvitesTab> {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: _load,
-      child: ListView(
-        padding: const EdgeInsets.all(24),
+      child: AppPageListView(
         children: [
           const AppSectionHeader(
             title: 'Convites',

@@ -73,6 +73,9 @@ public class RestaurantDeliveryService {
             restaurant.setCoversDeliveryDifferenceAcceptedAt(null);
         }
         restaurant.setCoversDeliveryDifference(request.isCoversDeliveryDifference());
+        if (request.getCourierNoShowMinutes() != null) {
+            restaurant.setCourierNoShowMinutes(request.getCourierNoShowMinutes());
+        }
         log.info("Restaurante {} atualizou as regras de entrega: {} (fallback={}, cobre diferença={})", restaurantId,
                 request.getCourierPolicy(), request.isFallbackToOpen(), request.isCoversDeliveryDifference());
         return toDTO(restaurantRepository.save(restaurant));
@@ -166,6 +169,7 @@ public class RestaurantDeliveryService {
                         EnumSet.of(CourierLinkStatus.ACTIVE)).size())
                 .pendingFixedCouriers(linkRepository.findByRestaurant(restaurant.getId(),
                         EnumSet.of(CourierLinkStatus.PENDING)).size())
+                .courierNoShowMinutes(restaurant.getCourierNoShowMinutes())
                 .build();
     }
 

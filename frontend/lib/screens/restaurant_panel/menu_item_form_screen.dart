@@ -10,6 +10,7 @@ import '../../utils/validators.dart';
 import '../../widgets/menu/customization_group_editor.dart';
 import '../../widgets/menu/menu_image.dart';
 import '../../widgets/onboarding/compact_image_picker.dart';
+import 'menu_form_route.dart';
 
 /// Cadastro e edição de item do cardápio.
 /// Em item novo, foto e complementos ficam em rascunho e são enviados logo após criar o item.
@@ -36,7 +37,10 @@ class _MenuItemFormScreenState extends State<MenuItemFormScreen> {
   bool _active = true;
   XFile? _newImage;
   late List<CustomizationGroup> _groups;
+  late List<String> _badges;
   bool _isSaving = false;
+
+  static const _badgeSuggestions = ['Tradicional', 'Especial', 'Novo', 'Picante', 'Vegano', 'Vegetariano', 'Sem glúten', 'Artesanal'];
 
   bool get _isNew => widget.item == null;
 
@@ -54,6 +58,7 @@ class _MenuItemFormScreenState extends State<MenuItemFormScreen> {
     _available = item?.available ?? true;
     _active = item?.active ?? true;
     _groups = List.of(item?.customizationGroups ?? const []);
+    _badges = List.of(item?.badges ?? const []);
   }
 
   @override
@@ -94,6 +99,7 @@ class _MenuItemFormScreenState extends State<MenuItemFormScreen> {
         'price': parseMoney(_price.text),
         'promotionalPrice': parseMoney(_promotionalPrice.text),
         'preparationTime': int.tryParse(_preparationTime.text),
+        'badges': _badges,
         'available': _available,
         'active': _active,
       });
@@ -110,7 +116,7 @@ class _MenuItemFormScreenState extends State<MenuItemFormScreen> {
 
       if (!mounted) return;
       AppToast.show(context, message: _isNew ? 'Item criado' : 'Item atualizado', type: ToastType.success);
-      Navigator.of(context).pop();
+      closeMenuForm(context);
     } on ApiException catch (e) {
       if (mounted) AppToast.show(context, message: e.message, type: ToastType.error, duration: const Duration(seconds: 6));
     } finally {
@@ -130,7 +136,7 @@ class _MenuItemFormScreenState extends State<MenuItemFormScreen> {
       await _service.deleteItem(widget.item!.id);
       if (!mounted) return;
       AppToast.show(context, message: 'Item excluído', type: ToastType.success);
-      Navigator.of(context).pop();
+      closeMenuForm(context);
     } on ApiException catch (e) {
       if (mounted) AppToast.show(context, message: e.message, type: ToastType.error, duration: const Duration(seconds: 6));
     }
@@ -192,6 +198,7 @@ class _MenuItemFormScreenState extends State<MenuItemFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(onPressed: () => closeMenuForm(context)),
         title: Text(_isNew ? 'Novo item' : 'Editar item'),
         actions: [
           if (!_isNew)
@@ -266,6 +273,14 @@ class _MenuItemFormScreenState extends State<MenuItemFormScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 24),
+                AppTagField(
+                  label: 'Selos',
+                  helperText: 'Aparecem no card do item. Promoção e Combo são mostrados automaticamente.',
+                  value: _badges,
+                  suggestions: _badgeSuggestions,
+                  onChanged: (badges) => setState(() => _badges = badges),
+                ),
                 const SizedBox(height: 28),
                 _buildPhoto(currentImage),
                 const SizedBox(height: 16),
@@ -306,7 +321,7 @@ class _MenuItemFormScreenState extends State<MenuItemFormScreen> {
                     AppButton(
                       text: 'Cancelar',
                       variant: ButtonVariant.text,
-                      onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
+                      onPressed: _isSaving ? null : () => closeMenuForm(context),
                     ),
                     const SizedBox(width: 12),
                     AppButton(

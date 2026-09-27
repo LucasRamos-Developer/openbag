@@ -2,37 +2,44 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/ui/ui.dart';
+import '../../models/panel_profile.dart';
 import '../../services/auth_service.dart';
 import '../../services/restaurant_delivery_service.dart';
 import '../../services/restaurant_orders_service.dart';
 import '../../services/restaurant_panel_service.dart';
-import '../../widgets/restaurant/store_status_chip.dart';
+import '../../widgets/navigation/panel_profiles.dart';
+import '../../widgets/navigation/panel_routes.dart';
+import '../../widgets/restaurant/restaurant_logo.dart';
+import '../../widgets/restaurant/store_status_menu_tile.dart';
+import 'restaurant_section.dart';
+import 'tabs/cash_tab.dart';
 import 'tabs/couriers_tab.dart';
 import 'tabs/menu_tab.dart';
 import 'tabs/orders_tab.dart';
+import 'tabs/reviews_tab.dart';
+import 'tabs/routes_tab.dart';
 import 'tabs/store_tab.dart';
 
-/// Painel do dono do restaurante: cardápio e operação da loja
+/// Painel do dono do restaurante: pedidos, cardápio, entregadores, avaliações e loja.
+/// A seção vem do endereço (`/restaurante/<secao>[/<aba>]`).
 class RestaurantPanelScreen extends StatefulWidget {
-  const RestaurantPanelScreen({super.key});
+  final RestaurantSection section;
+  final StoreSection storeSection;
+
+  const RestaurantPanelScreen({
+    super.key,
+    this.section = RestaurantSection.orders,
+    this.storeSection = StoreSection.general,
+  });
 
   @override
   State<RestaurantPanelScreen> createState() => _RestaurantPanelScreenState();
 }
 
 class _RestaurantPanelScreenState extends State<RestaurantPanelScreen> {
-  int _tabIndex = 0;
-
   List<AppPanelDestination> _destinations(int newOrders) => [
-        AppPanelDestination(
-          icon: Icons.receipt_long_outlined,
-          selectedIcon: Icons.receipt_long,
-          label: 'Pedidos',
-          badge: newOrders,
-        ),
-        const AppPanelDestination(icon: Icons.restaurant_menu_outlined, selectedIcon: Icons.restaurant_menu, label: 'Cardápio'),
-        const AppPanelDestination(icon: Icons.two_wheeler_outlined, selectedIcon: Icons.two_wheeler, label: 'Entregadores'),
-        const AppPanelDestination(icon: Icons.storefront_outlined, selectedIcon: Icons.storefront, label: 'Loja'),
+        for (final section in RestaurantSection.values)
+          section.destination(badge: section == RestaurantSection.orders ? newOrders : 0),
       ];
 
   @override
@@ -41,6 +48,23 @@ class _RestaurantPanelScreenState extends State<RestaurantPanelScreen> {
     // Descarta dados de uma sessão anterior (outro dono) antes de carregar
     final service = context.read<RestaurantPanelService>()..clear();
     WidgetsBinding.instance.addPostFrameCallback((_) => service.load());
+  }
+
+  // Recriada ao trocar de restaurante; recarrega o caixa ao entrar na seção
+  GlobalKey<CashTabState> _cashKey = GlobalKey();
+  int? _cashRestaurantId;
+
+  @override
+  void didUpdateWidget(RestaurantPanelScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.section == RestaurantSection.cash && oldWidget.section != widget.section) {
+      _cashKey.currentState?.refresh();
+    }
+    // A taxa de entrega pode ter mudado na Loja
+    final selectedId = context.read<RestaurantPanelService>().selectedId;
+    if (widget.section == RestaurantSection.couriers && oldWidget.section != widget.section && selectedId != null) {
+      context.read<RestaurantDeliveryService>().load(selectedId);
+    }
   }
 
   Future<void> _logout() async {
@@ -53,31 +77,40 @@ class _RestaurantPanelScreenState extends State<RestaurantPanelScreen> {
   @override
   Widget build(BuildContext context) {
     final service = context.watch<RestaurantPanelService>();
+    final store = service.store;
+    if (_cashRestaurantId != service.selectedId) {
+      _cashRestaurantId = service.selectedId;
+      _cashKey = GlobalKey();
+    }
 
-    if (service.store == null || service.menu == null) {
-      return Scaffold(
-        appBar: _buildAppBar(service),
+    if (store == null || service.menu == null) {
+      return AppPanelScaffold(
+        header: _buildHeader(service),
+        title: 'Meu restaurante',
+        onDestinationSelected: (_) {},
+        onLogout: _logout,
         body: _buildLoadingOrEmpty(service),
       );
     }
 
     return AppPanelScaffold(
-      appBar: _buildAppBar(service),
+      header: _buildHeader(service),
+      status: StoreStatusMenuTile(store: store),
       destinations: _destinations(context.watch<RestaurantOrdersService>().pending.length),
-      selectedIndex: _tabIndex,
-      onDestinationSelected: (index) {
-        // A taxa de entrega pode ter mudado na aba Loja
-        if (index == 2 && service.selectedId != null) context.read<RestaurantDeliveryService>().load(service.selectedId!);
-        setState(() => _tabIndex = index);
-      },
+      selectedIndex: widget.section.index,
+      onDestinationSelected: (index) => context.go(RestaurantSection.values[index].path),
+      onLogout: _logout,
       body: IndexedStack(
-        index: _tabIndex,
+        index: widget.section.index,
         // A chave recria a aba de pedidos ao trocar de restaurante
         children: [
           OrdersTab(key: ValueKey(service.selectedId)),
+          RoutesTab(key: ValueKey('routes-${service.selectedId}')),
           const MenuTab(),
           CouriersTab(key: ValueKey('couriers-${service.selectedId}')),
-          const StoreTab(),
+          CashTab(key: _cashKey),
+          const ReviewsTab(),
+          StoreTab(section: widget.storeSection),
         ],
       ),
     );
@@ -103,46 +136,30 @@ class _RestaurantPanelScreenState extends State<RestaurantPanelScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(RestaurantPanelService service) {
-    final store = service.store;
-    final hasSeveral = service.restaurants.length > 1;
+  Widget _buildHeader(RestaurantPanelService service) {
+    final name = service.store?.name ?? 'Meu restaurante';
 
-    return AppBar(
-      titleSpacing: 16,
-      title: Row(
-        children: [
-          Flexible(
-            child: hasSeveral
-                ? PopupMenuButton<int>(
-                    tooltip: 'Trocar de restaurante',
-                    onSelected: service.selectRestaurant,
-                    itemBuilder: (_) => [
-                      for (final r in service.restaurants)
-                        CheckedPopupMenuItem(value: r.id, checked: r.id == service.selectedId, child: Text(r.name)),
-                    ],
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Flexible(child: _title(store?.name ?? 'Meu restaurante')),
-                        const Icon(Icons.arrow_drop_down),
-                      ],
+    return AppPanelProfileHeader(
+      avatar: RestaurantLogo(logoUrl: service.store?.logoUrl, name: name, size: 40),
+      title: name,
+      subtitle: PanelProfile.restaurant.label,
+      sections: [
+        AppPanelProfileSection(
+          title: 'Seus restaurantes',
+          options: service.restaurants.length < 2
+              ? const []
+              : [
+                  for (final r in service.restaurants)
+                    AppPanelProfileOption(
+                      icon: Icons.storefront_outlined,
+                      label: r.name,
+                      selected: r.id == service.selectedId,
+                      onTap: () => service.selectRestaurant(r.id),
                     ),
-                  )
-                : _title(store?.name ?? 'Meu restaurante'),
-          ),
-          if (store != null) ...[
-            const SizedBox(width: 12),
-            StoreStatusChip(store: store),
-          ],
-        ],
-      ),
-      actions: [
-        IconButton(tooltip: 'Sair', icon: const Icon(Icons.logout), onPressed: _logout),
-        const SizedBox(width: 8),
+                ],
+        ),
+        panelProfilesSection(context, current: PanelProfile.restaurant),
       ],
     );
   }
-
-  Widget _title(String text) =>
-      Text(text, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600));
 }

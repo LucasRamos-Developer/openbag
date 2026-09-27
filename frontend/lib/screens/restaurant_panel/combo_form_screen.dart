@@ -9,6 +9,7 @@ import '../../utils/formatters.dart';
 import '../../utils/validators.dart';
 import '../../widgets/menu/menu_image.dart';
 import '../../widgets/onboarding/compact_image_picker.dart';
+import 'menu_form_route.dart';
 
 class _ComboLine {
   int? productId;
@@ -97,7 +98,7 @@ class _ComboFormScreenState extends State<ComboFormScreen> {
       }
       if (!mounted) return;
       AppToast.show(context, message: _isNew ? 'Combo criado' : 'Combo atualizado', type: ToastType.success);
-      Navigator.of(context).pop();
+      closeMenuForm(context);
     } on ApiException catch (e) {
       if (mounted) AppToast.show(context, message: e.message, type: ToastType.error, duration: const Duration(seconds: 6));
     } finally {
@@ -117,7 +118,7 @@ class _ComboFormScreenState extends State<ComboFormScreen> {
       await _service.deleteCombo(widget.combo!.id);
       if (!mounted) return;
       AppToast.show(context, message: 'Combo excluído', type: ToastType.success);
-      Navigator.of(context).pop();
+      closeMenuForm(context);
     } on ApiException catch (e) {
       if (mounted) AppToast.show(context, message: e.message, type: ToastType.error);
     }
@@ -133,6 +134,7 @@ class _ComboFormScreenState extends State<ComboFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(onPressed: () => closeMenuForm(context)),
         title: Text(_isNew ? 'Novo combo' : 'Editar combo'),
         actions: [
           if (!_isNew) IconButton(tooltip: 'Excluir combo', icon: const Icon(Icons.delete_outline), onPressed: _delete),
@@ -264,7 +266,7 @@ class _ComboFormScreenState extends State<ComboFormScreen> {
                     AppButton(
                       text: 'Cancelar',
                       variant: ButtonVariant.text,
-                      onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
+                      onPressed: _isSaving ? null : () => closeMenuForm(context),
                     ),
                     const SizedBox(width: 12),
                     AppButton(

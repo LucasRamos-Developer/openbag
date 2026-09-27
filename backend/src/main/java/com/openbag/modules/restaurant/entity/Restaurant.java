@@ -141,6 +141,47 @@ public class Restaurant {
     @Column(name = "covers_delivery_difference_at")
     private LocalDateTime coversDeliveryDifferenceAcceptedAt;
 
+    // Entregador livre que não aparece na loja: depois destes minutos a loja pode trocá-lo
+    @Column(name = "courier_no_show_minutes")
+    private Integer courierNoShowMinutes;
+
+    // ============= Rotas =============
+
+    // Junta entregas do mesmo bairro/direção e chama o entregador perto de ficarem prontas
+    @Column(name = "route_batching_enabled")
+    private Boolean routeBatchingEnabled;
+
+    @Column(name = "route_max_orders")
+    private Integer routeMaxOrders;
+
+    // Quanto um pedido pronto pode esperar outro da mesma rota
+    @Column(name = "route_max_hold_minutes")
+    private Integer routeMaxHoldMinutes;
+
+    // Quantos minutos antes de o pedido ficar pronto o entregador é chamado
+    @Column(name = "route_dispatch_lead_minutes")
+    private Integer routeDispatchLeadMinutes;
+
+    public boolean isRouteBatchingEnabled() {
+        return routeBatchingEnabled == null || routeBatchingEnabled;
+    }
+
+    public int getRouteMaxOrders() {
+        return routeMaxOrders != null ? routeMaxOrders : 3;
+    }
+
+    public int getRouteMaxHoldMinutes() {
+        return routeMaxHoldMinutes != null ? routeMaxHoldMinutes : 8;
+    }
+
+    public int getRouteDispatchLeadMinutes() {
+        return routeDispatchLeadMinutes != null ? routeDispatchLeadMinutes : 10;
+    }
+
+    public int getCourierNoShowMinutes() {
+        return courierNoShowMinutes != null ? courierNoShowMinutes : 10;
+    }
+
     public CourierPolicy getCourierPolicy() {
         return courierPolicy != null ? courierPolicy : CourierPolicy.OPEN;
     }

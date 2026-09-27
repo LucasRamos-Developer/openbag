@@ -4,9 +4,13 @@ import 'package:provider/provider.dart';
 import '../../core/ui/ui.dart';
 import '../../models/association/association.dart';
 import '../../models/association/member.dart';
+import '../../models/panel_profile.dart';
 import '../../services/association_service.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/association/association_logo.dart';
+import '../../widgets/navigation/panel_profiles.dart';
+import '../../widgets/navigation/panel_routes.dart';
+import 'association_section.dart';
 import 'tabs/delivery_rate_tab.dart';
 import 'tabs/invites_tab.dart';
 import 'tabs/members_tab.dart';
@@ -18,38 +22,28 @@ import 'tabs/profile_tab.dart';
 /// Associação ativa: abas Visão geral, Associados, Convites e Dados.
 /// Associação pendente/recusada/suspensa: tela de status (a recusada pode corrigir os dados e reenviar).
 class AssociationPanelScreen extends StatefulWidget {
-  const AssociationPanelScreen({super.key});
+  final AssociationSection section;
+
+  const AssociationPanelScreen({super.key, this.section = AssociationSection.overview});
 
   @override
   State<AssociationPanelScreen> createState() => _AssociationPanelScreenState();
 }
 
 class _AssociationPanelScreenState extends State<AssociationPanelScreen> {
-  int _tabIndex = 0;
   // Filtro aplicado ao abrir a aba de associados a partir da visão geral
   MembershipStatus? _membersFilter;
   bool _editingRejected = false;
 
   List<AppPanelDestination> _destinations(AssociationService service) => [
-        const AppPanelDestination(icon: Icons.dashboard_outlined, selectedIcon: Icons.dashboard, label: 'Visão geral'),
-        AppPanelDestination(
-          icon: Icons.groups_outlined,
-          selectedIcon: Icons.groups,
-          label: 'Associados',
-          badge: service.stats?.pendingRequests ?? 0,
-        ),
-        const AppPanelDestination(
-          icon: Icons.confirmation_number_outlined,
-          selectedIcon: Icons.confirmation_number,
-          label: 'Convites',
-        ),
-        AppPanelDestination(
-          icon: Icons.local_shipping_outlined,
-          selectedIcon: Icons.local_shipping,
-          label: 'Entregas',
-          badge: service.association?.deliveryRate.configured == false ? 1 : 0,
-        ),
-        const AppPanelDestination(icon: Icons.apartment_outlined, selectedIcon: Icons.apartment, label: 'Dados'),
+        for (final section in AssociationSection.values)
+          section.destination(
+            badge: switch (section) {
+              AssociationSection.members => service.stats?.pendingRequests ?? 0,
+              AssociationSection.deliveries => service.association?.deliveryRate.configured == false ? 1 : 0,
+              _ => 0,
+            },
+          ),
       ];
 
   @override
@@ -68,10 +62,8 @@ class _AssociationPanelScreenState extends State<AssociationPanelScreen> {
   }
 
   void _openMembers(MembershipStatus? filter) {
-    setState(() {
-      _membersFilter = filter;
-      _tabIndex = 1;
-    });
+    setState(() => _membersFilter = filter);
+    context.go(AssociationSection.members.path);
   }
 
   @override
@@ -80,8 +72,11 @@ class _AssociationPanelScreenState extends State<AssociationPanelScreen> {
     final association = service.association;
 
     if (association == null) {
-      return Scaffold(
-        appBar: _buildAppBar(null),
+      return AppPanelScaffold(
+        header: _buildHeader(null),
+        title: 'Minha associação',
+        onDestinationSelected: (_) {},
+        onLogout: _logout,
         body: service.isLoading || service.error == null
             ? const Center(child: CircularProgressIndicator())
             : AppEmptyState(
@@ -94,8 +89,11 @@ class _AssociationPanelScreenState extends State<AssociationPanelScreen> {
     }
 
     if (!association.isActive) {
-      return Scaffold(
-        appBar: _buildAppBar(association),
+      return AppPanelScaffold(
+        header: _buildHeader(association),
+        title: association.status.label,
+        onDestinationSelected: (_) {},
+        onLogout: _logout,
         body: _editingRejected
             ? ProfileTab(onSaved: () => setState(() => _editingRejected = false))
             : _StatusView(
@@ -107,9 +105,9 @@ class _AssociationPanelScreenState extends State<AssociationPanelScreen> {
     }
 
     final body = IndexedStack(
-      index: _tabIndex,
+      index: widget.section.index,
       children: [
-        OverviewTab(onOpenMembers: _openMembers, onOpenInvites: () => setState(() => _tabIndex = 2)),
+        OverviewTab(onOpenMembers: _openMembers, onOpenInvites: () => context.go(AssociationSection.invites.path)),
         MembersTab(key: ValueKey(_membersFilter), initialFilter: _membersFilter),
         const InvitesTab(),
         const DeliveryRateTab(),
@@ -118,50 +116,23 @@ class _AssociationPanelScreenState extends State<AssociationPanelScreen> {
     );
 
     return AppPanelScaffold(
-      appBar: _buildAppBar(association),
+      header: _buildHeader(association),
+      onLogout: _logout,
       destinations: _destinations(service),
-      selectedIndex: _tabIndex,
-      onDestinationSelected: (index) => setState(() => _tabIndex = index),
+      selectedIndex: widget.section.index,
+      onDestinationSelected: (index) => context.go(AssociationSection.values[index].path),
       body: body,
     );
   }
 
-  PreferredSizeWidget _buildAppBar(Association? association) {
-    return AppBar(
-      titleSpacing: 16,
-      title: Row(
-        children: [
-          if (association != null) ...[
-            AssociationLogo(logoUrl: association.logoUrl, name: association.tradingName, size: 36),
-            const SizedBox(width: 12),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  association?.tradingName ?? 'Minha associação',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                if (association != null)
-                  Text(
-                    association.type.label,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        IconButton(
-          tooltip: 'Sair',
-          icon: const Icon(Icons.logout),
-          onPressed: _logout,
-        ),
-        const SizedBox(width: 8),
-      ],
+  Widget _buildHeader(Association? association) {
+    final name = association?.tradingName ?? 'Minha associação';
+
+    return AppPanelProfileHeader(
+      avatar: AssociationLogo(logoUrl: association?.logoUrl, name: name, size: 40),
+      title: name,
+      subtitle: association?.type.label ?? PanelProfile.association.label,
+      sections: [panelProfilesSection(context, current: PanelProfile.association)],
     );
   }
 }

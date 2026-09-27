@@ -69,7 +69,7 @@ class _AppCountdownState extends State<AppCountdown> {
           ),
         ),
         const SizedBox(width: 12),
-        Text('${seconds}s', style: TextStyle(fontWeight: FontWeight.bold, color: color, fontFeatures: const [FontFeature.tabularFigures()])),
+        Text(seconds >= 60 ? '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}' : '${seconds}s', style: TextStyle(fontWeight: FontWeight.bold, color: color, fontFeatures: const [FontFeature.tabularFigures()])),
       ],
     );
   }

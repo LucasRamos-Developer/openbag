@@ -53,7 +53,10 @@ class AddressFormController {
 class AddressForm extends StatefulWidget {
   final AddressFormController controller;
 
-  const AddressForm({super.key, required this.controller});
+  /// Mostra o campo "Ponto de referência" (endereço de entrega do cliente)
+  final bool showReference;
+
+  const AddressForm({super.key, required this.controller, this.showReference = true});
 
   @override
   State<AddressForm> createState() => _AddressFormState();
@@ -138,8 +141,10 @@ class _AddressFormState extends State<AddressForm> {
             _field(_c.state, 'UF', validator: (v) => validateRequired(v, 'UF'), caps: TextCapitalization.characters),
           ],
         ),
-        const SizedBox(height: 28),
-        _field(_c.reference, 'Ponto de referência (opcional)', caps: TextCapitalization.sentences),
+        if (widget.showReference) ...[
+          const SizedBox(height: 28),
+          _field(_c.reference, 'Ponto de referência (opcional)', caps: TextCapitalization.sentences),
+        ],
       ],
     );
   }

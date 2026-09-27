@@ -67,6 +67,13 @@ class Order {
   final String? cancellationReason;
   final List<OrderTimelineEntry> timeline;
   final OrderCourier? courier;
+  final CourierKind? courierKind;
+
+  /// Entregador da equipe própria da loja (sem o app)
+  final OrderStaffCourier? staffCourier;
+
+  /// Entregador livre: a partir de quando a loja pode trocá-lo se ele não aparecer
+  final DateTime? reassignableAt;
   final DateTime? assignedAt;
   final DateTime? pickedUpAt;
 
@@ -100,14 +107,24 @@ class Order {
     this.cancellationReason,
     required this.timeline,
     this.courier,
+    this.courierKind,
+    this.staffCourier,
+    this.reassignableAt,
     this.assignedAt,
     this.pickedUpAt,
     this.searchingCourierSince,
   });
 
-  /// Aceito e ainda sem entregador do app
-  bool get awaitingCourier =>
-      courier == null && (status == OrderStatus.CONFIRMED || status == OrderStatus.PREPARING || status == OrderStatus.READY_FOR_PICKUP);
+  /// Antes da retirada: ainda pode receber ou trocar de entregador
+  bool get beforePickup =>
+      pickedUpAt == null &&
+      (status == OrderStatus.CONFIRMED || status == OrderStatus.PREPARING || status == OrderStatus.READY_FOR_PICKUP);
+
+  /// Aceito e ainda sem ninguém para levar
+  bool get awaitingCourier => courier == null && staffCourier == null && beforePickup;
+
+  /// Nome de quem está com o pedido (app ou equipe)
+  String? get courierName => courier?.fullName ?? staffCourier?.name;
 
   int get itemCount => items.fold(0, (sum, i) => sum + i.quantity);
 
@@ -142,10 +159,38 @@ class Order {
         cancellationReason: json['cancellationReason'],
         timeline: (json['timeline'] as List? ?? []).map((e) => OrderTimelineEntry.fromJson(e)).toList(),
         courier: json['courier'] != null ? OrderCourier.fromJson(json['courier']) : null,
+        courierKind: CourierKind.fromName(json['courierKind']),
+        staffCourier: json['staffCourier'] != null ? OrderStaffCourier.fromJson(json['staffCourier']) : null,
+        reassignableAt: _date(json['reassignableAt']),
         assignedAt: _date(json['assignedAt']),
         pickedUpAt: _date(json['pickedUpAt']),
         searchingCourierSince: _date(json['searchingCourierSince']),
       );
+}
+
+/// De onde vem quem está com o pedido: fixo em check-in, livre do app ou equipe própria
+enum CourierKind {
+  FIXED('Fixo'),
+  FREE('Livre'),
+  STAFF('Equipe da loja');
+
+  final String label;
+
+  const CourierKind(this.label);
+
+  static CourierKind? fromName(String? name) => values.where((k) => k.name == name).firstOrNull;
+}
+
+/// Entregador da equipe própria da loja atribuído ao pedido
+class OrderStaffCourier {
+  final int id;
+  final String name;
+  final String? phone;
+
+  OrderStaffCourier({required this.id, required this.name, this.phone});
+
+  factory OrderStaffCourier.fromJson(Map<String, dynamic> json) =>
+      OrderStaffCourier(id: json['id'], name: json['name'] ?? '', phone: json['phone']);
 }
 
 /// Entregador do app atribuído ao pedido

@@ -5,8 +5,10 @@ import '../../../models/menu/menu.dart';
 import '../../../utils/feedback.dart';
 import '../../../services/restaurant_panel_service.dart';
 import '../../../widgets/menu/menu_item_tile.dart';
-import '../combo_form_screen.dart';
-import '../menu_item_form_screen.dart';
+import '../../../widgets/menu/menu_section_icons.dart';
+import '../../../widgets/menu/section_icon_picker.dart';
+import 'package:go_router/go_router.dart';
+import '../menu_form_route.dart';
 
 /// Aba Cardápio: seções (arraste para ordenar), itens e combos
 class MenuTab extends StatelessWidget {
@@ -18,12 +20,21 @@ class MenuTab extends StatelessWidget {
     final menu = service.menu!;
     final itemCount = menu.allItems.length;
 
+    return LayoutBuilder(
+      builder: (context, constraints) => _buildList(context, menu, itemCount, constraints.maxWidth),
+    );
+  }
+
+  Widget _buildList(BuildContext context, Menu menu, int itemCount, double width) {
+    final service = context.read<RestaurantPanelService>();
+    final side = AppLayout.contentPadding(width).left;
+
     return RefreshIndicator(
       onRefresh: service.refreshMenu,
       child: CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+            padding: EdgeInsets.fromLTRB(side, 24, side, 8),
             sliver: SliverToBoxAdapter(
               child: AppSectionHeader(
                 title: 'Cardápio',
@@ -38,7 +49,7 @@ class MenuTab extends StatelessWidget {
           ),
           if (menu.unsectionedItems.isNotEmpty)
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(horizontal: side),
               sliver: SliverToBoxAdapter(child: _UnsectionedWarning(items: menu.unsectionedItems)),
             ),
           if (menu.sections.isEmpty)
@@ -53,7 +64,7 @@ class MenuTab extends StatelessWidget {
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+              padding: EdgeInsets.fromLTRB(side, 8, side, 32),
               sliver: SliverReorderableList(
                 itemCount: menu.sections.length,
                 onReorder: (oldIndex, newIndex) => _reorderSections(context, menu, oldIndex, newIndex),
@@ -81,7 +92,7 @@ class MenuTab extends StatelessWidget {
 }
 
 Future<void> _editSection(BuildContext context, MenuSection? section) async {
-  final result = await showDialog<({String name, String? description})>(
+  final result = await showDialog<({String name, String? description, String icon})>(
     context: context,
     builder: (_) => _SectionDialog(section: section),
   );
@@ -91,8 +102,8 @@ Future<void> _editSection(BuildContext context, MenuSection? section) async {
   await runWithFeedback(
     context,
     () => section == null
-        ? service.createSection(result.name, description: result.description)
-        : service.updateSection(section, name: result.name, description: result.description),
+        ? service.createSection(result.name, description: result.description, icon: result.icon)
+        : service.updateSection(section, name: result.name, description: result.description, icon: result.icon),
     success: section == null ? 'Seção criada' : 'Seção atualizada',
   );
 }
@@ -103,11 +114,11 @@ class _SectionCard extends StatelessWidget {
 
   const _SectionCard({required this.section, required this.index});
 
-  Future<void> _openItem(BuildContext context, {MenuItem? item}) => Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => MenuItemFormScreen(item: item, initialSectionId: section.id)));
+  void _openItem(BuildContext context, {MenuItem? item}) =>
+      context.push(MenuFormKind.item.path(id: item?.id, sectionId: section.id));
 
-  Future<void> _openCombo(BuildContext context, {Combo? combo}) => Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => ComboFormScreen(combo: combo, initialSectionId: section.id)));
+  void _openCombo(BuildContext context, {Combo? combo}) =>
+      context.push(MenuFormKind.combo.path(id: combo?.id, sectionId: section.id));
 
   Future<void> _onMenuAction(BuildContext context, String action) async {
     final service = context.read<RestaurantPanelService>();
@@ -116,7 +127,7 @@ class _SectionCard extends StatelessWidget {
         await _editSection(context, section);
       case 'toggle':
         await runWithFeedback(context, () => service.updateSection(section,
-            name: section.name, description: section.description, active: !section.active));
+            name: section.name, description: section.description, icon: section.icon, active: !section.active));
       case 'delete':
         final confirmed = await AppDialog.confirm(
           context,
@@ -322,8 +333,7 @@ class _UnsectionedWarning extends StatelessWidget {
               for (final item in items)
                 ActionChip(
                   label: Text(item.name),
-                  onPressed: () => Navigator.of(context)
-                      .push(MaterialPageRoute(builder: (_) => MenuItemFormScreen(item: item))),
+                  onPressed: () => context.push(MenuFormKind.item.path(id: item.id)),
                 ),
             ],
           ),
@@ -346,6 +356,10 @@ class _SectionDialogState extends State<_SectionDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _name = TextEditingController(text: widget.section?.name);
   late final TextEditingController _description = TextEditingController(text: widget.section?.description);
+
+  // Segue a sugestão pelo nome até o dono escolher um ícone
+  late String _icon = widget.section?.icon ?? MenuSectionIcons.suggest(widget.section?.name ?? '');
+  late bool _iconChosen = widget.section?.icon != null;
 
   @override
   void dispose() {
@@ -373,6 +387,9 @@ class _SectionDialogState extends State<_SectionDialog> {
                 variant: TextFieldVariant.filled,
                 textCapitalization: TextCapitalization.sentences,
                 autofocus: true,
+                onChanged: (v) {
+                  if (!_iconChosen) setState(() => _icon = MenuSectionIcons.suggest(v));
+                },
                 validator: (v) => v == null || v.trim().isEmpty ? 'Informe o nome da seção' : null,
               ),
               const SizedBox(height: 28),
@@ -382,6 +399,19 @@ class _SectionDialogState extends State<_SectionDialog> {
                 variant: TextFieldVariant.filled,
                 maxLines: 2,
                 textCapitalization: TextCapitalization.sentences,
+              ),
+              const SizedBox(height: 20),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Ícone no cardápio', style: Theme.of(context).textTheme.titleSmall),
+              ),
+              const SizedBox(height: 10),
+              SectionIconPicker(
+                value: _icon,
+                onChanged: (key) => setState(() {
+                  _icon = key;
+                  _iconChosen = true;
+                }),
               ),
             ],
           ),
@@ -394,7 +424,8 @@ class _SectionDialogState extends State<_SectionDialog> {
           onPressed: () {
             if (!_formKey.currentState!.validate()) return;
             final description = _description.text.trim();
-            Navigator.of(context).pop((name: _name.text.trim(), description: description.isEmpty ? null : description));
+            Navigator.of(context)
+                .pop((name: _name.text.trim(), description: description.isEmpty ? null : description, icon: _icon));
           },
         ),
       ],

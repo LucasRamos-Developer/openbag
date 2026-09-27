@@ -15,6 +15,7 @@ import '../../widgets/courier/order_courier_card.dart';
 import '../../widgets/order/order_status_timeline.dart';
 import '../../widgets/order/price_summary.dart';
 import '../../widgets/restaurant/restaurant_logo.dart';
+import '../../widgets/navigation/storefront_scaffold.dart';
 
 /// Acompanhamento do pedido pelo cliente.
 /// Atualiza em tempo real pelo WebSocket; a cada 30s recarrega como reserva.
@@ -82,15 +83,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final order = _order;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(order?.displayCode != null ? 'Pedido ${order!.displayCode}' : 'Pedido'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Voltar',
-          onPressed: () => context.canPop() ? context.pop() : context.go('/pedidos'),
-        ),
-      ),
+    return StorefrontScaffold(
+      title: order?.displayCode != null ? 'Pedido ${order!.displayCode}' : 'Pedido',
+      current: StorefrontLink.orders,
+      // Largura útil da lista (720 menos o padding de 16 de cada lado), para alinhar o título
+      maxWidth: 720 - 32,
+      onBack: () => context.canPop() ? context.pop() : context.go('/pedidos'),
       body: order == null
           ? (_error != null
               ? AppEmptyState(icon: Icons.receipt_long_outlined, message: _error!, actionLabel: 'Tentar novamente', onAction: _load)

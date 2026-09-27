@@ -40,28 +40,34 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-      background: linear-gradient(135deg, #E91E63 0%, #FF6B6B 100%);
-      color: white;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      /* Tema padrão Fresh Green (frontend/lib/core/ui/theme/app_theme_presets.dart) */
+      background: #F7FAF8;
+      color: #17221D;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
     .loading-logo {
       font-size: 3rem;
-      font-weight: bold;
+      font-weight: 800;
+      letter-spacing: -0.02em;
       margin-bottom: 1rem;
+    }
+
+    .loading-logo span {
+      color: #00A878;
     }
 
     .loading-text {
       font-size: 1.2rem;
-      opacity: 0.9;
+      color: #5B6660;
       margin-bottom: 2rem;
     }
 
     .spinner {
       width: 40px;
       height: 40px;
-      border: 4px solid rgba(255, 255, 255, 0.3);
-      border-top: 4px solid white;
+      border: 4px solid #DDF4EC;
+      border-top: 4px solid #00A878;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -84,7 +90,7 @@
 
 <body>
   <div id="loading">
-    <div class="loading-logo">🛍️ Open Bag</div>
+    <div class="loading-logo">Open<span>Bag</span></div>
     <div class="loading-text">Carregando sua experiência de delivery...</div>
     <div class="spinner"></div>
   </div>

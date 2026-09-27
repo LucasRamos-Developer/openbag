@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/ui/ui.dart';
 import '../../models/courier/courier_public.dart';
@@ -8,6 +7,7 @@ import '../../services/courier_service.dart';
 import '../../widgets/courier/social_links_row.dart';
 import '../../widgets/courier/work_history_list.dart';
 import '../../widgets/courier/verification_badge_card.dart';
+import '../../widgets/navigation/storefront_scaffold.dart';
 
 /// Perfil público do entregador (/e/:slug), aberto pelo QR code da placa de verificação. Não exige login.
 class PublicCourierScreen extends StatefulWidget {
@@ -34,11 +34,9 @@ class _PublicCourierScreenState extends State<PublicCourierScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Perfil do entregador'),
-        leading: context.canPop() ? null : IconButton(icon: const Icon(Icons.home_outlined), onPressed: () => context.go('/')),
-      ),
+    return StorefrontScaffold(
+      title: 'Perfil do entregador',
+      maxWidth: 480,
       body: FutureBuilder<CourierPublic>(
         future: _future,
         builder: (context, snapshot) {

@@ -40,6 +40,14 @@ import 'screens/onboarding/courier_onboarding_screen.dart';
 import 'services/courier_service.dart';
 import 'services/courier_work_service.dart';
 import 'services/restaurant_delivery_service.dart';
+import 'services/restaurant_cash_service.dart';
+import 'services/restaurant_routes_service.dart';
+import 'screens/association/association_section.dart';
+import 'screens/courier/courier_section.dart';
+import 'screens/restaurant_panel/menu_form_route.dart';
+import 'screens/restaurant_panel/restaurant_section.dart';
+import 'widgets/navigation/panel_routes.dart';
+
 void main() {
   usePathUrlStrategy(); // Remove o # das URLs (somente para Web)
   // push/pop também atualizam a URL (página do restaurante e pedido ficam compartilháveis)
@@ -69,6 +77,8 @@ class _OpenBagAppState extends State<OpenBagApp> {
         ChangeNotifierProvider(create: (_) => CourierService(_authService.apiClient)),
         ChangeNotifierProvider(create: (_) => RestaurantPanelService(_authService.apiClient)),
         ChangeNotifierProvider(create: (_) => RestaurantDeliveryService(_authService.apiClient)),
+        Provider(create: (_) => RestaurantCashService(_authService.apiClient)),
+        Provider(create: (_) => RestaurantRoutesService(_authService.apiClient)),
         ChangeNotifierProvider(create: (_) => RestaurantService(_authService.apiClient)),
         Provider(create: (_) => OrderService(_authService.apiClient)),
         ChangeNotifierProvider.value(value: _realtime),
@@ -150,25 +160,39 @@ GoRouter buildRouter(AuthService authService) => GoRouter(
       path: '/registrar/entregador',
       builder: (context, state) => CourierOnboardingScreen(inviteCode: state.uri.queryParameters['convite']),
     ),
-    GoRoute(
-      path: '/associacao',
-      builder: (context, state) => const AssociationPanelScreen(),
+    ...panelRoutes(
+      base: '/associacao',
+      sections: AssociationSection.values,
+      builder: (section, _) => AssociationPanelScreen(section: section),
     ),
-    GoRoute(
-      path: '/entregador',
-      builder: (context, state) => const CourierPanelScreen(),
+    ...panelRoutes(
+      base: '/entregador',
+      sections: CourierSection.values,
+      builder: (section, _) => CourierPanelScreen(section: section),
     ),
     GoRoute(
       path: '/e/:slug',
       builder: (context, state) => PublicCourierScreen(slug: state.pathParameters['slug']!),
     ),
-    GoRoute(
-      path: '/restaurante',
-      builder: (context, state) => const RestaurantPanelScreen(),
-    ),
+    // Rotas específicas do restaurante antes das seções do painel
     GoRoute(
       path: '/restaurante/cozinha',
       builder: (context, state) => const KitchenScreen(),
+    ),
+    GoRoute(
+      path: '/restaurante/cardapio/:tipo/:id',
+      redirect: (context, state) =>
+          MenuFormKind.fromSlug(state.pathParameters['tipo']) == null ? RestaurantSection.menu.path : null,
+      builder: (context, state) => MenuFormRoute(
+        kind: MenuFormKind.fromSlug(state.pathParameters['tipo'])!,
+        id: int.tryParse(state.pathParameters['id']!),
+        sectionId: int.tryParse(state.uri.queryParameters['secao'] ?? ''),
+      ),
+    ),
+    ...panelRoutes(
+      base: '/restaurante',
+      sections: RestaurantSection.values,
+      builder: (section, tab) => RestaurantPanelScreen(section: section, storeSection: StoreSection.fromSlug(tab)),
     ),
     GoRoute(
       path: '/admin/associacoes',
@@ -184,7 +208,11 @@ GoRouter buildRouter(AuthService authService) => GoRouter(
     ),
     GoRoute(
       path: '/r/:slug',
-      builder: (context, state) => RestaurantPageScreen(slug: state.pathParameters['slug']!),
+      builder: (context, state) => RestaurantPageScreen(
+        slug: state.pathParameters['slug']!,
+        previewTheme: state.uri.queryParameters['tema'],
+        previewColor: state.uri.queryParameters['cor'],
+      ),
     ),
     // Endereço antigo por id: a página aceita slug ou id
     GoRoute(

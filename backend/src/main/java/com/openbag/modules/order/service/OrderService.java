@@ -117,6 +117,7 @@ public class OrderService {
         order.setOrderNotes(request.getNotes() != null && !request.getNotes().isBlank() ? request.getNotes().trim() : null);
         order.setDeliveryAddress(address.format());
         order.setDeliveryLatitude(address.getLatitude());
+        order.setDeliveryNeighborhood(address.getNeighborhood().trim());
         order.setDeliveryLongitude(address.getLongitude());
         order.setCustomerName(customer.getFullName());
         order.setCustomerPhone(request.getCustomerPhone() != null && !request.getCustomerPhone().isBlank()
@@ -151,6 +152,7 @@ public class OrderService {
         if (restaurant.getAcceptanceMode() == AcceptanceMode.AUTO) {
             order.setStatus(OrderStatus.CONFIRMED);
             order.setAcceptedAt(now);
+            order.setExpectedReadyAt(now.plusMinutes(restaurant.getDefaultPreparationMinutes()));
             addTracking(order, OrderStatus.CONFIRMED, "Pedido confirmado pelo restaurante", now);
         } else {
             order.setStatus(OrderStatus.PENDING);
@@ -161,12 +163,12 @@ public class OrderService {
         events.publishEvent(new OrderChangedEvent(saved.getId(), OrderChangedEvent.Type.ORDER_CREATED));
         log.info("Pedido {} ({}) criado no restaurante {} com status {}", saved.getId(), saved.getDisplayCode(),
                 restaurant.getId(), saved.getStatus());
-        return OrderDTO.from(saved);
+        return OrderDTO.forCustomer(saved);
     }
 
     @Transactional(readOnly = true)
     public Page<OrderDTO> getMyOrders(User customer, Pageable pageable) {
-        return orderRepository.findByUserIdOrderByOrderDateDesc(customer.getId(), pageable).map(OrderDTO::from);
+        return orderRepository.findByUserIdOrderByOrderDateDesc(customer.getId(), pageable).map(OrderDTO::forCustomer);
     }
 
     /**
@@ -174,7 +176,7 @@ public class OrderService {
      */
     @Transactional(readOnly = true)
     public OrderDTO getOrder(Long orderId) {
-        return OrderDTO.from(findOrder(orderId));
+        return OrderDTO.forCustomer(findOrder(orderId));
     }
 
     /**
@@ -194,7 +196,7 @@ public class OrderService {
         addTracking(order, OrderStatus.CANCELLED, "Pedido cancelado pelo cliente", now);
         Order saved = orderRepository.save(order);
         events.publishEvent(new OrderChangedEvent(saved.getId(), OrderChangedEvent.Type.ORDER_UPDATED));
-        return OrderDTO.from(saved);
+        return OrderDTO.forCustomer(saved);
     }
 
     // ============= Helpers =============

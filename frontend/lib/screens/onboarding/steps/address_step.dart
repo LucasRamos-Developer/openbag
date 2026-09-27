@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import '../../../utils/validators.dart';
 import '../../../utils/formatters.dart';
 import '../../../services/onboarding_service.dart';
 import '../../../core/ui/ui.dart';
+import '../../../utils/location.dart';
 
 /// Step 3: Endereço do Restaurante
 class AddressStep extends StatefulWidget {
@@ -151,76 +151,15 @@ class _AddressStepState extends State<AddressStep> {
   }
 
   Future<void> _getLocation() async {
-    try {
-      // Verificar se o serviço de localização está habilitado
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        if (mounted) {
-          AppToast.show(
-            context,
-            message: 'Serviço de localização desabilitado. Ative nas configurações do navegador.',
-            type: ToastType.warning,
-          );
-        }
-        return;
-      }
+    final position = await currentPosition(context);
+    if (position == null || !mounted) return;
 
-      // Verificar permissão
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (mounted) {
-            AppToast.show(
-              context,
-              message: 'Permissão de localização negada',
-              type: ToastType.error,
-            );
-          }
-          return;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        if (mounted) {
-          AppToast.show(
-            context,
-            message: 'Permissão de localização permanentemente negada. Ative nas configurações.',
-            type: ToastType.error,
-          );
-        }
-        return;
-      }
-
-      // Obter localização atual
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      // Preencher campos
-      setState(() {
-        _latitudeController.text = position.latitude.toString();
-        _longitudeController.text = position.longitude.toString();
-      });
-
-      _notifyChanges();
-
-      if (mounted) {
-        AppToast.show(
-          context,
-          message: 'Coordenadas obtidas com sucesso!',
-          type: ToastType.success,
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        AppToast.show(
-          context,
-          message: 'Erro ao obter localização: $e',
-          type: ToastType.error,
-        );
-      }
-    }
+    setState(() {
+      _latitudeController.text = position.latitude.toString();
+      _longitudeController.text = position.longitude.toString();
+    });
+    _notifyChanges();
+    AppToast.show(context, message: 'Coordenadas obtidas com sucesso!', type: ToastType.success);
   }
 
   @override

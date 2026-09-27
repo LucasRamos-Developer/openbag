@@ -1,5 +1,6 @@
 package com.openbag.modules.order.dto;
 
+import com.openbag.modules.delivery.dispatch.ReassignPolicy;
 import com.openbag.enums.CancelledBy;
 import com.openbag.enums.OrderStatus;
 import com.openbag.enums.VehicleType;
@@ -67,6 +68,11 @@ public class OrderDTO {
 
     // Entrega pelo entregador do app
     private CourierInfo courier;
+    // FIXED, FREE ou STAFF (quem está com o pedido); a equipe própria vem em staffCourier
+    private ReassignPolicy.CourierKind courierKind;
+    private StaffInfo staffCourier;
+    // Entregador livre: a partir de quando a loja pode trocá-lo se ele não aparecer
+    private LocalDateTime reassignableAt;
     private LocalDateTime assignedAt;
     private LocalDateTime pickedUpAt;
     // Aceito e ainda sem entregador disponível desde este momento
@@ -129,6 +135,15 @@ public class OrderDTO {
         private String vehiclePlate;
     }
 
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StaffInfo {
+        private Long id;
+        private String name;
+        private String phone;
+    }
+
     public static OrderDTO from(Order order) {
         Restaurant restaurant = order.getRestaurant();
         return OrderDTO.builder()
@@ -165,10 +180,26 @@ public class OrderDTO {
                         .map(t -> new TimelineEntry(t.getStatus(), t.getMessage(), t.getTimestamp()))
                         .toList())
                 .courier(toCourier(order.getDeliveryPerson()))
+                .courierKind(ReassignPolicy.kindOf(order))
+                .staffCourier(order.getStaffCourier() == null ? null : new StaffInfo(order.getStaffCourier().getId(),
+                        order.getStaffCourier().getName(), order.getStaffCourier().getPhone()))
+                .reassignableAt(ReassignPolicy.availableAt(order))
                 .assignedAt(order.getAssignedAt())
                 .pickedUpAt(order.getPickedUpAt())
-                .searchingCourierSince(order.getDeliveryPerson() == null ? order.getSearchingCourierSince() : null)
+                .searchingCourierSince(order.getDeliveryPerson() == null && order.getStaffCourier() == null
+                        ? order.getSearchingCourierSince() : null)
                 .build();
+    }
+
+    /**
+     * Versão para o cliente: sem dados da operação da loja (tipo de entregador, prazo de troca). O cliente nunca
+     * fica sabendo de rotas ou de espera por outros pedidos.
+     */
+    public static OrderDTO forCustomer(Order order) {
+        OrderDTO dto = from(order);
+        dto.setCourierKind(null);
+        dto.setReassignableAt(null);
+        return dto;
     }
 
     private static CourierInfo toCourier(DeliveryPerson courier) {

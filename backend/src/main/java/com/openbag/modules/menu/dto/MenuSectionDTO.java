@@ -17,6 +17,7 @@ public class MenuSectionDTO {
     private Long id;
     private String name;
     private String description;
+    private String icon;
     private int position;
     private boolean active;
     private List<MenuItemDTO> items;
@@ -27,6 +28,7 @@ public class MenuSectionDTO {
                 .id(section.getId())
                 .name(section.getName())
                 .description(section.getDescription())
+                .icon(section.getIcon())
                 .position(section.getPosition())
                 .active(section.isActive())
                 .items(items)

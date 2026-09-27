@@ -39,6 +39,13 @@ class CourierOffer {
   /// Momento local em que a oferta expira (calculado a partir dos segundos restantes do servidor)
   final DateTime expiresAt;
 
+  /// Oferta de rota: as entregas na ordem; valor e total somam a rota inteira
+  final int? routeId;
+  final double? routeDistanceKm;
+  final List<OfferStop> stops;
+
+  bool get isRoute => routeId != null && stops.length > 1;
+
   CourierOffer({
     required this.offerId,
     required this.orderId,
@@ -51,6 +58,9 @@ class CourierOffer {
     this.paymentMethod,
     this.totalAmount,
     required this.expiresAt,
+    this.routeId,
+    this.routeDistanceKm,
+    this.stops = const [],
   });
 
   factory CourierOffer.fromJson(Map<String, dynamic> json) => CourierOffer(
@@ -66,6 +76,30 @@ class CourierOffer {
         totalAmount: _toDouble(json['totalAmount']),
         // Usa os segundos restantes em vez do horário do servidor: o relógio do aparelho pode estar errado
         expiresAt: DateTime.now().add(Duration(seconds: (json['secondsLeft'] as num?)?.toInt() ?? 30)),
+        routeId: json['routeId'],
+        routeDistanceKm: _toDouble(json['routeDistanceKm']),
+        stops: [for (final s in json['stops'] as List? ?? []) OfferStop.fromJson(s)],
+      );
+}
+
+/// Uma entrega de uma oferta de rota
+class OfferStop {
+  final int orderId;
+  final String? displayCode;
+  final String? neighborhood;
+  final String? deliveryAddress;
+  final PaymentMethod? paymentMethod;
+  final double? totalAmount;
+
+  OfferStop({required this.orderId, this.displayCode, this.neighborhood, this.deliveryAddress, this.paymentMethod, this.totalAmount});
+
+  factory OfferStop.fromJson(Map<String, dynamic> json) => OfferStop(
+        orderId: json['orderId'],
+        displayCode: json['displayCode'],
+        neighborhood: json['neighborhood'],
+        deliveryAddress: json['deliveryAddress'],
+        paymentMethod: json['paymentMethod'] != null ? PaymentMethod.fromName(json['paymentMethod']) : null,
+        totalAmount: _toDouble(json['totalAmount']),
       );
 }
 
@@ -91,6 +125,11 @@ class CourierOrder {
   final DateTime? assignedAt;
   final DateTime? pickedUpAt;
 
+  /// Em rota: qual rota e a posição desta entrega (1 = primeira)
+  final int? routeId;
+  final int? routeSequence;
+  final String? neighborhood;
+
   CourierOrder({
     required this.orderId,
     this.displayCode,
@@ -111,6 +150,9 @@ class CourierOrder {
     this.deliveryDistanceKm,
     this.assignedAt,
     this.pickedUpAt,
+    this.routeId,
+    this.routeSequence,
+    this.neighborhood,
   });
 
   factory CourierOrder.fromJson(Map<String, dynamic> json) => CourierOrder(
@@ -133,6 +175,9 @@ class CourierOrder {
         deliveryDistanceKm: _toDouble(json['deliveryDistanceKm']),
         assignedAt: parseDate(json['assignedAt']),
         pickedUpAt: parseDate(json['pickedUpAt']),
+        routeId: json['routeId'],
+        routeSequence: json['routeSequence'],
+        neighborhood: json['neighborhood'],
       );
 
   bool get pickedUp => status == OrderStatus.OUT_FOR_DELIVERY;
@@ -168,6 +213,9 @@ class CourierWorkState {
   final CourierShift? shift;
   final CourierOffer? pendingOffer;
   final CourierOrder? activeOrder;
+
+  /// Entregas em andamento na ordem (rota); activeOrder é a primeira
+  final List<CourierOrder> activeOrders;
   final double earnedToday;
   final int deliveriesToday;
   final List<String> blockers;
@@ -178,6 +226,7 @@ class CourierWorkState {
     this.shift,
     this.pendingOffer,
     this.activeOrder,
+    this.activeOrders = const [],
     required this.earnedToday,
     required this.deliveriesToday,
     required this.blockers,
@@ -189,6 +238,7 @@ class CourierWorkState {
         shift: json['shift'] != null ? CourierShift.fromJson(json['shift']) : null,
         pendingOffer: json['pendingOffer'] != null ? CourierOffer.fromJson(json['pendingOffer']) : null,
         activeOrder: json['activeOrder'] != null ? CourierOrder.fromJson(json['activeOrder']) : null,
+        activeOrders: [for (final o in json['activeOrders'] as List? ?? []) CourierOrder.fromJson(o)],
         earnedToday: _toDouble(json['earnedToday']) ?? 0,
         deliveriesToday: json['deliveriesToday'] ?? 0,
         blockers: [for (final b in (json['blockers'] as List? ?? [])) b.toString()],

@@ -11,7 +11,7 @@ class AppColors {
   
   static const Color primaryLighter = Color(0xFFB3F0D9);
   static const Color primaryLight = Color(0xFF52D4A0);
-  static const Color primary = Color(0xFF00A76F);
+  static const Color primary = Color(0xFF00A878); // Fresh Green (AppThemePreset.freshGreen)
   static const Color primaryDark = Color(0xFF008558);
   static const Color primaryDarker = Color(0xFF006341);
   

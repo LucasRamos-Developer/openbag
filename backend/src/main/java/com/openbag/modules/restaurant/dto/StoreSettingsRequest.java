@@ -42,8 +42,5 @@ public class StoreSettingsRequest {
     @Min(value = 1, message = "Tempo máximo de entrega deve ser positivo")
     private Integer deliveryTimeMax;
 
-    @Pattern(regexp = "^\\$\\${0,3}$", message = "Faixa de preço deve ser de $ a $$$$")
-    private String priceRange;
-
     private boolean autoPrintTicket;
 }

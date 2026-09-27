@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/restaurant.dart';
+import '../../core/ui/ui.dart';
 import '../../services/category_service.dart';
 
 /// Widget para selecionar múltiplas categorias
@@ -67,7 +68,7 @@ class _CategorySelectorState extends State<CategorySelector> {
           children: [
             Text(
               _errorMessage!,
-              style: TextStyle(color: Colors.red[700]),
+              style: TextStyle(color: context.appColors.danger),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -91,7 +92,7 @@ class _CategorySelectorState extends State<CategorySelector> {
         Text(
           'Selecione pelo menos 1 categoria',
           style: TextStyle(
-            color: Colors.grey[700],
+            color: context.appColors.textMuted,
             fontSize: 14,
           ),
         ),
@@ -109,15 +110,7 @@ class _CategorySelectorState extends State<CategorySelector> {
               onSelected: (selected) {
                 _toggleCategory(category.id, selected);
               },
-              selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-              checkmarkColor: Theme.of(context).primaryColor,
-              avatar: !isSelected
-                  ? null
-                  : Icon(
-                      Icons.check_circle,
-                      color: Theme.of(context).primaryColor,
-                      size: 18,
-                    ),
+
             );
           }).toList(),
         ),
@@ -140,7 +133,7 @@ class _CategorySelectorState extends State<CategorySelector> {
             child: Text(
               '${widget.selectedCategoryIds.length} categoria(s) selecionada(s)',
               style: TextStyle(
-                color: Theme.of(context).primaryColor,
+                color: context.appColors.primaryText,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),

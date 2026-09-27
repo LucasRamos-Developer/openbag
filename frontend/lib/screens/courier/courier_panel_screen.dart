@@ -3,10 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/ui/ui.dart';
 import '../../models/courier/courier_profile.dart';
+import '../../models/panel_profile.dart';
 import '../../services/auth_service.dart';
 import '../../services/courier_service.dart';
 import '../../widgets/courier/courier_avatar.dart';
+import '../../widgets/navigation/panel_profiles.dart';
+import '../../widgets/navigation/panel_routes.dart';
 import '../../models/delivery/courier_link.dart';
+import 'courier_section.dart';
 import 'tabs/badge_tab.dart';
 import 'tabs/earnings_tab.dart';
 import 'tabs/profile_tab.dart';
@@ -17,34 +21,26 @@ import 'tabs/work_tab.dart';
 /// Painel do entregador: trabalhar (online, check-in, ofertas, entrega), ganhos, lojas (fixo e onde trabalhou),
 /// veículos, perfil e placa de verificação
 class CourierPanelScreen extends StatefulWidget {
-  const CourierPanelScreen({super.key});
+  final CourierSection section;
+
+  const CourierPanelScreen({super.key, this.section = CourierSection.work});
 
   @override
   State<CourierPanelScreen> createState() => _CourierPanelScreenState();
 }
 
 class _CourierPanelScreenState extends State<CourierPanelScreen> {
-  int _tabIndex = 0;
-
-  static const _earningsTab = 1;
-  static const _storesTab = 2;
-  static const _vehiclesTab = 3;
   final _earningsKey = GlobalKey<EarningsTabState>();
   final _storesKey = GlobalKey<CourierRestaurantsTabState>();
 
   List<AppPanelDestination> _destinations(CourierService service) => [
-        const AppPanelDestination(icon: Icons.bolt_outlined, selectedIcon: Icons.bolt, label: 'Trabalhar'),
-        const AppPanelDestination(icon: Icons.payments_outlined, selectedIcon: Icons.payments, label: 'Ganhos'),
-        AppPanelDestination(
-          icon: Icons.storefront_outlined,
-          selectedIcon: Icons.storefront,
-          label: 'Lojas',
-          // Convites de restaurantes aguardando resposta
-          badge: service.links.where((l) => l.isPending && l.requestedBy == LinkRequester.RESTAURANT).length,
-        ),
-        const AppPanelDestination(icon: Icons.two_wheeler_outlined, selectedIcon: Icons.two_wheeler, label: 'Veículos'),
-        const AppPanelDestination(icon: Icons.person_outline, selectedIcon: Icons.person, label: 'Perfil'),
-        const AppPanelDestination(icon: Icons.qr_code_2_outlined, selectedIcon: Icons.qr_code_2, label: 'Placa'),
+        for (final section in CourierSection.values)
+          section.destination(
+            // Convites de restaurantes aguardando resposta
+            badge: section == CourierSection.stores
+                ? service.links.where((l) => l.isPending && l.requestedBy == LinkRequester.RESTAURANT).length
+                : 0,
+          ),
       ];
 
   @override
@@ -53,6 +49,15 @@ class _CourierPanelScreenState extends State<CourierPanelScreen> {
     // Descarta dados de uma sessão anterior (outro entregador) antes de carregar
     final service = context.read<CourierService>()..clear();
     WidgetsBinding.instance.addPostFrameCallback((_) => service.load());
+  }
+
+  @override
+  void didUpdateWidget(CourierPanelScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.section == oldWidget.section) return;
+    // Ganhos e histórico mudam a cada entrega: recarrega ao abrir
+    if (widget.section == CourierSection.earnings) _earningsKey.currentState?.refresh();
+    if (widget.section == CourierSection.stores) _storesKey.currentState?.refresh();
   }
 
   Future<void> _logout() async {
@@ -68,8 +73,11 @@ class _CourierPanelScreenState extends State<CourierPanelScreen> {
     final profile = service.profile;
 
     if (profile == null) {
-      return Scaffold(
-        appBar: _buildAppBar(null),
+      return AppPanelScaffold(
+        header: _buildHeader(null),
+        title: 'Painel do entregador',
+        onDestinationSelected: (_) {},
+        onLogout: _logout,
         body: service.isLoading || service.error == null
             ? const Center(child: CircularProgressIndicator())
             : AppEmptyState(
@@ -82,19 +90,15 @@ class _CourierPanelScreenState extends State<CourierPanelScreen> {
     }
 
     return AppPanelScaffold(
-      appBar: _buildAppBar(profile),
+      header: _buildHeader(profile),
+      onLogout: _logout,
       destinations: _destinations(service),
-      selectedIndex: _tabIndex,
-      onDestinationSelected: (index) {
-        // Ganhos e histórico mudam a cada entrega: recarrega ao abrir
-        if (index == _earningsTab) _earningsKey.currentState?.refresh();
-        if (index == _storesTab) _storesKey.currentState?.refresh();
-        setState(() => _tabIndex = index);
-      },
+      selectedIndex: widget.section.index,
+      onDestinationSelected: (index) => context.go(CourierSection.values[index].path),
       body: IndexedStack(
-        index: _tabIndex,
+        index: widget.section.index,
         children: [
-          WorkTab(onOpenVehicles: () => setState(() => _tabIndex = _vehiclesTab)),
+          WorkTab(onOpenVehicles: () => context.go(CourierSection.vehicles.path)),
           EarningsTab(key: _earningsKey),
           CourierRestaurantsTab(key: _storesKey),
           const VehiclesTab(),
@@ -105,35 +109,15 @@ class _CourierPanelScreenState extends State<CourierPanelScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(CourierProfile? profile) {
-    return AppBar(
-      titleSpacing: 16,
-      title: Row(
-        children: [
-          if (profile != null) ...[
-            CourierAvatar(photoUrl: profile.photoUrl, name: profile.fullName, size: 36),
-            const SizedBox(width: 12),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  profile?.fullName ?? 'Painel do entregador',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                if (profile?.association != null)
-                  Text(profile!.association!.name, style: Theme.of(context).textTheme.bodySmall),
-              ],
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        IconButton(tooltip: 'Sair', icon: const Icon(Icons.logout), onPressed: _logout),
-        const SizedBox(width: 8),
-      ],
+  Widget _buildHeader(CourierProfile? profile) {
+    final name = profile?.fullName ?? 'Painel do entregador';
+    final association = profile?.association?.name;
+
+    return AppPanelProfileHeader(
+      avatar: CourierAvatar(photoUrl: profile?.photoUrl, name: name, size: 40),
+      title: name,
+      subtitle: association != null ? '${PanelProfile.courier.label} · $association' : PanelProfile.courier.label,
+      sections: [panelProfilesSection(context, current: PanelProfile.courier)],
     );
   }
 }

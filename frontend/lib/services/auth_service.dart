@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import '../models/panel_profile.dart';
 import '../models/user.dart';
 import 'api_client.dart';
 
@@ -30,11 +31,7 @@ class AuthService extends ChangeNotifier {
   String get homeRoute {
     final user = _currentUser;
     if (user == null) return '/login';
-    if (user.isAdmin) return '/admin/associacoes';
-    if (user.isAssociationManager) return '/associacao';
-    if (user.hasRole(UserRoles.restaurantOwner)) return '/restaurante';
-    if (user.isDeliveryPerson) return '/entregador';
-    return '/home';
+    return PanelProfile.of(user).first.route;
   }
 
   AuthService() {

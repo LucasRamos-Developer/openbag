@@ -2,6 +2,62 @@
 
 Sistema de componentes reutilizáveis baseado no design MUI Minimal.
 
+## 🧭 Linguagem visual padrão
+
+**Referência:** [`layout/restaurante-padrão.png`](../../../../layout/restaurante-padrão.png). Toda tela nova (e toda tela redesenhada) segue esse estilo. Os prints da página do restaurante em cada tema ficam em [`layout/temas/`](../../../../layout/temas/).
+
+### Tokens de cor (`AppThemeColors`)
+
+Nunca use `Colors.x` ou `AppColors.x` fixos em tela nova; leia os tokens com `context.appColors`.
+
+| Token | Uso |
+|---|---|
+| `background` | fundo da página |
+| `surface` / `surfaceAlt` | cards / campos, placeholders, skeleton |
+| `text` / `textMuted` | títulos e nomes / descrições e metadados |
+| `primary` | cor da marca: degradês, ícones, destaques |
+| `action` + `onAction` | preenchimento de botões e chips ativos + texto sobre eles |
+| `primaryText` | preço, links e textos na cor da marca |
+| `secondary` + `onSecondary` | selos e áreas suaves + texto sobre eles |
+| `accent` | detalhes (sublinhado do banner, selo "Novo") |
+| `border`, `cardShadow` | borda e sombra dos cards |
+| `success`, `danger`, `rating` | **semânticas fixas**: status aberto/fechado e estrela, nunca mudam com a marca |
+
+`action`, `primaryText` e `onSecondary` são derivados com contraste WCAG AA garantido (teste em `test/core/ui/app_theme_colors_test.dart`), inclusive quando o restaurante usa a própria cor da marca.
+
+### Temas (`AppThemePreset`)
+
+Fresh Green (padrão do app), Sunset Orange, Berry Pink, Ocean Blue, Grape Purple e os escuros Midnight Green, Midnight Blue e Graphite. O app inteiro usa `AppTheme.light` (Fresh Green); a página do restaurante aplica o tema do dono com `RestaurantThemeScope`, que faz `Theme(data: AppTheme.fromColors(...))`.
+
+### Forma e tipografia
+
+- Fonte **Plus Jakarta Sans** (400 a 800). Títulos de página e de seção usam peso 800.
+- Raios (`AppRadius`): 8 pequenos, 12 botões e campos, 16 cards, 24 banner e bottom sheets, pílula em busca, chips e selos.
+- Cards: `surface`, borda `border` de 1px e `cardShadow` (no tema escuro, só a borda).
+- Espaçamento: 12 entre cards, 24–28 antes de cada seção, gutter de 24 no desktop e 12 no celular. Conteúdo com largura máxima de 1180.
+
+### Blocos do padrão
+
+| Bloco | Componente |
+|---|---|
+| Banner com degradê, título e subtítulo | `AppHeroBanner` |
+| Card de informações sobreposto | `RestaurantHeader` / `RestaurantInfoCard` (widgets/restaurant) |
+| Metadados com ícone e separador | `AppMetaItem` + `AppMetaRow` |
+| Busca em pílula | `AppSearchBar` |
+| Chips com ícone (ativo preenchido com ✓) | `AppFilterChips` + `SelectItem.icon` |
+| Título de seção com ícone | `AppSectionHeader(leadingIcon: ...)` |
+| Selos | `AppBadge` (tons primary, accent, danger, neutral) |
+| Card de produto | `MenuProductCard` (widgets/menu) |
+| Carregamento | `AppSkeleton` + `AppSkeleton.group` |
+| Bloco de configuração dos painéis | `AppPanelCard` |
+| Menu lateral dos painéis + troca de perfil | `AppPanelScaffold` + `AppPanelProfileHeader` |
+| Etiquetas com limite e sugestões | `AppTagField` |
+| Cor | `AppColorField` |
+| Largura padrão do conteúdo (1200px) | `AppLayout` + `AppPageListView` / `AppPageContainer` |
+| Grade de cards (até 4 colunas) | `AppResponsiveGrid` |
+| Barra horizontal de vidro da vitrine | `AppTopNavBar` (+ `StorefrontScaffold` em widgets/navigation) |
+| Situação no menu do painel (aberta, online...) | `AppPanelStatus` |
+
 ## 📦 Componentes Disponíveis
 
 ### AppTextField
@@ -156,6 +212,46 @@ final ok = await AppDialog.confirm(context,
 final motivo = await AppDialog.reason(context,
     title: 'Recusar?', confirmLabel: 'Recusar', required: true);
 ```
+
+### AppPanelScaffold
+Layout dos painéis de gestão (restaurante, entregador, cooperativa, admin), no estilo do menu do app fieng:
+
+Prints de referência em [`layout/menu/`](../../../../layout/menu/).
+
+- **Tela larga (≥ 800px):** menu flutuante arredondado sobre o conteúdo. ☰ alterna entre recolhido (84px, só ícones com tooltip) e expandido (256px, ícone + rótulo + contador); a escolha fica salva (`panel_menu_expanded`).
+- **Celular:** barra mínima com ☰ e o título da aba; o mesmo menu abre como gaveta e fecha ao escolher um item.
+- Ordem do menu: ☰, `header`, `status`, abas (`destinations`) e "Sair" (`onLogout`) no rodapé. Item ativo com fundo `primary` suave e texto `primaryText`.
+- Não há faixa no topo do conteúdo: a situação do painel (loja aberta, pausada...) vai em `status`, com um `AppPanelStatus` (ponto colorido quando recolhido; um toque abre as ações).
+- **Rotas:** cada aba tem endereço próprio (`/restaurante/pedidos`, `/restaurante/loja/horarios`). As seções são um enum que implementa `PanelSection`, e as rotas vêm de `panelRoutes(...)` (`widgets/navigation/panel_routes.dart`). Todas usam a mesma chave de página: trocar de aba não recria o painel. A aba ativa vem do endereço (`selectedIndex: widget.section.index`) e a troca é `context.go(section.path)`.
+- `AppPanelProfileHeader`: avatar, nome e perfil ativo; um toque abre as `sections` (ex: "Seus restaurantes", "Seus perfis"). Seções vazias não aparecem.
+- A lista de perfis do usuário vem de `PanelProfile.of(user)` (`models/panel_profile.dart`) e a seção pronta de `panelProfilesSection` (`widgets/navigation/panel_profiles.dart`).
+
+**Exemplo:**
+```dart
+AppPanelScaffold(
+  header: AppPanelProfileHeader(
+    avatar: RestaurantLogo(logoUrl: store.logoUrl, name: store.name, size: 40),
+    title: store.name,
+    subtitle: 'Restaurante',
+    sections: [panelProfilesSection(context, current: PanelProfile.restaurant)],
+  ),
+  status: StoreStatusMenuTile(store: store),
+  destinations: [for (final s in RestaurantSection.values) s.destination()],
+  selectedIndex: widget.section.index,
+  onDestinationSelected: (i) => context.go(RestaurantSection.values[i].path),
+  onLogout: _logout,
+  body: IndexedStack(index: widget.section.index, children: [...]),
+)
+```
+
+### Largura do conteúdo (`AppLayout`)
+Toda tela limita o conteúdo a `AppLayout.maxContentWidth` (1200px), com margem lateral de 24 (16 no celular).
+- `AppPageListView(children: [...])`: lista rolável centralizada; a barra de rolagem fica na borda da tela.
+- `AppPageContainer(child: ...)`: o mesmo sem rolagem (ex: quadro de colunas).
+- `AppLayout.contentPadding(width)`: o padding pronto para `SliverPadding` ou listas próprias.
+
+### AppTopNavBar
+Barra horizontal de vidro (fundo translúcido desfocado) das telas do cliente, para `Scaffold(extendBodyBehindAppBar: true)`. Tem os espaços `logo`, `links` e `trailing`. Abaixo de 700px os links saem da barra. Nas telas use `StorefrontScaffold` (widgets/navigation), que já monta o logo, os links, o carrinho e a conta, e opcionalmente uma linha de título com o botão voltar.
 
 ## 🎨 Sistema de Cores
 

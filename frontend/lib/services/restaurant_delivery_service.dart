@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
 import '../models/association/association_summary.dart';
 import '../models/delivery/courier_link.dart';
+import '../models/delivery/courier_options.dart';
+import '../models/delivery/staff_courier.dart';
 import '../models/delivery/restaurant_delivery_settings.dart';
 import 'api_client.dart';
 import 'association_directory.dart' as association_directory;
 
-/// Regras de entrega do restaurante selecionado: política, parceiras e entregadores fixos
+/// Entrega do restaurante selecionado: política, parceiras, fixos, equipe própria e quem leva cada pedido
 class RestaurantDeliveryService extends ChangeNotifier {
   final ApiClient _api;
 
@@ -14,11 +16,13 @@ class RestaurantDeliveryService extends ChangeNotifier {
   int? _restaurantId;
   RestaurantDeliverySettings? _settings;
   List<CourierLink> _links = [];
+  List<StaffCourier> _staff = [];
   bool _isLoading = false;
   String? _error;
 
   RestaurantDeliverySettings? get settings => _settings;
   List<CourierLink> get links => _links;
+  List<StaffCourier> get staff => _staff;
   List<CourierLink> get pendingLinks => _links.where((l) => l.isPending).toList();
   List<CourierLink> get activeLinks => _links.where((l) => l.isActive).toList();
   List<CourierLink> get checkedIn => _links.where((l) => l.isActive && l.checkedIn).toList();
@@ -33,7 +37,7 @@ class RestaurantDeliveryService extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      await Future.wait([_loadSettings(), refreshLinks(notify: false)]);
+      await Future.wait([_loadSettings(), refreshLinks(notify: false), _loadStaff()]);
     } on ApiException catch (e) {
       _error = e.message;
     } finally {
@@ -46,6 +50,7 @@ class RestaurantDeliveryService extends ChangeNotifier {
     _restaurantId = null;
     _settings = null;
     _links = [];
+    _staff = [];
     _error = null;
   }
 
@@ -63,11 +68,13 @@ class RestaurantDeliveryService extends ChangeNotifier {
     required CourierPolicy policy,
     required bool fallbackToOpen,
     required bool coversDeliveryDifference,
+    int? courierNoShowMinutes,
   }) async {
     _settings = RestaurantDeliverySettings.fromJson(await _api.put('$_base/settings', data: {
       'courierPolicy': policy.name,
       'fallbackToOpen': fallbackToOpen,
       'coversDeliveryDifference': coversDeliveryDifference,
+      if (courierNoShowMinutes != null) 'courierNoShowMinutes': courierNoShowMinutes,
     }));
     notifyListeners();
   }
@@ -98,9 +105,44 @@ class RestaurantDeliveryService extends ChangeNotifier {
     await _afterLinkChange();
   }
 
-  /// Oferece o pedido a um fixo em check-in
-  Future<void> assignOrder(int orderId, int deliveryPersonId) async {
-    await _api.post('$_base/orders/$orderId/assign/$deliveryPersonId');
+  // ============= Quem leva cada pedido =============
+
+  // Recebem o restaurante do pedido: a ficha pode abrir antes de a aba Entregadores carregar o restaurante
+  String _orderBase(int restaurantId, int orderId) => '/restaurants/$restaurantId/delivery/orders/$orderId';
+
+  Future<CourierOptions> courierOptions(int restaurantId, int orderId) async =>
+      CourierOptions.fromJson(await _api.get('${_orderBase(restaurantId, orderId)}/courier-options'));
+
+  /// Atribui direto (sem oferta) a um entregador do app ou da equipe própria
+  Future<void> assignCourier(int restaurantId, int orderId, CourierOption option) =>
+      _api.put('${_orderBase(restaurantId, orderId)}/courier', data: {
+        'deliveryPersonId': option.deliveryPersonId,
+        'staffCourierId': option.staffCourierId,
+      });
+
+  /// Tira o entregador; o pedido volta a procurar outro
+  Future<void> unassignCourier(int restaurantId, int orderId) => _api.delete('${_orderBase(restaurantId, orderId)}/courier');
+
+  // ============= Equipe própria =============
+
+  Future<void> _loadStaff() async =>
+      _staff = [for (final s in await _api.get('$_base/staff') as List) StaffCourier.fromJson(s)];
+
+  Future<void> saveStaff({int? id, required String name, String? phone, double? feePerDelivery}) async {
+    final body = {'name': name, 'phone': phone, 'feePerDelivery': feePerDelivery};
+    if (id == null) {
+      await _api.post('$_base/staff', data: body);
+    } else {
+      await _api.put('$_base/staff/$id', data: body);
+    }
+    await _loadStaff();
+    notifyListeners();
+  }
+
+  Future<void> removeStaff(int id) async {
+    await _api.delete('$_base/staff/$id');
+    await _loadStaff();
+    notifyListeners();
   }
 
   Future<void> _afterLinkChange() async {

@@ -53,21 +53,25 @@ class OrderCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text('${formatMoney(order.totalAmount)} · ${order.paymentMethod.label}',
               style: TextStyle(color: muted, fontSize: 13)),
-          if (order.courier != null || order.awaitingCourier) ...[
+          if (order.courierName != null || order.awaitingCourier) ...[
             const SizedBox(height: 4),
             Row(
               children: [
-                Icon(order.courier != null ? Icons.two_wheeler : Icons.search, size: 14,
+                Icon(
+                    order.staffCourier != null
+                        ? Icons.badge_outlined
+                        : (order.courier != null ? Icons.two_wheeler : Icons.search),
+                    size: 14,
                     color: order.searchingCourierSince != null ? AppColors.warningDarker : muted),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
-                    order.courier != null
-                        ? order.courier!.fullName
+                    order.courierName != null
+                        ? 'com ${order.courierName}${order.courierKind != null ? ' · ${order.courierKind!.label}' : ''}'
                         : (order.searchingCourierSince != null ? 'Sem entregador disponível' : 'Procurando entregador'),
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                        color: order.searchingCourierSince != null && order.courier == null ? AppColors.warningDarker : muted,
+                        color: order.searchingCourierSince != null && order.courierName == null ? AppColors.warningDarker : muted,
                         fontSize: 13),
                   ),
                 ),

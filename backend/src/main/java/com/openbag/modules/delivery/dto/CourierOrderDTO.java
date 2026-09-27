@@ -42,6 +42,10 @@ public class CourierOrderDTO {
     private LocalDateTime readyAt;
     private LocalDateTime pickedUpAt;
     private LocalDateTime deliveredAt;
+    // Em rota: qual rota e a posição desta entrega (1 = primeira)
+    private Long routeId;
+    private Integer routeSequence;
+    private String neighborhood;
 
     public static CourierOrderDTO from(Order order) {
         return CourierOrderDTO.builder()
@@ -66,6 +70,9 @@ public class CourierOrderDTO {
                 .readyAt(order.getReadyAt())
                 .pickedUpAt(order.getPickedUpAt())
                 .deliveredAt(order.getDeliveredAt())
+                .routeId(order.getRoute() != null ? order.getRoute().getId() : null)
+                .routeSequence(order.getRouteSequence())
+                .neighborhood(order.getDeliveryNeighborhood())
                 .build();
     }
 

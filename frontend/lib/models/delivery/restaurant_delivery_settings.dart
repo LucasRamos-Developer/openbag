@@ -59,6 +59,9 @@ class RestaurantDeliverySettings {
   final int activeFixedCouriers;
   final int pendingFixedCouriers;
 
+  /// Entregador livre que não aparece: minutos até a loja poder trocá-lo
+  final int courierNoShowMinutes;
+
   RestaurantDeliverySettings({
     required this.courierPolicy,
     required this.fallbackToOpen,
@@ -68,6 +71,7 @@ class RestaurantDeliverySettings {
     required this.partners,
     required this.activeFixedCouriers,
     required this.pendingFixedCouriers,
+    this.courierNoShowMinutes = 10,
   });
 
   factory RestaurantDeliverySettings.fromJson(Map<String, dynamic> json) => RestaurantDeliverySettings(
@@ -79,5 +83,6 @@ class RestaurantDeliverySettings {
         partners: [for (final p in (json['partners'] as List? ?? [])) Partner.fromJson(p)],
         activeFixedCouriers: json['activeFixedCouriers'] ?? 0,
         pendingFixedCouriers: json['pendingFixedCouriers'] ?? 0,
+        courierNoShowMinutes: json['courierNoShowMinutes'] ?? 10,
       );
 }

@@ -111,6 +111,25 @@ class MoneyFormatter extends TextInputFormatter {
   }
 }
 
+/// Telefone brasileiro fixo ou celular: (XX) XXXX-XXXX com até 10 dígitos, (XX) XXXXX-XXXX com 11
+class PhoneFormatter extends TextInputFormatter {
+  static String format(String text) {
+    final digits = text.replaceAll(RegExp(r'\D'), '');
+    final d = digits.length > 11 ? digits.substring(0, 11) : digits;
+    if (d.isEmpty) return '';
+    if (d.length <= 2) return '($d';
+    final split = d.length == 11 ? 7 : 6;
+    if (d.length <= split) return '(${d.substring(0, 2)}) ${d.substring(2)}';
+    return '(${d.substring(0, 2)}) ${d.substring(2, split)}-${d.substring(split)}';
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final formatted = format(newValue.text);
+    return TextEditingValue(text: formatted, selection: TextSelection.collapsed(offset: formatted.length));
+  }
+}
+
 /// Formatter para números inteiros positivos
 class IntegerFormatter extends TextInputFormatter {
   @override
@@ -168,6 +187,11 @@ final _currency = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
 /// Valor em reais: R$ 12,90
 String formatMoney(num value) => _currency.format(value);
+
+final _count = NumberFormat.decimalPattern('pt_BR');
+
+/// Número inteiro com separador de milhar (1.245)
+String formatCount(num value) => _count.format(value);
 
 /// Lê o texto de um campo com [MoneyFormatter] ("12,90") como número; null se vazio
 double? parseMoney(String text) {

@@ -1,7 +1,9 @@
 package com.openbag.modules.restaurant.dto;
 
+import com.openbag.enums.RestaurantThemePreset;
 import com.openbag.modules.order.entity.Order;
 import com.openbag.modules.product.entity.Category;
+import com.openbag.modules.restaurant.entity.LayoutConfig;
 import com.openbag.modules.restaurant.entity.OpeningHour;
 import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.user.entity.Address;
@@ -37,7 +39,11 @@ public class RestaurantPublicDTO {
     private String cnpj;
     private String logoUrl;
     private String bannerUrl;
+    /** Cor principal efetiva (cor da marca ou a do tema) */
     private String primaryColor;
+    private RestaurantThemePreset themePreset;
+    private String brandColor;
+    private String slogan;
     private BigDecimal rating;
     private Integer totalReviews;
     private BigDecimal deliveryFee;
@@ -71,6 +77,7 @@ public class RestaurantPublicDTO {
 
     public static RestaurantPublicDTO from(Restaurant restaurant, LocalDateTime now) {
         Address address = restaurant.getAddress();
+        LayoutConfig layout = restaurant.getLayoutConfig();
         return RestaurantPublicDTO.builder()
                 .id(restaurant.getId())
                 .name(restaurant.getName())
@@ -80,7 +87,10 @@ public class RestaurantPublicDTO {
                 .cnpj(restaurant.getCnpj())
                 .logoUrl(restaurant.getLogoUrl())
                 .bannerUrl(restaurant.getBannerUrl())
-                .primaryColor(restaurant.getLayoutConfig() != null ? restaurant.getLayoutConfig().getPrimaryColor() : null)
+                .primaryColor(layout != null ? layout.getEffectivePrimaryColor() : RestaurantThemePreset.DEFAULT.getPrimaryHex())
+                .themePreset(layout != null ? layout.getThemePreset() : RestaurantThemePreset.DEFAULT)
+                .brandColor(layout != null ? layout.getBrandColor() : null)
+                .slogan(layout != null ? layout.getSlogan() : null)
                 .rating(restaurant.getRating())
                 .totalReviews(restaurant.getTotalReviews())
                 .deliveryFee(restaurant.getDeliveryFee())

@@ -21,6 +21,7 @@ class User {
 
   bool get isAdmin => hasRole(UserRoles.admin);
   bool get isAssociationManager => hasRole(UserRoles.associationManager);
+  bool get isRestaurantOwner => hasRole(UserRoles.restaurantOwner);
   bool get isDeliveryPerson => hasRole(UserRoles.deliveryPerson);
 
   factory User.fromJson(Map<String, dynamic> json) {

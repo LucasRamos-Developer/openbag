@@ -5,6 +5,7 @@ import com.openbag.modules.delivery.dispatch.DispatchService;
 import com.openbag.modules.delivery.dto.*;
 import com.openbag.modules.delivery.service.CourierLinkService;
 import com.openbag.modules.delivery.service.RestaurantDeliveryService;
+import com.openbag.modules.delivery.service.StaffCourierService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +34,9 @@ public class RestaurantDeliveryController {
 
     @Autowired
     private DispatchService dispatchService;
+
+    @Autowired
+    private StaffCourierService staffService;
 
     @GetMapping("/settings")
     @IsRestaurantOwner
@@ -67,12 +71,65 @@ public class RestaurantDeliveryController {
         return ResponseEntity.ok(deliveryService.removePartner(restaurantId, organizationId));
     }
 
-    @PostMapping("/orders/{orderId}/assign/{deliveryPersonId}")
+    // ============= Quem leva cada pedido =============
+
+    @GetMapping("/orders/{orderId}/courier-options")
     @IsRestaurantOwner
-    @Operation(summary = "Oferecer o pedido a um fixo em check-in", description = "A oferta vai direto para o entregador escolhido")
-    public ResponseEntity<Void> assign(@PathVariable Long restaurantId, @PathVariable Long orderId,
-                                       @PathVariable Long deliveryPersonId) {
-        dispatchService.offerToFixedCourier(restaurantId, orderId, deliveryPersonId);
+    @Operation(summary = "Quem pode levar o pedido",
+            description = "Fixos em check-in, livres online por perto e equipe própria, com valor e motivo de bloqueio; "
+                    + "e se a loja pode trocar quem está com o pedido")
+    public ResponseEntity<CourierOptionsDTO> courierOptions(@PathVariable Long restaurantId, @PathVariable Long orderId) {
+        return ResponseEntity.ok(dispatchService.courierOptions(restaurantId, orderId));
+    }
+
+    @PutMapping("/orders/{orderId}/courier")
+    @IsRestaurantOwner
+    @Operation(summary = "Atribuir o pedido a um entregador",
+            description = "Direto, sem oferta. Trocar: fixo e equipe a qualquer momento; livre só se não aparecer em X minutos")
+    public ResponseEntity<Void> assignCourier(@PathVariable Long restaurantId, @PathVariable Long orderId,
+                                              @RequestBody AssignCourierRequest request) {
+        dispatchService.assignDirect(restaurantId, orderId, request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/orders/{orderId}/courier")
+    @IsRestaurantOwner
+    @Operation(summary = "Tirar o entregador do pedido", description = "O pedido volta a procurar entregador")
+    public ResponseEntity<Void> unassignCourier(@PathVariable Long restaurantId, @PathVariable Long orderId) {
+        dispatchService.unassign(restaurantId, orderId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ============= Equipe própria =============
+
+    @GetMapping("/staff")
+    @IsRestaurantOwner
+    @Operation(summary = "Entregadores da equipe própria (sem o app)")
+    public ResponseEntity<List<StaffCourierDTO>> listStaff(@PathVariable Long restaurantId) {
+        return ResponseEntity.ok(staffService.list(restaurantId));
+    }
+
+    @PostMapping("/staff")
+    @IsRestaurantOwner
+    @Operation(summary = "Cadastrar entregador da equipe própria")
+    public ResponseEntity<StaffCourierDTO> createStaff(@PathVariable Long restaurantId,
+                                                       @Valid @RequestBody StaffCourierRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(staffService.create(restaurantId, request));
+    }
+
+    @PutMapping("/staff/{staffId}")
+    @IsRestaurantOwner
+    @Operation(summary = "Editar entregador da equipe própria")
+    public ResponseEntity<StaffCourierDTO> updateStaff(@PathVariable Long restaurantId, @PathVariable Long staffId,
+                                                       @Valid @RequestBody StaffCourierRequest request) {
+        return ResponseEntity.ok(staffService.update(restaurantId, staffId, request));
+    }
+
+    @DeleteMapping("/staff/{staffId}")
+    @IsRestaurantOwner
+    @Operation(summary = "Remover entregador da equipe própria", description = "Só desativa: o histórico continua")
+    public ResponseEntity<Void> removeStaff(@PathVariable Long restaurantId, @PathVariable Long staffId) {
+        staffService.deactivate(restaurantId, staffId);
         return ResponseEntity.noContent().build();
     }
 

@@ -84,7 +84,7 @@ public class RestaurantOnboardingService {
         }
 
         // 3. Validar que todas as categorias existem
-        List<Category> categories = validateAndGetCategories(request.getCategoryIds());
+        List<Category> categories = categoryRepository.findAllByIdOrThrow(request.getCategoryIds());
 
         // 4. Criar o usuário owner
         User owner = createOwner(request.getOwner());
@@ -153,16 +153,6 @@ public class RestaurantOnboardingService {
         }
     }
 
-    private List<Category> validateAndGetCategories(List<Long> categoryIds) {
-        List<Category> categories = categoryRepository.findAllById(categoryIds);
-        
-        if (categories.size() != categoryIds.size()) {
-            throw new ResourceNotFoundException("Uma ou mais categorias não foram encontradas");
-        }
-
-        return categories;
-    }
-
     private User createOwner(RestaurantOnboardingRequest.OwnerData ownerData) {
         User owner = new User();
         owner.setFullName(ownerData.getFullName());
@@ -218,8 +208,11 @@ public class RestaurantOnboardingService {
 
     private LayoutConfig createLayoutConfig(LayoutConfigDTO layoutConfigDTO, Restaurant restaurant) {
         LayoutConfig layoutConfig = new LayoutConfig();
-        layoutConfig.setPrimaryColor(layoutConfigDTO.getPrimaryColor());
-        layoutConfig.setSecondaryColor(layoutConfigDTO.getSecondaryColor());
+        // Formato antigo (só cores livres): a primária vira a cor da marca sobre o tema padrão
+        String brandColor = layoutConfigDTO.getBrandColor() != null || layoutConfigDTO.getThemePreset() != null
+                ? layoutConfigDTO.getBrandColor()
+                : layoutConfigDTO.getPrimaryColor();
+        layoutConfig.applyAppearance(layoutConfigDTO.getThemePreset(), brandColor, layoutConfigDTO.getSlogan());
         layoutConfig.setRestaurant(restaurant);
 
         return layoutConfig;

@@ -28,7 +28,21 @@ export 'components/app_image_avatar.dart';
 export 'components/app_choice_tile.dart';
 export 'components/app_qr_code.dart';
 export 'components/app_countdown.dart';
+export 'components/app_hero_banner.dart';
+export 'components/app_badge.dart';
+export 'components/app_meta_item.dart';
+export 'components/app_search_bar.dart';
+export 'components/app_skeleton.dart';
+export 'components/app_color_field.dart';
+export 'components/app_tag_field.dart';
+export 'components/app_panel_card.dart';
+export 'components/app_page_container.dart';
+export 'components/app_responsive_grid.dart';
+export 'components/app_stat_tile.dart';
+export 'components/app_top_nav_bar.dart';
 
 // ========== TEMA ==========
 export 'theme/app_colors.dart';
 export 'theme/app_theme.dart';
+export 'theme/app_theme_colors.dart';
+export 'theme/app_theme_presets.dart';

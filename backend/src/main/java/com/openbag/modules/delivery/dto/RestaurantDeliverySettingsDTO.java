@@ -27,4 +27,5 @@ public class RestaurantDeliverySettingsDTO {
     private List<PartnerDTO> partners;
     private long activeFixedCouriers;
     private long pendingFixedCouriers;
+    private int courierNoShowMinutes;
 }

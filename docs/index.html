@@ -3,811 +3,699 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    
+
     <!-- Primary Meta Tags -->
-    <title>OpenBag - Delivery Justo e Cooperativo | Plataforma Open Source</title>
-    <meta name="title" content="OpenBag - Delivery Justo e Cooperativo | Plataforma Open Source">
-    <meta name="description" content="OpenBag conecta restaurantes com cooperativas de entregadores através de uma taxa fixa justa (R$ 3,98 por pedido). Combata o monopólio do delivery com open source, transparência e impacto social.">
-    <meta name="keywords" content="delivery, cooperativa, entregadores, restaurantes, open source, delivery justo, taxa fixa delivery, cooperativismo, economia solidária, alternativa delivery">
-    <meta name="author" content="OpenBag Community">
+    <title>OpenBag - Visibilidade para pequenos negócios | Open Source</title>
+    <meta name="title" content="OpenBag - Visibilidade para pequenos negócios | Open Source">
+    <meta name="description" content="Plataforma open source que dá a pequenos restaurantes página própria, cardápio online e controle da operação, e que, quando possível, trabalha junto com cooperativas de entregadores.">
+    <meta name="keywords" content="pequenos negócios, restaurante, cardápio online, página do restaurante, cooperativa de entregadores, associação de entregadores, open source, delivery local, economia solidária">
+    <meta name="author" content="Lucas Ramos">
     <meta name="robots" content="index, follow">
-    <meta name="language" content="Portuguese">
-    
-    <!-- Open Graph / Facebook -->
+
+    <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://seu-usuario.github.io/openbag/">
-    <meta property="og:title" content="OpenBag - Delivery Justo e Cooperativo">
-    <meta property="og:description" content="Plataforma open source que conecta restaurantes e cooperativas de entregadores com taxas justas. Combata o monopólio do delivery!">
-    <meta property="og:image" content="https://seu-usuario.github.io/openbag/assets/og-image.png">
+    <meta property="og:url" content="https://lucasramos-developer.github.io/openbag/">
+    <meta property="og:title" content="OpenBag - Visibilidade para pequenos negócios">
+    <meta property="og:description" content="Página própria, cardápio online e controle da operação para pequenos restaurantes, com espaço para as cooperativas de entregadores da cidade.">
+    <meta property="og:image" content="https://lucasramos-developer.github.io/openbag/assets/og-image.jpg">
     <meta property="og:locale" content="pt_BR">
-    
+
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://seu-usuario.github.io/openbag/">
-    <meta property="twitter:title" content="OpenBag - Delivery Justo e Cooperativo">
-    <meta property="twitter:description" content="Plataforma open source que conecta restaurantes e cooperativas de entregadores com taxas justas.">
-    <meta property="twitter:image" content="https://seu-usuario.github.io/openbag/assets/twitter-image.png">
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://seu-usuario.github.io/openbag/">
-    
-    <!-- Favicon -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="OpenBag - Visibilidade para pequenos negócios">
+    <meta name="twitter:description" content="Plataforma open source para pequenos restaurantes e cooperativas de entregadores.">
+    <meta name="twitter:image" content="https://lucasramos-developer.github.io/openbag/assets/og-image.jpg">
+
+    <link rel="canonical" href="https://lucasramos-developer.github.io/openbag/">
     <link rel="icon" type="image/png" sizes="32x32" href="openbag.png">
-    
-    <!-- Schema.org structured data -->
+
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "OpenBag",
+      "softwareVersion": "0.2.0",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web, Android, iOS",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "BRL"
-      },
-      "description": "Plataforma open source de delivery que conecta restaurantes com cooperativas de entregadores através de taxas justas e transparentes.",
-      "url": "https://seu-usuario.github.io/openbag/",
-      "image": "https://seu-usuario.github.io/openbag/assets/logo.png",
+      "license": "https://www.gnu.org/licenses/agpl-3.0.html",
+      "description": "Plataforma open source que dá visibilidade a pequenos negócios de comida e apoia cooperativas de entregadores.",
+      "url": "https://lucasramos-developer.github.io/openbag/",
+      "image": "https://lucasramos-developer.github.io/openbag/assets/og-image.jpg",
+      "codeRepository": "https://github.com/LucasRamos-Developer/openbag",
       "author": {
-        "@type": "Organization",
-        "name": "OpenBag Community",
-        "url": "https://github.com/seu-usuario/openbag"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "5",
-        "ratingCount": "1"
+        "@type": "Person",
+        "name": "Lucas Ramos",
+        "email": "lucasramos.developer@gmail.com"
       }
     }
     </script>
-    
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         :root {
-            --primary-color: #16a34a;
-            --secondary-color: #15803d;
-            --danger-color: #dc2626;
-            --dark: #1f2937;
-            --light: #f9fafb;
-            --border-radius: 8px;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
+            --primary: #16a34a;
+            --primary-strong: #15803d;
+            --primary-deep: #14532d;
+            --primary-soft: #dcfce7;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --bg: #ffffff;
+            --bg-alt: #f6f8f7;
+            --surface: #ffffff;
+            --border: #e5e7eb;
+            --warn-bg: #fef3c7;
+            --warn-text: #92400e;
+            --info-bg: #dbeafe;
+            --info-text: #1e40af;
+            --radius: 12px;
+            --shadow: 0 1px 2px rgba(0,0,0,.05), 0 8px 24px rgba(0,0,0,.06);
+            --gutter: 2rem;
         }
-        
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --primary: #22c55e;
+                --primary-strong: #4ade80;
+                --primary-soft: #14532d;
+                --text: #e5e7eb;
+                --muted: #9ca3af;
+                --bg: #0f1412;
+                --bg-alt: #151c19;
+                --surface: #1a221f;
+                --border: #2a3430;
+                --warn-bg: #451a03;
+                --warn-text: #fcd34d;
+                --info-bg: #172554;
+                --info-text: #93c5fd;
+                --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+            }
+        }
+        :root[data-theme="dark"] {
+            --primary: #22c55e;
+            --primary-strong: #4ade80;
+            --primary-soft: #14532d;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --bg: #0f1412;
+            --bg-alt: #151c19;
+            --surface: #1a221f;
+            --border: #2a3430;
+            --warn-bg: #451a03;
+            --warn-text: #fcd34d;
+            --info-bg: #172554;
+            --info-text: #93c5fd;
+            --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, sans-serif;
             line-height: 1.6;
-            color: var(--dark);
-            background-color: #ffffff;
+            color: var(--text);
+            background: var(--bg);
+            overflow-x: hidden;
         }
-        
+
+        img { max-width: 100%; height: auto; display: block; }
+        a { color: var(--primary-strong); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 var(--gutter); }
+
         /* Header */
         header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #14532d 100%);
-            color: white;
-            padding: 1rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: var(--shadow);
+            background: var(--primary-deep);
+            color: #fff;
+            position: sticky; top: 0; z-index: 100;
         }
-        
         nav {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 2rem;
+            max-width: 1200px; margin: 0 auto; padding: .9rem var(--gutter);
+            display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
         }
-        
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .logo img {
-            height: 44px;
-            width: auto;
-            filter: brightness(0) invert(1);
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-        
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            transition: var(--transition);
-            font-weight: 500;
-        }
-        
-        .nav-links a:hover {
-            opacity: 0.8;
-        }
-        
-        /* Hero Section */
+        .logo { display: flex; align-items: center; gap: .6rem; font-weight: 800; font-size: 1.25rem; color: #fff; text-decoration: none; }
+        .logo img { height: 32px; filter: brightness(0) invert(1); }
+        .nav-links { display: flex; gap: 1.5rem; list-style: none; overflow-x: auto; scrollbar-width: none; }
+        .nav-links::-webkit-scrollbar { display: none; }
+        .nav-links a { color: #fff; text-decoration: none; font-weight: 500; white-space: nowrap; opacity: .9; }
+        .nav-links a:hover { opacity: 1; text-decoration: underline; }
+
+        /* Hero */
         .hero {
-            background: linear-gradient(135deg, #14532d 0%, var(--primary-color) 100%);
-            color: white;
-            padding: 6rem 2rem;
-            text-align: center;
+            background: linear-gradient(160deg, var(--primary-deep) 0%, #166534 55%, #16a34a 100%);
+            color: #fff;
+            padding: 4.5rem 0 0;
+            overflow: hidden;
         }
-        
-        .hero h1 {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            margin-bottom: 1rem;
-            font-weight: 800;
-            line-height: 1.2;
+        .hero-inner { text-align: center; max-width: 820px; margin: 0 auto; }
+        .version-pill {
+            display: inline-flex; align-items: center; gap: .5rem;
+            background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25);
+            padding: .3rem .9rem; border-radius: 999px; font-size: .9rem; color: #fff; text-decoration: none;
+            margin-bottom: 1.5rem;
         }
-        
-        .hero p {
-            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
-            margin-bottom: 2rem;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            opacity: 0.95;
-        }
-        
-        .cta-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
+        .version-pill strong { font-weight: 700; }
+        .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.15; font-weight: 800; margin-bottom: 1rem; }
+        .hero p { font-size: clamp(1.05rem, 2.3vw, 1.25rem); opacity: .95; margin-bottom: 2rem; }
+        .cta-buttons { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
         .btn {
-            padding: 1rem 2rem;
-            border-radius: var(--border-radius);
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition);
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
+            display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+            padding: .85rem 1.6rem; border-radius: 10px; font-weight: 600; text-decoration: none;
+            transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
         }
-        
-        .btn-primary {
-            background-color: white;
-            color: var(--primary-color);
+        .btn:hover { transform: translateY(-1px); }
+        .btn-light { background: #fff; color: var(--primary-deep); }
+        .btn-light:hover { box-shadow: 0 8px 20px rgba(0,0,0,.2); }
+        .btn-outline { border: 2px solid rgba(255,255,255,.8); color: #fff; }
+        .btn-outline:hover { background: rgba(255,255,255,.1); }
+        .btn-primary { background: var(--primary); color: #fff; }
+
+        .hero-shot {
+            margin: 3rem auto 0; max-width: 980px;
+            border-radius: 14px 14px 0 0; overflow: hidden;
+            box-shadow: 0 -10px 40px rgba(0,0,0,.25);
+            border: 1px solid rgba(255,255,255,.2); border-bottom: none;
         }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
-        
-        .btn-secondary {
-            background-color: transparent;
-            color: white;
-            border: 2px solid white;
-        }
-        
-        .btn-secondary:hover {
-            background-color: white;
-            color: var(--secondary-color);
-        }
-        
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-        
-        /* Section */
-        section {
-            padding: 5rem 0;
-        }
-        
-        section:nth-child(even) {
-            background-color: var(--light);
-        }
-        
-        h2 {
-            font-size: clamp(2rem, 4vw, 2.5rem);
-            margin-bottom: 1rem;
-            text-align: center;
-            color: var(--dark);
-            font-weight: 700;
-        }
-        
-        .section-subtitle {
-            text-align: center;
-            font-size: 1.2rem;
-            color: #6b7280;
-            margin-bottom: 3rem;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        /* Problem Section */
-        .problem-solution {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-        
+        .browser-bar { background: #e5e7eb; height: 28px; display: flex; align-items: center; gap: 6px; padding: 0 12px; }
+        .browser-bar span { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; }
+
+        /* Sections */
+        section { padding: 5rem 0; }
+        section.alt { background: var(--bg-alt); }
+        h2 { font-size: clamp(1.7rem, 3.6vw, 2.3rem); line-height: 1.2; text-align: center; margin-bottom: .75rem; }
+        .subtitle { text-align: center; color: var(--muted); font-size: 1.1rem; max-width: 700px; margin: 0 auto 3rem; }
+        h3 { font-size: 1.25rem; line-height: 1.3; margin-bottom: .6rem; }
+
+        .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+
         .card {
-            background: white;
-            padding: 2rem;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            transition: var(--transition);
+            background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 1.75rem; box-shadow: var(--shadow);
         }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        .card .icon { font-size: 2rem; margin-bottom: .75rem; }
+        .card p { color: var(--muted); }
+        .card ul { list-style: none; margin-top: .75rem; }
+        .card li { padding: .3rem 0 .3rem 1.5rem; position: relative; }
+        .card li::before { content: "✓"; position: absolute; left: 0; color: var(--primary); font-weight: 700; }
+
+        .callout {
+            margin-top: 2.5rem; border-left: 4px solid var(--primary);
+            background: var(--surface); border-radius: var(--radius); padding: 1.5rem 1.75rem; box-shadow: var(--shadow);
         }
-        
-        .card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: var(--dark);
+        .callout p + p { margin-top: .5rem; }
+        .ways { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; margin-top: 1.25rem; }
+        .way h4 { font-size: 1.05rem; margin-bottom: .35rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+        .way p { color: var(--muted); }
+
+        .principles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-top: 2.5rem; }
+        .principle { text-align: center; padding: 1.25rem 1rem; border-radius: var(--radius); background: var(--primary-soft); }
+        .principle strong { display: block; margin-bottom: .25rem; }
+        .principle span { font-size: .95rem; color: var(--muted); }
+
+        /* Badges */
+        .badge {
+            display: inline-block; font-size: .78rem; font-weight: 700; letter-spacing: .02em;
+            padding: .2rem .6rem; border-radius: 999px; vertical-align: middle; white-space: nowrap;
         }
-        
-        .card.problem {
-            border-top: 4px solid var(--danger-color);
+        .badge-ok { background: var(--primary-soft); color: var(--primary-strong); }
+        .badge-test { background: var(--info-bg); color: var(--info-text); }
+        .badge-dev { background: var(--warn-bg); color: var(--warn-text); }
+        .badge-plan { background: var(--bg-alt); color: var(--muted); border: 1px solid var(--border); }
+
+        /* Screens */
+        .feature { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 3rem; align-items: center; margin-bottom: 4.5rem; }
+        .feature.reverse .feature-text { order: 2; }
+        .feature-text p { color: var(--muted); margin-bottom: 1rem; }
+        .feature-text ul { list-style: none; }
+        .feature-text li { padding: .3rem 0 .3rem 1.5rem; position: relative; }
+        .feature-text li::before { content: "✓"; position: absolute; left: 0; color: var(--primary); font-weight: 700; }
+
+        .shot {
+            border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border);
+            box-shadow: var(--shadow); background: var(--surface);
         }
-        
-        .card.solution {
-            border-top: 4px solid var(--secondary-color);
+        .shot a { display: block; }
+        .shot.tall { max-height: 520px; }
+        .shot.phone { max-width: 280px; margin: 0 auto; border-radius: 22px; }
+        figure figcaption { font-size: .9rem; color: var(--muted); margin-top: .6rem; text-align: center; }
+
+        .themes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+        .ops { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+
+        .status-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
+        .status-card { display: flex; flex-direction: column; gap: 1rem; }
+        .status-card .head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; flex-wrap: wrap; }
+        .status-card .head h3 { margin: 0; }
+        .status-card .shot.phone { max-height: 440px; }
+        .status-card .pair { display: grid; grid-template-columns: 3fr 2fr; gap: .75rem; align-items: start; }
+        .placeholder {
+            border: 2px dashed var(--border); border-radius: var(--radius);
+            min-height: 220px; display: flex; align-items: center; justify-content: center;
+            color: var(--muted); text-align: center; padding: 1.5rem; font-size: .95rem;
         }
-        
-        .card ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        
-        .card li {
-            padding: 0.5rem 0;
-            padding-left: 1.5rem;
-            position: relative;
-        }
-        
-        .card.problem li:before {
-            content: "✗";
-            position: absolute;
-            left: 0;
-            color: var(--danger-color);
-            font-weight: bold;
-        }
-        
-        .card.solution li:before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: var(--secondary-color);
-            font-weight: bold;
-        }
-        
-        /* Comparison Table */
-        .comparison-table {
-            overflow-x: auto;
-            margin-top: 2rem;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-        }
-        
-        th, td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        th {
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: 600;
-        }
-        
-        tbody tr:hover {
-            background-color: var(--light);
-        }
-        
-        .highlight {
-            background-color: #dbeafe;
-            font-weight: 600;
-        }
-        
-        /* Impact Grid */
-        .impact-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-        
-        .impact-card {
-            background: white;
-            padding: 2rem;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            text-align: center;
-        }
-        
-        .impact-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        
-        .impact-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-            color: var(--dark);
-        }
-        
-        .impact-card ul {
-            list-style: none;
-            text-align: left;
-        }
-        
-        .impact-card li {
-            padding: 0.5rem 0;
-            padding-left: 1.5rem;
-            position: relative;
-        }
-        
-        .impact-card li:before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: var(--secondary-color);
-            font-weight: bold;
-        }
-        
-        /* How it Works */
-        .steps {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-        
-        .step {
-            text-align: center;
-            position: relative;
-        }
-        
+
+        .more-link { text-align: center; margin-top: 3rem; }
+
+        /* Steps */
+        .steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.5rem; counter-reset: step; }
+        .step { text-align: center; }
         .step-number {
-            width: 60px;
-            height: 60px;
-            background: var(--primary-color);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin: 0 auto 1rem;
+            width: 52px; height: 52px; border-radius: 50%; background: var(--primary); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.25rem;
+            margin: 0 auto .9rem;
         }
-        
-        .step h3 {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
+        .step p { color: var(--muted); font-size: .98rem; }
+
+        /* Roadmap */
+        .timeline { max-width: 820px; margin: 0 auto; position: relative; }
+        .timeline::before { content: ""; position: absolute; left: 11px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
+        .release { position: relative; padding-left: 2.75rem; margin-bottom: 1.75rem; }
+        .release::before {
+            content: ""; position: absolute; left: 4px; top: 6px; width: 16px; height: 16px; border-radius: 50%;
+            background: var(--surface); border: 3px solid var(--border);
         }
-        
-        /* CTA Section */
-        .cta-section {
-            background: linear-gradient(135deg, var(--secondary-color) 0%, #15803d 100%);
-            color: white;
-            text-align: center;
-            padding: 5rem 2rem;
+        .release.done::before { background: var(--primary); border-color: var(--primary); }
+        .release.current::before { background: var(--surface); border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
+        .release-head { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; margin-bottom: .3rem; }
+        .release-head code { font-size: 1.05rem; font-weight: 800; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+        .release-head h3 { margin: 0; font-size: 1.1rem; }
+        .release ul { list-style: disc; padding-left: 1.2rem; color: var(--muted); }
+        .release li { padding: .12rem 0; }
+        .release li strong { color: var(--text); }
+        .semver-note { max-width: 820px; margin: 2.5rem auto 0; text-align: center; color: var(--muted); font-size: .95rem; }
+
+        /* Docs */
+        .docs-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+        .doc-link {
+            display: block; text-decoration: none; color: var(--text);
+            background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 1.25rem 1.4rem; transition: border-color .15s ease, transform .15s ease;
         }
-        
-        .cta-section h2 {
-            color: white;
+        .doc-link:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .doc-link strong { display: block; margin-bottom: .2rem; }
+        .doc-link span { color: var(--muted); font-size: .95rem; }
+
+        /* Contact */
+        .contact {
+            background: linear-gradient(160deg, var(--primary-deep) 0%, #166534 100%);
+            color: #fff; text-align: center;
         }
-        
-        .cta-section .btn-primary {
-            background-color: white;
-            color: var(--secondary-color);
-        }
-        
+        .contact h2 { color: #fff; }
+        .contact .subtitle { color: rgba(255,255,255,.9); }
+        .contact .email { font-size: clamp(1.05rem, 3vw, 1.35rem); font-weight: 700; color: #fff; word-break: break-all; }
+
         /* Footer */
-        footer {
-            background-color: var(--dark);
-            color: white;
-            padding: 3rem 0 1rem;
-        }
-        
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .footer-section h3 {
-            margin-bottom: 1rem;
-            font-size: 1.2rem;
-        }
-        
-        .footer-section ul {
-            list-style: none;
-        }
-        
-        .footer-section a {
-            color: #d1d5db;
-            text-decoration: none;
-            transition: var(--transition);
-            display: block;
-            padding: 0.3rem 0;
-        }
-        
-        .footer-section a:hover {
-            color: white;
-        }
-        
-        .footer-bottom {
-            text-align: center;
-            padding-top: 2rem;
-            border-top: 1px solid #374151;
-            color: #9ca3af;
-        }
-        
+        footer { background: #111827; color: #d1d5db; padding: 3rem 0 1.5rem; }
+        .footer-content { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+        footer h3 { color: #fff; font-size: 1.05rem; }
+        footer ul { list-style: none; }
+        footer a { color: #d1d5db; text-decoration: none; display: inline-block; padding: .2rem 0; }
+        footer a:hover { color: #fff; }
+        .footer-bottom { border-top: 1px solid #374151; padding-top: 1.25rem; text-align: center; color: #9ca3af; font-size: .9rem; }
+
+        a:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: 4px; }
+
         /* Responsive */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
-            .hero {
-                padding: 4rem 2rem;
-            }
-            
-            section {
-                padding: 3rem 0;
-            }
-            
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .btn {
-                width: 100%;
-                max-width: 300px;
-                justify-content: center;
-            }
+        @media (max-width: 1000px) {
+            .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .status-grid, .docs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .principles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
-        
-        /* Accessibility */
-        .visually-hidden {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
-        }
-        
-        /* Focus states */
-        a:focus,
-        button:focus {
-            outline: 2px solid var(--primary-color);
-            outline-offset: 2px;
+        @media (max-width: 760px) {
+            :root { --gutter: 16px; }
+            nav { flex-direction: column; align-items: flex-start; gap: .6rem; }
+            .nav-links { width: 100%; gap: 1.1rem; }
+            .hero { padding-top: 3rem; }
+            section { padding: 3.5rem 0; }
+            .grid-3, .grid-2, .ways, .feature, .ops, .status-grid, .docs-grid, .footer-content { grid-template-columns: minmax(0, 1fr); }
+            .feature { gap: 1.5rem; margin-bottom: 3rem; }
+            .feature.reverse .feature-text { order: 0; }
+            .themes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .steps { grid-template-columns: minmax(0, 1fr); }
+            .principles { grid-template-columns: minmax(0, 1fr); }
+            .cta-buttons .btn { width: 100%; max-width: 320px; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header role="banner">
-        <nav aria-label="Main navigation">
-            <div class="logo">
-                <span>OpenBag</span>
-            </div>
+    <header>
+        <nav aria-label="Navegação principal">
+            <a class="logo" href="#top"><img src="openbag.png" alt=""><span>OpenBag</span></a>
             <ul class="nav-links">
-                <li><a href="#problema">Problema</a></li>
-                <li><a href="#solucao">Solução</a></li>
-                <li><a href="#como-funciona">Como Funciona</a></li>
-                <li><a href="#impacto">Impacto Social</a></li>
-                <li><a href="https://github.com/seu-usuario/openbag" target="_blank" rel="noopener">GitHub</a></li>
+                <li><a href="#proposta">Proposta</a></li>
+                <li><a href="#telas">Telas</a></li>
+                <li><a href="#como-funciona">Como funciona</a></li>
+                <li><a href="#roadmap">Roadmap</a></li>
+                <li><a href="#docs">Docs</a></li>
+                <li><a href="https://github.com/LucasRamos-Developer/openbag" target="_blank" rel="noopener">GitHub</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero" role="main">
-        <img src="openbag.png" alt="OpenBag" style="height: 140px; width: auto; margin-bottom: 1.5rem; filter: brightness(0) invert(1);">
-        <h1>Delivery Justo e Cooperativo</h1>
-        <p>Conectamos restaurantes com cooperativas de entregadores através de uma taxa fixa e transparente de R$ 3,98 por pedido. Open source, sem monopólio, com impacto social real.</p>
-        <div class="cta-buttons">
-            <a href="https://github.com/seu-usuario/openbag" class="btn btn-primary" target="_blank" rel="noopener">
-                <span>Ver no GitHub</span>
-            </a>
-            <a href="https://github.com/seu-usuario/openbag/blob/main/README-DEVELOPER.md" class="btn btn-secondary" target="_blank" rel="noopener">
-                <span>Documentação</span>
-            </a>
-        </div>
-    </section>
-
-    <!-- Problem & Solution -->
-    <section id="problema">
-        <div class="container">
-            <h2>O Problema do Monopólio</h2>
-            <p class="section-subtitle">Grandes plataformas dominam o mercado com taxas abusivas e falta de proteção social</p>
-            
-            <div class="problem-solution">
-                <div class="card problem">
-                    <h3>🚨 Grandes Plataformas</h3>
-                    <ul>
-                        <li>Taxas de até 30% por pedido</li>
-                        <li>Mudanças unilaterais de preços</li>
-                        <li>Falta de transparência</li>
-                        <li>Nenhuma proteção social para entregadores</li>
-                        <li>Centralização de lucros</li>
-                        <li>Controle total dos dados</li>
-                    </ul>
+    <main id="top">
+        <!-- Hero -->
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="container">
+                <div class="hero-inner">
+                    <a class="version-pill" href="https://github.com/LucasRamos-Developer/openbag/blob/main/CHANGELOG.md" target="_blank" rel="noopener">
+                        <strong>v0.2.0</strong> · Veja as novidades →
+                    </a>
+                    <h1 id="hero-title">Pequenos negócios merecem ser vistos</h1>
+                    <p>O OpenBag dá a pequenos restaurantes uma página própria, cardápio online e controle da operação. Quando possível, trabalhamos junto com as cooperativas de entregadores da cidade.</p>
+                    <div class="cta-buttons">
+                        <a href="#telas" class="btn btn-light">Ver as telas</a>
+                        <a href="https://github.com/LucasRamos-Developer/openbag" class="btn btn-outline" target="_blank" rel="noopener">Código no GitHub</a>
+                    </div>
                 </div>
-                
-                <div class="card solution">
-                    <h3>✅ OpenBag</h3>
-                    <ul>
-                        <li>Taxa fixa de R$ 3,98 por pedido</li>
-                        <li>100% open source e auditável</li>
-                        <li>Transparência total</li>
-                        <li>Cooperativas com seguro e aposentadoria</li>
-                        <li>Lucro para quem trabalha</li>
-                        <li>Dados pertencem ao restaurante</li>
-                    </ul>
+                <div class="hero-shot">
+                    <div class="browser-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+                    <img src="assets/screens/vitrine-fresh-green.jpg" alt="Página de um restaurante no OpenBag, com banner, cardápio por seções e botão de adicionar ao carrinho" width="1440" height="1100">
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Comparison Table -->
-    <section id="solucao">
-        <div class="container">
-            <h2>Comparação Detalhada</h2>
-            <p class="section-subtitle">Veja como o OpenBag se diferencia das plataformas tradicionais</p>
-            
-            <div class="comparison-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Característica</th>
-                            <th>Plataformas Tradicionais</th>
-                            <th class="highlight">OpenBag</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Comissão por Pedido</strong></td>
-                            <td>Até 30%</td>
-                            <td class="highlight">R$ 3,98 fixo por pedido</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Transparência</strong></td>
-                            <td>Mudanças unilaterais</td>
-                            <td class="highlight">Open source, auditável</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Proteção Social</strong></td>
-                            <td>Nenhuma</td>
-                            <td class="highlight">Modelo cooperativo viabiliza benefícios</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Quem Lucra?</strong></td>
-                            <td>Shareholders</td>
-                            <td class="highlight">Restaurantes e entregadores</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Controle dos Dados</strong></td>
-                            <td>Centralizado</td>
-                            <td class="highlight">Do restaurante</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Governança</strong></td>
-                            <td>Corporativa</td>
-                            <td class="highlight">Cooperativa e democrática</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <p style="text-align: center; margin-top: 2rem; font-size: 1.1rem; color: var(--secondary-color); font-weight: 600;">
-                💡 <strong>R$ 1,99 cobrado do restaurante + R$ 1,99 cobrado do entregador/cooperativa</strong> — O resto é todo de quem trabalha!
-            </p>
-        </div>
-    </section>
+        <!-- Proposta -->
+        <section id="proposta">
+            <div class="container">
+                <h2>Nossa proposta</h2>
+                <p class="subtitle">Dar visibilidade a quem faz comida boa no bairro e, se possível, ajudar os entregadores a trabalhar de forma organizada e justa.</p>
 
-    <!-- How it Works -->
-    <section id="como-funciona">
-        <div class="container">
-            <h2>Como Funciona</h2>
-            <p class="section-subtitle">Um processo simples e transparente</p>
-            
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <h3>Cadastro</h3>
-                    <p>Restaurante se cadastra gratuitamente na plataforma</p>
+                <div class="grid-3">
+                    <div class="card">
+                        <div class="icon" aria-hidden="true">🏪</div>
+                        <h3>Para pequenos negócios</h3>
+                        <p>Uma vitrine própria e as ferramentas do dia a dia.</p>
+                        <ul>
+                            <li>Página com a cara da sua loja</li>
+                            <li>Cardápio com complementos e combos</li>
+                            <li>Pedidos em tempo real e tela da cozinha</li>
+                            <li>Caixa e acerto com entregadores</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="icon" aria-hidden="true">🛵</div>
+                        <h3>Para cooperativas e associações</h3>
+                        <p>Organização do trabalho dos entregadores.</p>
+                        <ul>
+                            <li>Gestão de membros e convites</li>
+                            <li>Tabela de entrega própria</li>
+                            <li>Ofertas que priorizam quem ganhou menos no dia</li>
+                            <li>Rotas que economizam sem reduzir o ganho</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="icon" aria-hidden="true">🧡</div>
+                        <h3>Para quem pede</h3>
+                        <p>Um jeito simples de pedir de quem está perto.</p>
+                        <ul>
+                            <li>Restaurantes da sua região</li>
+                            <li>Pedido pelo navegador ou pelo celular</li>
+                            <li>Pagamento na entrega</li>
+                            <li>Acompanhamento do pedido</li>
+                        </ul>
+                    </div>
                 </div>
-                
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <h3>Parceria</h3>
-                    <p>Cooperativa local se conecta aos restaurantes</p>
+
+                <div class="callout">
+                    <p><strong>Duas formas de usar</strong></p>
+                    <div class="ways">
+                        <div class="way">
+                            <h4>Com uma associação ou cooperativa <span class="badge badge-ok">Recomendado</span></h4>
+                            <p>É importante ter um <strong>acordo com a associação ou cooperativa</strong> de entregadores da sua região. Nele vocês combinam a tabela de entrega, quem atende a loja e como fica o acerto. O sistema cuida da chamada dos entregadores, das rotas e do caixa.</p>
+                        </div>
+                        <div class="way">
+                            <h4>Só o seu negócio</h4>
+                            <p>Sem acordo, você pode usar o OpenBag <strong>só para divulgar e controlar o seu negócio</strong>: página, cardápio, pedidos, cozinha e caixa, com a sua própria equipe de entrega.</p>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <h3>Pedido</h3>
-                    <p>Cliente faz pedido pelo app ou web</p>
-                </div>
-                
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <h3>Entrega</h3>
-                    <p>Entregador da cooperativa realiza a entrega</p>
-                </div>
-                
-                <div class="step">
-                    <div class="step-number">5</div>
-                    <h3>Taxas Justas</h3>
-                    <p>R$ 3,98 fixos — R$ 1,99 do restaurante + R$ 1,99 do entregador/cooperativa</p>
+
+                <div class="principles">
+                    <div class="principle"><strong>Ganho justo</strong><span>Rota agrupada nunca reduz o que o entregador recebe</span></div>
+                    <div class="principle"><strong>Vitrine honesta</strong><span>A ordem das lojas não é vendida</span></div>
+                    <div class="principle"><strong>Dados da loja</strong><span>Os dados pertencem ao negócio</span></div>
+                    <div class="principle"><strong>Código aberto</strong><span>AGPL-3.0, auditável por qualquer pessoa</span></div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Social Impact -->
-    <section id="impacto">
-        <div class="container">
-            <h2>Impacto Social</h2>
-            <p class="section-subtitle">Modelo cooperativo que viabiliza benefícios sociais aos entregadores</p>
-            
-            <div class="impact-grid">
-                <div class="impact-card">
-                    <div class="impact-icon">🤝</div>
-                    <h3>Benefícios Viabilizados via Cooperativas</h3>
-                    <ul>
-                        <li>Seguro de vida e acidentes</li>
-                        <li>Planos de aposentadoria</li>
-                        <li>Suporte jurídico</li>
-                        <li>Capacitação profissional</li>
-                        <li>Gestão democrática</li>
-                    </ul>
-                    <p style="margin-top: 1rem; font-size: 0.9rem; color: #6b7280;">
-                        <em>* Oferecidos pelas cooperativas, não pela plataforma</em>
-                    </p>
+        <!-- Telas -->
+        <section id="telas" class="alt">
+            <div class="container">
+                <h2>As telas da versão 0.2.0</h2>
+                <p class="subtitle">Capturas do sistema funcionando. Clique em uma imagem para ver no tamanho real.</p>
+
+                <div class="feature">
+                    <div class="feature-text">
+                        <span class="badge badge-ok">Pronto</span>
+                        <h3 style="margin-top:.6rem;">Sua loja, do seu jeito</h3>
+                        <p>O restaurante personaliza a própria página e vê o resultado ao vivo antes de salvar.</p>
+                        <ul>
+                            <li>8 temas prontos, 5 claros e 3 escuros</li>
+                            <li>Opção de usar a cor da sua marca</li>
+                            <li>Imagem de destaque, logo e slogan</li>
+                            <li>Seções do cardápio com ícones</li>
+                        </ul>
+                    </div>
+                    <figure class="shot tall">
+                        <a href="assets/screens/painel-aparencia.jpg" target="_blank" rel="noopener">
+                            <img src="assets/screens/painel-aparencia.jpg" alt="Painel de aparência da loja com prévia ao vivo e seletor de temas" loading="lazy" width="1200" height="1667">
+                        </a>
+                    </figure>
                 </div>
-                
-                <div class="impact-card">
-                    <div class="impact-icon">🍽️</div>
-                    <h3>Para Restaurantes</h3>
-                    <ul>
-                        <li>Custos previsíveis</li>
-                        <li>Maior margem de lucro</li>
-                        <li>Controle dos dados</li>
-                        <li>Parcerias locais</li>
-                        <li>Visibilidade justa</li>
-                    </ul>
+
+                <div class="themes" style="margin-bottom:4.5rem;">
+                    <figure>
+                        <div class="shot"><a href="assets/screens/vitrine-fresh-green.jpg" target="_blank" rel="noopener"><img src="assets/screens/vitrine-fresh-green.jpg" alt="Loja com o tema Fresh Green" loading="lazy" width="1440" height="1100"></a></div>
+                        <figcaption>Fresh Green</figcaption>
+                    </figure>
+                    <figure>
+                        <div class="shot"><a href="assets/screens/vitrine-sunset-orange.jpg" target="_blank" rel="noopener"><img src="assets/screens/vitrine-sunset-orange.jpg" alt="Loja com o tema Sunset Orange" loading="lazy" width="1440" height="1100"></a></div>
+                        <figcaption>Sunset Orange</figcaption>
+                    </figure>
+                    <figure>
+                        <div class="shot"><a href="assets/screens/vitrine-berry-pink.jpg" target="_blank" rel="noopener"><img src="assets/screens/vitrine-berry-pink.jpg" alt="Loja com o tema Berry Pink" loading="lazy" width="1440" height="1100"></a></div>
+                        <figcaption>Berry Pink</figcaption>
+                    </figure>
+                    <figure>
+                        <div class="shot"><a href="assets/screens/vitrine-midnight-blue.jpg" target="_blank" rel="noopener"><img src="assets/screens/vitrine-midnight-blue.jpg" alt="Loja com o tema escuro Midnight Blue" loading="lazy" width="1440" height="1100"></a></div>
+                        <figcaption>Midnight Blue (escuro)</figcaption>
+                    </figure>
                 </div>
-                
-                <div class="impact-card">
-                    <div class="impact-icon">👥</div>
-                    <h3>Para Consumidores</h3>
-                    <ul>
-                        <li>Preços mais baixos</li>
-                        <li>Transparência total</li>
-                        <li>Economia local</li>
-                        <li>Impacto social positivo</li>
-                        <li>Apoio ao cooperativismo</li>
-                    </ul>
+
+                <div style="margin-bottom:4.5rem;">
+                    <div style="text-align:center; margin-bottom:1.5rem;">
+                        <span class="badge badge-ok">Pronto</span>
+                        <h3 style="margin-top:.6rem;">Operação do restaurante</h3>
+                        <p style="color:var(--muted); max-width:640px; margin:0 auto;">Pedidos em tempo real, cozinha, comanda impressa, rotas de entrega e o caixa com o acerto de cada entregador.</p>
+                    </div>
+                    <div class="ops">
+                        <figure>
+                            <div class="shot"><a href="assets/screens/restaurante-pedidos.jpg" target="_blank" rel="noopener"><img src="assets/screens/restaurante-pedidos.jpg" alt="Gestor de pedidos do restaurante com o menu lateral aberto" loading="lazy" width="1280" height="800"></a></div>
+                            <figcaption>Pedidos e menu do painel</figcaption>
+                        </figure>
+                        <figure>
+                            <div class="shot"><a href="assets/screens/restaurante-rotas.jpg" target="_blank" rel="noopener"><img src="assets/screens/restaurante-rotas.jpg" alt="Tela de rotas com mapa e pedidos agrupados" loading="lazy" width="1440" height="900"></a></div>
+                            <figcaption>Rotas: pedidos da mesma direção saem juntos</figcaption>
+                        </figure>
+                        <figure>
+                            <div class="shot"><a href="assets/screens/restaurante-caixa.jpg" target="_blank" rel="noopener"><img src="assets/screens/restaurante-caixa.jpg" alt="Caixa do restaurante com o saldo de cada entregador" loading="lazy" width="1440" height="900"></a></div>
+                            <figcaption>Caixa e acerto com entregadores</figcaption>
+                        </figure>
+                    </div>
+                </div>
+
+                <div class="status-grid">
+                    <div class="card status-card">
+                        <div class="head"><h3>Cliente</h3><span class="badge badge-test">Em testes</span></div>
+                        <p>A vitrine, a página da loja, o carrinho, o checkout e o acompanhamento do pedido já funcionam e estão em fase de testes.</p>
+                        <div class="pair">
+                            <div class="shot"><a href="assets/screens/cliente-restaurantes.jpg" target="_blank" rel="noopener"><img src="assets/screens/cliente-restaurantes.jpg" alt="Vitrine de restaurantes para o cliente" loading="lazy" width="1440" height="900"></a></div>
+                            <div class="shot phone"><a href="assets/screens/cliente-mobile.jpg" target="_blank" rel="noopener"><img src="assets/screens/cliente-mobile.jpg" alt="Página da loja no celular" loading="lazy" width="390" height="844"></a></div>
+                        </div>
+                    </div>
+                    <div class="card status-card">
+                        <div class="head"><h3>Entregador</h3><span class="badge badge-dev">Em desenvolvimento</span></div>
+                        <p>O painel está sendo construído. Já dá para ficar online, receber ofertas em tempo real, seguir a rota e ver os ganhos.</p>
+                        <div class="shot phone"><a href="assets/screens/entregador-rota.jpg" target="_blank" rel="noopener"><img src="assets/screens/entregador-rota.jpg" alt="Entregador em rota com duas entregas" loading="lazy" width="390" height="844"></a></div>
+                    </div>
+                    <div class="card status-card">
+                        <div class="head"><h3>Cooperativa</h3><span class="badge badge-dev">Em desenvolvimento</span></div>
+                        <p>O painel da associação ou cooperativa está sendo construído. Cadastro, membros, convites e tabela de entrega já funcionam.</p>
+                        <div class="placeholder">Parcerias com lojas e relatórios para os cooperados chegam na versão 0.3.0</div>
+                    </div>
+                </div>
+
+                <p class="more-link">
+                    <a class="btn btn-primary" href="https://github.com/LucasRamos-Developer/openbag/tree/main/layout" target="_blank" rel="noopener">Ver todas as telas do layout →</a>
+                </p>
+            </div>
+        </section>
+
+        <!-- Como funciona -->
+        <section id="como-funciona">
+            <div class="container">
+                <h2>Como funciona</h2>
+                <p class="subtitle">Do cadastro da loja até a entrega.</p>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h3>Cadastro</h3>
+                        <p>A loja se cadastra e monta a página e o cardápio.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h3>Acordo</h3>
+                        <p>Se quiser, combina com uma associação ou cooperativa da região.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h3>Pedido</h3>
+                        <p>O cliente pede pela página da loja, no navegador ou no celular.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <h3>Preparo</h3>
+                        <p>A loja recebe o pedido na hora e prepara na cozinha.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <h3>Entrega</h3>
+                        <p>Sai com um entregador da cooperativa, um fixo ou a equipe da loja.</p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="container">
-            <h2>Junte-se à Revolução do Delivery Justo</h2>
-            <p class="section-subtitle" style="color: rgba(255, 255, 255, 0.9);">
-                O OpenBag é 100% open source. Contribua com código, ideias ou divulgue o projeto!
-            </p>
-            <div class="cta-buttons">
-                <a href="https://github.com/seu-usuario/openbag" class="btn btn-primary" target="_blank" rel="noopener">
-                    Contribuir no GitHub
-                </a>
-                <a href="https://github.com/seu-usuario/openbag/blob/main/CONTRIBUTING.md" class="btn btn-secondary" target="_blank" rel="noopener">
-                    Guia de Contribuição
-                </a>
+        <!-- Roadmap -->
+        <section id="roadmap" class="alt">
+            <div class="container">
+                <h2>Roadmap</h2>
+                <p class="subtitle">Cada etapa vira uma nova versão, seguindo o Versionamento Semântico.</p>
+
+                <div class="timeline">
+                    <div class="release done">
+                        <div class="release-head"><code>0.1.0</code><h3>MVP</h3><span class="badge badge-ok">Lançada</span></div>
+                        <ul><li>Cadastro, onboarding do restaurante, carrinho, pedidos, mapas com OpenStreetMap e login com JWT.</li></ul>
+                    </div>
+                    <div class="release current">
+                        <div class="release-head"><code>0.2.0</code><h3>Operação do restaurante, associações e personalização</h3><span class="badge badge-ok">Atual</span></div>
+                        <ul>
+                            <li>Pedidos em tempo real, cozinha, comanda, cardápio com combos, rotas e caixa.</li>
+                            <li>8 temas e cor da marca para a página da loja.</li>
+                            <li>Associações com membros, convites e tabela de entrega.</li>
+                        </ul>
+                    </div>
+                    <div class="release">
+                        <div class="release-head"><code>0.3.0</code><h3>Entregador, cooperativa e cliente</h3><span class="badge badge-dev">Em andamento</span></div>
+                        <ul>
+                            <li>Concluir as telas do entregador e o painel da cooperativa.</li>
+                            <li>Fluxo do cliente fora da fase de testes, com avaliações.</li>
+                            <li>Página da loja otimizada para buscadores.</li>
+                        </ul>
+                    </div>
+                    <div class="release">
+                        <div class="release-head"><code>0.4.0</code><h3>Segurança e integridade dos dados</h3><span class="badge badge-plan">Planejada</span></div>
+                        <ul>
+                            <li><strong>Race conditions:</strong> ofertas, status do pedido e caixa à prova de ações simultâneas.</li>
+                            <li><strong>Rate limiting:</strong> login, cadastro, pedidos e envio de arquivos.</li>
+                            <li><strong>Throttling:</strong> localização do entregador, WebSocket e jobs.</li>
+                            <li><strong>Idempotência:</strong> a mesma ação nunca é aplicada duas vezes.</li>
+                            <li>Migrações versionadas, restrições no banco e revisão de segurança.</li>
+                        </ul>
+                    </div>
+                    <div class="release">
+                        <div class="release-head"><code>0.5.0</code><h3>Auditoria de dados</h3><span class="badge badge-plan">Planejada</span></div>
+                        <ul>
+                            <li>Trilha de auditoria: quem mudou o quê e quando, com o antes e o depois.</li>
+                            <li>Histórico que não pode ser alterado para caixa e ganhos.</li>
+                            <li>Relatórios exportáveis e LGPD.</li>
+                        </ul>
+                    </div>
+                    <div class="release">
+                        <div class="release-head"><code>1.0.0</code><h3>Primeira versão estável</h3><span class="badge badge-plan">Planejada</span></div>
+                        <ul><li>Piloto real com uma cidade e uma cooperativa. API estável e app web publicado.</li></ul>
+                    </div>
+                </div>
+
+                <p class="semver-note">
+                    Versões no formato <code>MAIOR.MENOR.CORREÇÃO</code>. Regras e histórico completos no
+                    <a href="https://github.com/LucasRamos-Developer/openbag/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG</a>.
+                </p>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Footer -->
-    <footer role="contentinfo">
+        <!-- Docs -->
+        <section id="docs">
+            <div class="container">
+                <h2>Documentação</h2>
+                <p class="subtitle">Tudo que você precisa para entender, rodar e contribuir. Documentação da versão 0.2.0.</p>
+                <div class="docs-grid">
+                    <a class="doc-link" href="https://github.com/LucasRamos-Developer/openbag/blob/main/docs/architecture/README.md" target="_blank" rel="noopener">
+                        <strong>Arquitetura</strong><span>Módulos, tempo real, despacho, rotas e caixa</span>
+                    </a>
+                    <a class="doc-link" href="https://github.com/LucasRamos-Developer/openbag/blob/main/README-DEVELOPER.md" target="_blank" rel="noopener">
+                        <strong>Guia de desenvolvimento</strong><span>Setup, Docker, variáveis e testes</span>
+                    </a>
+                    <a class="doc-link" href="https://github.com/LucasRamos-Developer/openbag/blob/main/CHANGELOG.md" target="_blank" rel="noopener">
+                        <strong>Changelog e versões</strong><span>O que mudou em cada versão</span>
+                    </a>
+                    <a class="doc-link" href="https://github.com/LucasRamos-Developer/openbag/blob/main/docs/api/README.md" target="_blank" rel="noopener">
+                        <strong>API</strong><span>Endpoints REST</span>
+                    </a>
+                    <a class="doc-link" href="https://github.com/LucasRamos-Developer/openbag/blob/main/frontend/lib/core/ui/README.md" target="_blank" rel="noopener">
+                        <strong>Design system</strong><span>Componentes e temas do app</span>
+                    </a>
+                    <a class="doc-link" href="https://github.com/LucasRamos-Developer/openbag/tree/main/layout" target="_blank" rel="noopener">
+                        <strong>Layout</strong><span>Todas as capturas de tela</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contato -->
+        <section class="contact" id="contato">
+            <div class="container">
+                <h2>Quer saber mais?</h2>
+                <p class="subtitle">Quer usar o OpenBag na sua cidade, trazer a sua cooperativa ou contribuir com o projeto? Fale com a gente.</p>
+                <p style="margin-bottom:2rem;"><a class="email" href="mailto:lucasramos.developer@gmail.com">lucasramos.developer@gmail.com</a></p>
+                <div class="cta-buttons">
+                    <a href="mailto:lucasramos.developer@gmail.com" class="btn btn-light">Enviar e-mail</a>
+                    <a href="https://github.com/LucasRamos-Developer/openbag/blob/main/CONTRIBUTING.md" class="btn btn-outline" target="_blank" rel="noopener">Como contribuir</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
         <div class="container">
             <div class="footer-content">
-                <div class="footer-section">
+                <div>
                     <h3>OpenBag</h3>
-                    <p>Plataforma open source de delivery com foco em cooperativismo e taxas justas.</p>
-                    <p style="margin-top: 1rem; font-size: 0.9rem; color: #9ca3af;">
-                        <em>O nome "OpenBag" é sugestivo e pode ser alterado.</em>
-                    </p>
+                    <p style="margin-top:.5rem;">Plataforma open source para dar visibilidade a pequenos negócios e apoiar cooperativas de entregadores.</p>
+                    <p style="margin-top:.75rem; font-size:.9rem; color:#9ca3af;"><em>"OpenBag" é um nome provisório.</em></p>
                 </div>
-                
-                <div class="footer-section">
-                    <h3>Links Úteis</h3>
+                <div>
+                    <h3>Projeto</h3>
                     <ul>
-                        <li><a href="https://github.com/seu-usuario/openbag">GitHub</a></li>
-                        <li><a href="https://github.com/seu-usuario/openbag/blob/main/README.md">Documentação</a></li>
-                        <li><a href="https://github.com/seu-usuario/openbag/blob/main/README-DEVELOPER.md">Para Desenvolvedores</a></li>
-                        <li><a href="https://github.com/seu-usuario/openbag/blob/main/CONTRIBUTING.md">Como Contribuir</a></li>
+                        <li><a href="https://github.com/LucasRamos-Developer/openbag">GitHub</a></li>
+                        <li><a href="https://github.com/LucasRamos-Developer/openbag/blob/main/CHANGELOG.md">Changelog</a></li>
+                        <li><a href="https://github.com/LucasRamos-Developer/openbag/tree/main/layout">Layout</a></li>
+                        <li><a href="https://github.com/LucasRamos-Developer/openbag/blob/main/CONTRIBUTING.md">Como contribuir</a></li>
                     </ul>
                 </div>
-                
-                <div class="footer-section">
+                <div>
                     <h3>Comunidade</h3>
                     <ul>
-                        <li><a href="https://github.com/seu-usuario/openbag/issues">Reportar Bug</a></li>
-                        <li><a href="https://github.com/seu-usuario/openbag/discussions">Discussões</a></li>
-                        <li><a href="mailto:contato@openbag.app">Contato</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>Tecnologias</h3>
-                    <ul>
-                        <li>Java 25 + Spring Boot</li>
-                        <li>Flutter (Web & Mobile)</li>
-                        <li>PostgreSQL</li>
-                        <li>OpenStreetMap</li>
+                        <li><a href="https://github.com/LucasRamos-Developer/openbag/issues">Reportar bug</a></li>
+                        <li><a href="https://github.com/LucasRamos-Developer/openbag/discussions">Discussões</a></li>
+                        <li><a href="mailto:lucasramos.developer@gmail.com">Contato</a></li>
                     </ul>
                 </div>
             </div>
-            
             <div class="footer-bottom">
-                <p>&copy; 2026 OpenBag Community. Licenciado sob MIT License.</p>
-                <p>Desenvolvido com ❤️ pela comunidade | Porque delivery justo é possível.</p>
+                <p>Versão 0.2.0 · Licenciado sob AGPL-3.0 · Java 25 + Spring Boot · Flutter · PostgreSQL · OpenStreetMap</p>
             </div>
         </div>
     </footer>
-
-    <!-- Analytics (placeholder) -->
-    <!-- Google Analytics -->
-    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script> -->
-    <!-- <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'GA_MEASUREMENT_ID');
-    </script> -->
 </body>
 </html>

@@ -13,6 +13,9 @@ class Restaurant {
   final String? logoUrl;
   final String? bannerUrl;
   final String? primaryColor;
+  final String? themePreset;
+  final String? brandColor;
+  final String? slogan;
   final double rating;
   final int totalReviews;
   final double deliveryFee;
@@ -37,6 +40,9 @@ class Restaurant {
     this.logoUrl,
     this.bannerUrl,
     this.primaryColor,
+    this.themePreset,
+    this.brandColor,
+    this.slogan,
     required this.rating,
     required this.totalReviews,
     required this.deliveryFee,
@@ -66,6 +72,9 @@ class Restaurant {
       logoUrl: json['logoUrl'],
       bannerUrl: json['bannerUrl'],
       primaryColor: json['primaryColor'],
+      themePreset: json['themePreset'],
+      brandColor: json['brandColor'],
+      slogan: json['slogan'],
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       totalReviews: json['totalReviews'] ?? 0,
       deliveryFee: (json['deliveryFee'] as num?)?.toDouble() ?? 0,
@@ -83,7 +92,7 @@ class Restaurant {
   }
 
   String get deliveryTimeRange => '$deliveryTimeMin-$deliveryTimeMax min';
-  String get formattedRating => rating.toStringAsFixed(1);
+  String get formattedRating => rating.toStringAsFixed(1).replaceAll('.', ',');
 }
 
 class Address {

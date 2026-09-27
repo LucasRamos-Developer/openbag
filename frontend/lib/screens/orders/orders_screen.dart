@@ -8,6 +8,7 @@ import '../../services/order_service.dart';
 import '../../utils/formatters.dart';
 import '../../widgets/order/order_status_chip.dart';
 import '../../widgets/restaurant/restaurant_logo.dart';
+import '../../widgets/navigation/storefront_scaffold.dart';
 
 /// Meus pedidos (mais recentes primeiro)
 class OrdersScreen extends StatefulWidget {
@@ -38,8 +39,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Meus pedidos')),
+    return StorefrontScaffold(
+      title: 'Meus pedidos',
+      current: StorefrontLink.orders,
+      // Largura útil da lista (720 menos o padding de 16 de cada lado), para alinhar o título
+      maxWidth: 720 - 32,
       body: _buildBody(),
     );
   }

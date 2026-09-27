@@ -54,7 +54,7 @@ class _BadgeTabState extends State<BadgeTab> {
       children: [
         Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
+            constraints: const BoxConstraints(maxWidth: AppLayout.maxContentWidth),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

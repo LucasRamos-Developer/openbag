@@ -346,8 +346,8 @@ Quer adicionar ou melhorar documentação de API?
 
 ## 📞 Suporte
 
-- 🐛 [Reportar Bug de API](https://github.com/seu-usuario/openbag/issues)
-- 💬 [Discussões](https://github.com/seu-usuario/openbag/discussions)
+- 🐛 [Reportar Bug de API](https://github.com/LucasRamos-Developer/openbag/issues)
+- 💬 [Discussões](https://github.com/LucasRamos-Developer/openbag/discussions)
 - 📧 Email: api@openbag.app
 
 ---

@@ -8,10 +8,14 @@ import '../../utils/formatters.dart';
 import '../../widgets/menu/menu_image.dart';
 import '../../widgets/order/price_summary.dart';
 import '../../widgets/restaurant/restaurant_logo.dart';
+import '../../widgets/navigation/storefront_scaffold.dart';
 
 /// Carrinho: itens com complementos, quantidades, totais e pedido mínimo
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
+
+  /// Largura útil da lista (720 menos o padding de 16 de cada lado), usada para alinhar o título
+  static const double _contentWidth = 720 - 32;
 
   void _checkout(BuildContext context) {
     final auth = context.read<AuthService>();
@@ -29,10 +33,10 @@ class CartScreen extends StatelessWidget {
     final restaurant = cart.restaurant;
     final muted = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Carrinho'),
-        actions: [
+    return StorefrontScaffold(
+      title: 'Carrinho',
+      maxWidth: _contentWidth,
+      actions: [
           if (!cart.isEmpty)
             AppButton(
               text: 'Limpar',
@@ -43,9 +47,7 @@ class CartScreen extends StatelessWidget {
                 if (ok) cart.clear();
               },
             ),
-          const SizedBox(width: 8),
-        ],
-      ),
+      ],
       body: cart.isEmpty
           ? AppEmptyState(
               icon: Icons.shopping_bag_outlined,

@@ -12,10 +12,10 @@ COPY pom.xml .
 COPY src ./src
 
 # Construir o projeto
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests && cp target/openbag-backend-*.jar app.jar
 
 # Expor a porta
 EXPOSE 8080
 
 # Comando para executar a aplicação
-CMD ["java", "-jar", "target/openbag-backend-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "app.jar"]

@@ -12,6 +12,7 @@ import '../../services/order_service.dart';
 import '../../utils/formatters.dart';
 import '../../widgets/address/address_form.dart';
 import '../../widgets/order/price_summary.dart';
+import '../../widgets/navigation/storefront_scaffold.dart';
 
 /// Finalização do pedido: endereço, pagamento na entrega, observações e resumo
 class CheckoutScreen extends StatefulWidget {
@@ -103,8 +104,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final muted = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
 
     if (cart.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Finalizar pedido')),
+      return StorefrontScaffold(
+        title: 'Finalizar pedido',
         body: AppEmptyState(
           icon: Icons.shopping_bag_outlined,
           message: 'Seu carrinho está vazio.',
@@ -114,8 +115,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Finalizar pedido')),
+    return StorefrontScaffold(
+      title: 'Finalizar pedido',
+      // Largura útil da lista (720 menos o padding de 16 de cada lado), para alinhar o título
+      maxWidth: 720 - 32,
       body: Form(
         key: _formKey,
         child: Center(

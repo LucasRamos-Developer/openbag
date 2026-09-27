@@ -1,39 +1,17 @@
+/// Aparência escolhida no cadastro: tema pronto + cor da marca opcional (#RRGGBB)
 class LayoutConfig {
-  String primaryColor; // #RRGGBB format
-  String secondaryColor; // #RRGGBB format
+  String themePreset;
+  String? brandColor;
 
-  LayoutConfig({
-    required this.primaryColor,
-    required this.secondaryColor,
-  });
+  LayoutConfig({required this.themePreset, this.brandColor});
 
-  Map<String, dynamic> toJson() {
-    return {
-      'primaryColor': primaryColor,
-      'secondaryColor': secondaryColor,
-    };
-  }
+  Map<String, dynamic> toJson() => {'themePreset': themePreset, 'brandColor': brandColor};
 
-  factory LayoutConfig.fromJson(Map<String, dynamic> json) {
-    return LayoutConfig(
-      primaryColor: json['primaryColor'],
-      secondaryColor: json['secondaryColor'],
-    );
-  }
+  factory LayoutConfig.fromJson(Map<String, dynamic> json) =>
+      LayoutConfig(themePreset: json['themePreset'] ?? 'FRESH_GREEN', brandColor: json['brandColor']);
 
-  LayoutConfig copyWith({
-    String? primaryColor,
-    String? secondaryColor,
-  }) {
-    return LayoutConfig(
-      primaryColor: primaryColor ?? this.primaryColor,
-      secondaryColor: secondaryColor ?? this.secondaryColor,
-    );
-  }
+  LayoutConfig copyWith({String? themePreset, String? brandColor}) =>
+      LayoutConfig(themePreset: themePreset ?? this.themePreset, brandColor: brandColor ?? this.brandColor);
 
-  // Valores padrão
-  static LayoutConfig get defaultConfig => LayoutConfig(
-    primaryColor: '#FF5722',
-    secondaryColor: '#212121',
-  );
+  static LayoutConfig get defaultConfig => LayoutConfig(themePreset: 'FRESH_GREEN');
 }

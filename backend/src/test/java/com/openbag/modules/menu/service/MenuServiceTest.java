@@ -87,7 +87,7 @@ class MenuServiceTest {
         when(productRepository.findMaxPositionInSection(10L)).thenReturn(4);
 
         MenuItemDTO item = menuService.createItem(RID, new MenuItemRequest(10L, " X-Burger ", null,
-                new BigDecimal("30.00"), new BigDecimal("25.00"), 15, null, null));
+                new BigDecimal("30.00"), new BigDecimal("25.00"), 15, null, null, null));
 
         assertThat(item.getName()).isEqualTo("X-Burger");
         assertThat(item.getPosition()).isEqualTo(5);
@@ -97,9 +97,39 @@ class MenuServiceTest {
     }
 
     @Test
+    void badgesAreTrimmedAndDeduplicated() {
+        when(productRepository.findMaxPositionInSection(10L)).thenReturn(0);
+
+        MenuItemDTO item = menuService.createItem(RID, new MenuItemRequest(10L, "X-Bacon", null,
+                BigDecimal.TEN, null, null, List.of(" Especial ", "especial", "", "Picante"), null, null));
+
+        assertThat(item.getBadges()).containsExactly("Especial", "Picante");
+    }
+
+    @Test
+    void atMostTwoBadgesUpToTwentyCharacters() {
+        assertThat(menuService.normalizeBadges(null)).isEmpty();
+        assertThatThrownBy(() -> menuService.normalizeBadges(List.of("Novo", "Vegano", "Picante")))
+                .isInstanceOf(BadRequestException.class);
+        assertThatThrownBy(() -> menuService.normalizeBadges(List.of("Um selo comprido demais")))
+                .isInstanceOf(BadRequestException.class);
+        assertThatThrownBy(() -> menuService.normalizeBadges(List.of("A|B")))
+                .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void sectionKeepsIcon() {
+        when(sectionRepository.save(any(MenuSection.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        MenuSectionDTO dto = menuService.updateSection(RID, 10L, new MenuSectionRequest("Bebidas", null, "local_drink", null));
+
+        assertThat(dto.getIcon()).isEqualTo("local_drink");
+    }
+
+    @Test
     void promotionalPriceMustBeLowerThanPrice() {
         assertThatThrownBy(() -> menuService.createItem(RID, new MenuItemRequest(10L, "X", null,
-                new BigDecimal("30.00"), new BigDecimal("30.00"), null, null, null)))
+                new BigDecimal("30.00"), new BigDecimal("30.00"), null, null, null, null)))
                 .isInstanceOf(BadRequestException.class);
     }
 
@@ -107,7 +137,7 @@ class MenuServiceTest {
     void sectionFromAnotherRestaurantIsNotFound() {
         when(sectionRepository.findByIdAndRestaurantId(99L, RID)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> menuService.createItem(RID, new MenuItemRequest(99L, "X", null,
-                BigDecimal.TEN, null, null, null, null)))
+                BigDecimal.TEN, null, null, null, null, null)))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 

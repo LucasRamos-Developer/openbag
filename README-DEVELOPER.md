@@ -2,6 +2,8 @@
 
 Documentação técnica completa para desenvolvedores que desejam contribuir com o projeto OpenBag.
 
+> Versão da documentação: **0.2.0**, atualizada em 2026-09-27. Veja o [CHANGELOG](CHANGELOG.md) e a [arquitetura](docs/architecture/README.md).
+
 ## 📋 Índice
 
 - [Pré-requisitos](#pré-requisitos)
@@ -34,6 +36,8 @@ Documentação técnica completa para desenvolvedores que desejam contribuir com
   # Instalar no macOS (via Homebrew)
   brew install openjdk@25
   ```
+
+  Se você só tiver o JDK 21, dá para compilar e rodar localmente com `-Djava.version=21` (por exemplo, `mvn spring-boot:run -Djava.version=21`).
 
 - **Apache Maven 3.6+**
   ```bash
@@ -80,7 +84,7 @@ A maneira mais rápida de rodar o projeto completo com todos os serviços:
 
 ```bash
 # 1. Clonar o repositório
-git clone https://github.com/seu-usuario/openbag.git
+git clone https://github.com/LucasRamos-Developer/openbag.git
 cd openbag
 
 # 2. Subir todos os serviços (PostgreSQL, Redis, Elasticsearch, Kibana)
@@ -146,30 +150,36 @@ flutter run -d chrome
 
 ### Backend (`/backend`)
 
+O backend é organizado **por módulo de domínio**. Cada módulo tem `controller`, `dto`, `entity`, `repository` e `service`. Os detalhes estão na [documentação de arquitetura](docs/architecture/README.md).
+
 ```
 backend/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/openbag/
-│   │   │   ├── annotation/         # Custom annotations (@ValidEmail, etc)
-│   │   │   ├── config/             # Configurações (Security, Redis, CORS, etc)
-│   │   │   ├── controller/         # REST Controllers
-│   │   │   ├── dto/                # Data Transfer Objects
-│   │   │   ├── entity/             # JPA Entities
-│   │   │   ├── exception/          # Custom Exceptions & Handlers
-│   │   │   ├── repository/         # Spring Data JPA Repositories
-│   │   │   ├── security/           # JWT, UserDetails, Filters
-│   │   │   ├── service/            # Business Logic
-│   │   │   └── util/               # Utility classes
+│   │   │   ├── annotation/         # Anotações de validação
+│   │   │   ├── config/             # Security, OpenAPI, Redis, agendamento
+│   │   │   ├── enums/              # Status e tipos compartilhados
+│   │   │   ├── exception/          # GlobalExceptionHandler
+│   │   │   ├── security/           # JWT, UserDetails, PermissionEvaluator
+│   │   │   └── modules/
+│   │   │       ├── user/           # Cadastro, login, perfil
+│   │   │       ├── restaurant/     # Loja, aparência, horários, página pública
+│   │   │       ├── menu/           # Cardápio do dono
+│   │   │       ├── product/        # Produtos, categorias, complementos
+│   │   │       ├── combo/          # Combos
+│   │   │       ├── order/          # Pedidos e tempo real (WebSocket)
+│   │   │       ├── delivery/       # Entregadores, despacho, rotas, caixa
+│   │   │       ├── organization/   # Associações e cooperativas
+│   │   │       └── shared/         # Arquivos, health, utilitários
 │   │   └── resources/
 │   │       ├── application.properties           # Config padrão
 │   │       ├── application-local.properties     # Config local
-│   │       ├── application-docker.properties    # Config Docker
-│   │       └── db/migration/                    # Flyway migrations
-│   └── test/                       # Testes unitários e integração
+│   │       └── application-docker.properties    # Config Docker
+│   └── test/                       # Testes unitários e de serviço
 ├── docs/                           # Documentação de APIs
-├── Dockerfile                      # Multi-stage build
-└── pom.xml                         # Maven dependencies
+├── Dockerfile
+└── pom.xml                         # Versão do backend (ver CHANGELOG)
 ```
 
 ### Frontend (`/frontend`)
@@ -177,38 +187,40 @@ backend/
 ```
 frontend/
 ├── lib/
-│   ├── main.dart                   # Entry point
+│   ├── main.dart                   # Rotas (GoRouter) e providers
 │   ├── constants/                  # Constantes (URLs, chaves, etc)
-│   ├── models/                     # Data models
-│   ├── screens/                    # UI Screens
-│   │   ├── auth/                   # Login, Register
-│   │   ├── home/                   # Home screen
-│   │   ├── restaurant/             # Restaurant details
-│   │   ├── cart/                   # Shopping cart
-│   │   ├── orders/                 # Order history
-│   │   └── profile/                # User profile
-│   ├── services/                   # API Services
-│   │   ├── auth_service.dart       # Authentication
-│   │   ├── restaurant_service.dart # Restaurant APIs
-│   │   └── cart_service.dart       # Cart management
-│   ├── widgets/                    # Reusable widgets
-│   └── utils/                      # Utilities (theme, helpers)
-├── assets/                         # Images, icons, fonts
-├── web/                            # Web-specific files
-└── pubspec.yaml                    # Dependencies
+│   ├── core/ui/                    # Design system: componentes App*, temas e tokens
+│   ├── models/                     # Modelos por domínio (order, menu, delivery, routes, cash...)
+│   ├── screens/
+│   │   ├── home/, restaurant/      # Vitrine e página da loja (cliente, em testes)
+│   │   ├── cart/, checkout/, orders/
+│   │   ├── restaurant_panel/       # Painel do restaurante (/restaurante)
+│   │   ├── kitchen/                # Tela da cozinha
+│   │   ├── courier/                # Painel do entregador (/entregador, em desenvolvimento)
+│   │   ├── association/            # Painel da associação (/associacao, em desenvolvimento)
+│   │   ├── admin/, auth/, onboarding/, profile/
+│   ├── services/                   # Chamadas à API e ao WebSocket
+│   ├── widgets/                    # Widgets reutilizáveis por domínio
+│   └── utils/                      # Formatadores, mapas, localização
+├── assets/                         # Imagens e fontes (Plus Jakarta Sans)
+├── web/                            # Arquivos da versão web
+└── pubspec.yaml                    # Versão do app (ver CHANGELOG)
 ```
+
+Tudo que se repete vira componente em `core/ui` ou em `widgets/<domínio>`. Veja o [README do design system](frontend/lib/core/ui/README.md).
 
 ### Documentação (`/docs`)
 
 ```
 docs/
-├── api/                            # API Documentation
-│   ├── README.md                   # API Index
-│   └── onboarding-restaurante.md  # Restaurant onboarding
-├── guides/                         # Guias técnicos
-│   └── openstreetmap.md            # OpenStreetMap integration
-└── architecture/                   # Diagramas de arquitetura
+├── index.html                      # Site (GitHub Pages)
+├── assets/screens/                 # Telas usadas no site
+├── architecture/README.md          # Arquitetura do sistema
+├── api/README.md                   # Índice de APIs
+└── guides/openstreetmap.md         # OpenStreetMap
 ```
+
+As capturas de tela de referência ficam em [`layout/`](layout/) e o histórico de versões em [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
@@ -220,9 +232,8 @@ docs/
 - **Spring Security** + JWT Authentication
 - **Spring Data JPA** (Hibernate)
 - **PostgreSQL** (Database)
-- **Redis** (Cache & Session)
-- **Elasticsearch** (Search engine)
-- **Flyway** (Database migrations)
+- **WebSocket + STOMP** (pedidos e ofertas em tempo real)
+- **Redis** e **Elasticsearch** (no Docker Compose; ainda sem uso relevante no código)
 - **SpringDoc OpenAPI** (API Documentation)
 - **ModelMapper** (DTO mapping)
 
@@ -247,7 +258,7 @@ mvn spring-boot:run
 mvn spring-boot:run -Dspring-boot.run.profiles=docker
 
 # Rodar JAR diretamente
-java -jar target/openbag-backend-0.0.1-SNAPSHOT.jar
+java -jar target/openbag-backend-0.2.0.jar
 ```
 
 ### Profiles disponíveis
@@ -291,6 +302,8 @@ mvn spring-boot:run
 - **GoRouter** (Navigation)
 - **Dio** (HTTP client)
 - **flutter_map** (OpenStreetMap integration)
+- **stomp_dart_client** (tempo real)
+- **printing/pdf** (comanda de 80 mm)
 - **SharedPreferences** (Local storage)
 
 ### Build & Run
@@ -373,19 +386,18 @@ O projeto usa **PostgreSQL 15** como banco de dados principal.
 
 #### Schema
 
-O schema é gerenciado automaticamente via **Flyway Migrations** localizadas em:
+Hoje o schema é gerado pelo Hibernate (`spring.jpa.hibernate.ddl-auto=update`). Os arquivos em `db/migration` são antigos e **não são aplicados**, porque o Flyway não está no `pom.xml`.
 
-```
-backend/src/main/resources/db/migration/
-```
+Cuidados com o `update`:
+- colunas novas em tabelas existentes chegam `NULL`, então use tipos wrapper ou getters com valor padrão;
+- as restrições `CHECK` de enums não são atualizadas, então um valor novo de enum exige ajuste manual no banco.
 
-#### Migrações
+A troca por migrações versionadas está no roadmap da versão **0.4.0** (veja o [CHANGELOG](CHANGELOG.md#roadmap)).
 
 ```bash
-# As migrações rodam automaticamente ao subir a aplicação
-# Para forçar rebuild do schema:
-docker compose down -v  # Remove volumes
-docker compose up -d    # Recria tudo
+# Para recriar o banco do zero:
+docker compose down -v  # Remove volumes (APAGA DADOS)
+docker compose up -d
 ```
 
 #### Acessar banco via CLI
@@ -409,10 +421,7 @@ SELECT * FROM restaurants LIMIT 10;
 
 ### Redis
 
-Usado para:
-- Cache de dados frequentes
-- Sessões de usuário
-- Rate limiting
+Hoje só a configuração existe. Os usos previstos são cache e rate limiting (roadmap 0.4.0).
 
 ```bash
 # Acessar Redis CLI
@@ -426,7 +435,7 @@ FLUSHALL            # Limpar cache (cuidado!)
 
 ### Elasticsearch
 
-Usado para busca avançada de restaurantes e produtos.
+Previsto para a busca de restaurantes e produtos. Ainda não é usado pelo código.
 
 ```bash
 # Acessar Elasticsearch
@@ -573,57 +582,16 @@ flutter build web --dart-define=API_URL=https://api.openbag.com/api
 
 A documentação interativa da API está disponível em:
 
-**http://localhost:8080/swagger-ui.html**
+**http://localhost:8080/api/swagger-ui.html** (todas as rotas ficam sob o prefixo `/api`)
 
-### Endpoints Principais
+### Rotas por módulo
 
-#### Autenticação
-
-```
-POST /api/auth/register/restaurant    # Cadastro de restaurante
-POST /api/auth/register/customer      # Cadastro de cliente
-POST /api/auth/register/driver        # Cadastro de entregador
-POST /api/auth/login                  # Login
-GET  /api/auth/check-email            # Verificar disponibilidade de email
-```
-
-#### Restaurantes
-
-```
-GET    /api/restaurants               # Listar restaurantes
-GET    /api/restaurants/{id}          # Detalhes do restaurante
-POST   /api/restaurants               # Criar restaurante (ADMIN)
-PUT    /api/restaurants/{id}          # Atualizar restaurante
-DELETE /api/restaurants/{id}          # Remover restaurante
-```
-
-#### Produtos
-
-```
-GET    /api/restaurants/{id}/products # Produtos de um restaurante
-POST   /api/products                  # Criar produto
-PUT    /api/products/{id}             # Atualizar produto
-DELETE /api/products/{id}             # Remover produto
-```
-
-#### Pedidos
-
-```
-GET    /api/orders                    # Listar pedidos
-GET    /api/orders/{id}               # Detalhes do pedido
-POST   /api/orders                    # Criar pedido
-PUT    /api/orders/{id}/status        # Atualizar status
-```
-
-### Postman Collection
-
-Importe a collection localizada em `backend/docs/postman-collection.json` para testar os endpoints.
+A tabela com as rotas base de cada módulo e os tópicos do WebSocket (`/api/ws`) está na [documentação de arquitetura](docs/architecture/README.md#módulos-e-rotas-principais). O Swagger é a lista sempre atualizada.
 
 ### Documentação Detalhada
 
-- [API - Onboarding de Restaurante](docs/api/onboarding-restaurante.md)
-- [API - Autenticação](docs/api/auth.md) _(a criar)_
-- [API - Pedidos](docs/api/orders.md) _(a criar)_
+- [API - Índice](docs/api/README.md)
+- [API - Onboarding de Restaurante](backend/docs/onboarding-restaurante.md)
 
 ---
 
@@ -634,7 +602,7 @@ Importe a collection localizada em `backend/docs/postman-collection.json` para t
 1. **Clone o repositório**
 
 ```bash
-git clone https://github.com/seu-usuario/openbag.git
+git clone https://github.com/LucasRamos-Developer/openbag.git
 cd openbag
 ```
 
@@ -825,19 +793,17 @@ public class CorsConfig implements WebMvcConfigurer {
 }
 ```
 
-#### 5. Migrações Flyway falham
+#### 5. Erro de restrição ao salvar um valor novo de enum
 
-**Erro**: `Migration checksum mismatch`
+**Erro**: `violates check constraint "..._check"`
+
+**Causa**: o `ddl-auto=update` não atualiza as restrições `CHECK` que o Hibernate cria para colunas `@Enumerated(STRING)`.
 
 **Solução**:
 ```bash
-# Remover volumes e recriar
-docker compose down -v
-docker compose up -d
-
-# Ou limpar histórico Flyway manualmente
 docker exec -it open-bag-postgres psql -U openbag -d openbag
-DELETE FROM flyway_schema_history;
+-- remova a restrição antiga (o nome aparece na mensagem de erro)
+ALTER TABLE <tabela> DROP CONSTRAINT <tabela>_<coluna>_check;
 ```
 
 #### 6. Redis connection timeout
@@ -868,8 +834,10 @@ docker compose restart redis
 
 ### Guias Internos
 
+- [Arquitetura](docs/architecture/README.md)
 - [OpenStreetMap Integration](docs/guides/openstreetmap.md)
-- [API - Onboarding de Restaurante](docs/api/onboarding-restaurante.md)
+- [API - Onboarding de Restaurante](backend/docs/onboarding-restaurante.md)
+- [CHANGELOG e versionamento](CHANGELOG.md)
 
 ### Ferramentas Recomendadas
 
@@ -885,8 +853,8 @@ docker compose restart redis
 
 - Consulte o [README principal](README.md) para visão geral do projeto
 - Veja [CONTRIBUTING.md](CONTRIBUTING.md) para guidelines de contribuição
-- Abra uma [Issue](https://github.com/seu-usuario/openbag/issues) para reportar bugs
-- Entre em contato com a equipe: dev@openbag.com
+- Abra uma [Issue](https://github.com/LucasRamos-Developer/openbag/issues) para reportar bugs
+- Entre em contato: [lucasramos.developer@gmail.com](mailto:lucasramos.developer@gmail.com)
 
 ---
 

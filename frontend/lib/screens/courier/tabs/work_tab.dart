@@ -7,6 +7,7 @@ import '../../../services/api_client.dart';
 import '../../../services/courier_service.dart';
 import '../../../services/courier_work_service.dart';
 import '../../../utils/formatters.dart';
+import '../../../utils/maps.dart';
 import '../../../widgets/courier/active_delivery_card.dart';
 import '../../../widgets/courier/offer_card.dart';
 import '../../../widgets/order/live_indicator.dart';
@@ -95,7 +96,7 @@ class _WorkTabState extends State<WorkTab> {
         children: [
           Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640),
+              constraints: const BoxConstraints(maxWidth: AppLayout.maxContentWidth),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -105,7 +106,33 @@ class _WorkTabState extends State<WorkTab> {
                     _Blockers(blockers: state.blockers),
                     const SizedBox(height: 16),
                   ],
-                  if (state.activeOrder != null) ...[
+                  if (state.activeOrders.length > 1) ...[
+                    // Rota: cabeçalho com o mapa e cada parada na ordem
+                    _RouteHeader(
+                      orders: state.activeOrders,
+                      busy: _busy,
+                      onPickUpReady: () => _run(() async {
+                        for (final order in state.activeOrders.where((o) => o.readyForPickup)) {
+                          await _work.pickUp(order);
+                        }
+                      }, success: 'Boa rota!'),
+                    ),
+                    const SizedBox(height: 12),
+                    for (var i = 0; i < state.activeOrders.length; i++) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4, bottom: 6),
+                        child: Text('Parada ${i + 1} de ${state.activeOrders.length}',
+                            style: const TextStyle(fontWeight: FontWeight.w700)),
+                      ),
+                      ActiveDeliveryCard(
+                        order: state.activeOrders[i],
+                        busy: _busy,
+                        onPickUp: () => _run(() => _work.pickUp(state.activeOrders[i]), success: 'Pedido retirado'),
+                        onDeliver: () => _deliver(state.activeOrders[i]),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ] else if (state.activeOrder != null) ...[
                     ActiveDeliveryCard(
                       order: state.activeOrder!,
                       busy: _busy,
@@ -342,6 +369,83 @@ class _CheckInTile extends StatelessWidget {
             ),
           ),
           AppButton(text: 'Check-in', icon: Icons.login, onPressed: enabled ? onCheckIn : null),
+        ],
+      ),
+    );
+  }
+}
+
+/// Rota com várias entregas: resumo, abrir o trajeto no mapa e retirar todos os pedidos prontos
+class _RouteHeader extends StatelessWidget {
+  final List<CourierOrder> orders;
+  final bool busy;
+  final VoidCallback onPickUpReady;
+
+  const _RouteHeader({required this.orders, required this.busy, required this.onPickUpReady});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.appColors;
+    final readyToPickUp = orders.where((o) => o.readyForPickup).length;
+    final waiting = orders.where((o) => !o.pickedUp && !o.readyForPickup).length;
+    final neighborhoods = orders.map((o) => o.neighborhood).whereType<String>().toSet().join(', ');
+    final fee = orders.fold(0.0, (sum, o) => sum + (o.courierFee ?? 0));
+
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      borderColor: c.primary,
+      borderWidth: 2,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.alt_route, color: c.primaryText),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('Rota com ${orders.length} entregas',
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+              ),
+              Text(formatMoney(fee), style: TextStyle(fontWeight: FontWeight.w800, color: c.primaryText, fontSize: 16)),
+            ],
+          ),
+          if (neighborhoods.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(neighborhoods, style: TextStyle(color: c.textMuted)),
+          ],
+          const SizedBox(height: 4),
+          Text('Você recebe o valor cheio de cada entrega e roda menos.', style: TextStyle(color: c.textMuted, fontSize: 13)),
+          if (waiting > 0) ...[
+            const SizedBox(height: 8),
+            Text(
+              '$waiting ${waiting == 1 ? 'pedido ainda está' : 'pedidos ainda estão'} em preparo: '
+              'espere para sair com todos.',
+              style: TextStyle(color: c.textMuted, fontSize: 13),
+            ),
+          ],
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              AppButton(
+                text: 'Abrir rota no mapa',
+                icon: Icons.map_outlined,
+                variant: ButtonVariant.outlined,
+                onPressed: () => openRouteDirections([
+                  for (final o in orders)
+                    (latitude: o.deliveryLatitude, longitude: o.deliveryLongitude, address: o.deliveryAddress),
+                ]),
+              ),
+              if (readyToPickUp > 1)
+                AppButton(
+                  text: 'Retirar os $readyToPickUp prontos',
+                  icon: Icons.shopping_bag_outlined,
+                  isLoading: busy,
+                  onPressed: busy ? null : onPickUpReady,
+                ),
+            ],
+          ),
         ],
       ),
     );

@@ -25,6 +25,7 @@ public class MenuItemDTO {
     private BigDecimal promotionalPrice;
     private BigDecimal currentPrice;
     private String imageUrl;
+    private List<String> badges;
     private boolean available;
     private boolean active;
     private Integer preparationTime;
@@ -41,6 +42,7 @@ public class MenuItemDTO {
                 .promotionalPrice(product.getPromotionalPrice())
                 .currentPrice(product.getCurrentPrice())
                 .imageUrl(product.getImageUrl())
+                .badges(product.getBadges() != null ? product.getBadges() : List.of())
                 .available(product.isAvailable())
                 .active(product.isActive())
                 .preparationTime(product.getPreparationTime())

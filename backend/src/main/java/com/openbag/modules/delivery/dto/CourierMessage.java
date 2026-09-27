@@ -10,6 +10,9 @@ public record CourierMessage(Type type, CourierOfferDTO offer, CourierOrderDTO o
         OFFER_CLOSED,
         ORDER_UPDATED,
         ORDER_CANCELLED,
+        // A loja passou um pedido direto para o entregador / tirou o pedido dele
+        ORDER_ASSIGNED,
+        ORDER_UNASSIGNED,
         STATE_CHANGED
     }
 }

@@ -124,7 +124,9 @@ class CourierWorkService extends ChangeNotifier {
         }
       default:
         // Mudanças na entrega ou no turno: recarrega o estado completo (ganhos, entrega, situação)
-        if (type == 'ORDER_CANCELLED' || type == 'STATE_CHANGED') _notice = message['reason'] as String?;
+        // A loja também pode passar um pedido direto ou tirar o pedido do entregador
+        const withNotice = {'ORDER_CANCELLED', 'STATE_CHANGED', 'ORDER_ASSIGNED', 'ORDER_UNASSIGNED'};
+        if (withNotice.contains(type)) _notice = message['reason'] as String?;
         refresh();
     }
   }
@@ -135,6 +137,7 @@ class CourierWorkService extends ChangeNotifier {
         shift: s.shift,
         pendingOffer: clearOffer ? null : (pendingOffer ?? s.pendingOffer),
         activeOrder: s.activeOrder,
+        activeOrders: s.activeOrders,
         earnedToday: s.earnedToday,
         deliveriesToday: s.deliveriesToday,
         blockers: s.blockers,

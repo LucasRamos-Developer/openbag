@@ -34,9 +34,28 @@ public class CourierOfferDTO {
     // Segundos restantes no momento da resposta (evita depender do relógio do aparelho)
     private long secondsLeft;
 
+    // Oferta de rota: as entregas na ordem (nulo = pedido sozinho); valor e total somam a rota inteira
+    private Long routeId;
+    private Double routeDistanceKm;
+    private java.util.List<Stop> stops;
+
+    public record Stop(Long orderId, String displayCode, String neighborhood, String deliveryAddress,
+                       Order.PaymentMethod paymentMethod, BigDecimal totalAmount) {
+    }
+
     public static CourierOfferDTO from(DeliveryOffer offer, LocalDateTime now) {
         Order order = offer.getOrder();
+        var route = offer.getRoute();
+        java.util.List<Order> routeOrders = route == null ? null : route.sortedOrders().stream()
+                .filter(o -> o.getStatus() != com.openbag.enums.OrderStatus.CANCELLED)
+                .toList();
         return CourierOfferDTO.builder()
+                .routeId(route != null ? route.getId() : null)
+                .routeDistanceKm(route != null ? route.getTotalDistanceKm() : null)
+                .stops(routeOrders == null ? null : routeOrders.stream()
+                        .map(o -> new Stop(o.getId(), o.getDisplayCode(), o.getDeliveryNeighborhood(), o.getDeliveryAddress(),
+                                o.getPaymentMethod(), o.getTotalAmount()))
+                        .toList())
                 .offerId(offer.getId())
                 .orderId(order.getId())
                 .displayCode(order.getDisplayCode())
@@ -46,7 +65,9 @@ public class CourierOfferDTO {
                 .deliveryDistanceKm(offer.getDeliveryDistanceKm())
                 .courierFee(offer.getCourierFee())
                 .paymentMethod(order.getPaymentMethod())
-                .totalAmount(order.getTotalAmount())
+                .totalAmount(routeOrders == null ? order.getTotalAmount()
+                        : routeOrders.stream().map(Order::getTotalAmount).filter(java.util.Objects::nonNull)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add))
                 .offeredAt(offer.getOfferedAt())
                 .expiresAt(offer.getExpiresAt())
                 .secondsLeft(Math.max(0, java.time.Duration.between(now, offer.getExpiresAt()).getSeconds()))

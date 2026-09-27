@@ -9,7 +9,7 @@ class CategoryService {
   Future<List<Category>> getAllCategories() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/categories'),
+        Uri.parse('$baseUrl/public/categories'),
         headers: {'Content-Type': 'application/json'},
       );
 

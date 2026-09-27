@@ -17,6 +17,7 @@ import com.openbag.modules.product.repository.OrderItemCustomizationRepository;
 import com.openbag.modules.product.repository.ProductRepository;
 import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.restaurant.repository.RestaurantRepository;
+import com.openbag.modules.shared.entity.StringListConverter;
 import com.openbag.modules.shared.service.FileStorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,8 @@ import java.util.stream.Collectors;
 public class MenuService {
 
     private static final String IMAGE_FOLDER = "products";
+    static final int MAX_BADGES = 2;
+    static final int MAX_BADGE_LENGTH = 20;
 
     @Autowired
     private MenuSectionRepository sectionRepository;
@@ -120,6 +123,7 @@ public class MenuService {
         section.setRestaurant(findRestaurant(restaurantId));
         section.setName(request.getName().trim());
         section.setDescription(trimToNull(request.getDescription()));
+        section.setIcon(trimToNull(request.getIcon()));
         section.setActive(request.getActive() == null || request.getActive());
         section.setPosition(sectionRepository.findMaxPosition(restaurantId) + 1);
         return MenuSectionDTO.from(sectionRepository.save(section), List.of(), List.of());
@@ -129,6 +133,7 @@ public class MenuService {
         MenuSection section = findSection(restaurantId, sectionId);
         section.setName(request.getName().trim());
         section.setDescription(trimToNull(request.getDescription()));
+        section.setIcon(trimToNull(request.getIcon()));
         if (request.getActive() != null) {
             section.setActive(request.getActive());
         }
@@ -389,6 +394,7 @@ public class MenuService {
         product.setPrice(request.getPrice());
         product.setPromotionalPrice(request.getPromotionalPrice());
         product.setPreparationTime(request.getPreparationTime());
+        product.setBadges(normalizeBadges(request.getBadges()));
     }
 
     private void applyGroup(CustomizationGroup group, CustomizationGroupRequest request) {
@@ -481,6 +487,33 @@ public class MenuService {
         if (path != null) {
             fileStorageService.deleteFile(path);
         }
+    }
+
+    /** Remove vazios e repetidos (sem diferenciar maiúsculas) e valida limite e tamanho */
+    List<String> normalizeBadges(List<String> badges) {
+        if (badges == null) {
+            return new ArrayList<>();
+        }
+        Map<String, String> unique = new LinkedHashMap<>();
+        for (String badge : badges) {
+            String value = trimToNull(badge);
+            if (value != null) {
+                unique.putIfAbsent(value.toLowerCase(), value);
+            }
+        }
+        List<String> result = new ArrayList<>(unique.values());
+        if (result.size() > MAX_BADGES) {
+            throw new BadRequestException("Cada item pode ter no máximo " + MAX_BADGES + " selos");
+        }
+        for (String badge : result) {
+            if (badge.length() > MAX_BADGE_LENGTH) {
+                throw new BadRequestException("O selo \"" + badge + "\" passa de " + MAX_BADGE_LENGTH + " caracteres");
+            }
+            if (badge.contains(StringListConverter.SEPARATOR)) {
+                throw new BadRequestException("Selos não podem conter o caractere " + StringListConverter.SEPARATOR);
+            }
+        }
+        return result;
     }
 
     private String trimToNull(String value) {

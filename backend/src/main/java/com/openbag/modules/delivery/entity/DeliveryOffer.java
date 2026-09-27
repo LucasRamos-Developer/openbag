@@ -37,6 +37,11 @@ public class DeliveryOffer {
     @JoinColumn(name = "delivery_person_id", nullable = false)
     private DeliveryPerson deliveryPerson;
 
+    // Oferta de rota: vale para todos os pedidos da rota (order = pedido líder); nulo = pedido sozinho
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "route_id")
+    private DeliveryRoute route;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
     private DeliveryOfferStatus status = DeliveryOfferStatus.PENDING;

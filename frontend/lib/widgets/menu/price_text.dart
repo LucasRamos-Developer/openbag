@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import '../../core/ui/ui.dart';
 import '../../utils/formatters.dart';
 
-/// Preço do item; em promoção mostra o preço antigo riscado ao lado do atual
+/// Preço do item; em promoção mostra o preço antigo riscado, menor, à esquerda do preço atual
 class PriceText extends StatelessWidget {
   final double price;
   final double? promotionalPrice;
   final TextStyle? style;
+
+  /// Tamanho do preço antigo em relação ao atual
+  static const double oldPriceScale = 0.72;
 
   const PriceText({super.key, required this.price, this.promotionalPrice, this.style});
 
@@ -18,20 +21,22 @@ class PriceText extends StatelessWidget {
     if (!onPromotion) {
       return Text(formatMoney(price), style: baseStyle);
     }
+    final muted = context.appColors.textMuted;
     return Wrap(
-      spacing: 8,
+      spacing: 6,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text(formatMoney(promotionalPrice!), style: baseStyle.copyWith(color: AppColors.successDark)),
         Text(
           formatMoney(price),
           style: baseStyle.copyWith(
-            fontWeight: FontWeight.normal,
-            fontSize: (baseStyle.fontSize ?? 14) * 0.85,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+            fontWeight: FontWeight.w500,
+            fontSize: (baseStyle.fontSize ?? 14) * oldPriceScale,
+            color: muted,
             decoration: TextDecoration.lineThrough,
+            decorationColor: muted,
           ),
         ),
+        Text(formatMoney(promotionalPrice!), style: baseStyle.copyWith(color: context.appColors.primaryText)),
       ],
     );
   }

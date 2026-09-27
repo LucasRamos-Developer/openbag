@@ -3,7 +3,7 @@ description: Um aplicativo de delivery open source - Mobile & Web
 
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 0.2.0+2
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -83,14 +83,16 @@ flutter:
     - assets/icons/
     - assets/sounds/
   
-  # Uncomment when Inter font files are added to assets/fonts/
-  # fonts:
-  #   - family: Inter
-  #     fonts:
-  #       - asset: assets/fonts/Inter-Regular.ttf
-  #       - asset: assets/fonts/Inter-Medium.ttf
-  #         weight: 500
-  #       - asset: assets/fonts/Inter-SemiBold.ttf
-  #         weight: 600
-  #       - asset: assets/fonts/Inter-Bold.ttf
-  #         weight: 700
+  # Plus Jakarta Sans (SIL OFL 1.1, ver assets/fonts/OFL.txt): fonte padrão do design system
+  fonts:
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-400.ttf
+        - asset: assets/fonts/PlusJakartaSans-500.ttf
+          weight: 500
+        - asset: assets/fonts/PlusJakartaSans-600.ttf
+          weight: 600
+        - asset: assets/fonts/PlusJakartaSans-700.ttf
+          weight: 700
+        - asset: assets/fonts/PlusJakartaSans-800.ttf
+          weight: 800

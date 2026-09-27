@@ -13,6 +13,8 @@ class Menu {
   /// Todos os itens (para montar combos)
   List<MenuItem> get allItems => [...sections.expand((s) => s.items), ...unsectionedItems];
 
+  List<Combo> get allCombos => [...sections.expand((s) => s.combos)];
+
   factory Menu.fromJson(Map<String, dynamic> json) => Menu(
         restaurantId: json['restaurantId'],
         sections: (json['sections'] as List? ?? []).map((e) => MenuSection.fromJson(e)).toList(),
@@ -24,6 +26,7 @@ class MenuSection {
   final int id;
   final String name;
   final String? description;
+  final String? icon;
   final int position;
   final bool active;
   final List<MenuItem> items;
@@ -33,6 +36,7 @@ class MenuSection {
     required this.id,
     required this.name,
     this.description,
+    this.icon,
     required this.position,
     required this.active,
     required this.items,
@@ -43,6 +47,7 @@ class MenuSection {
         id: json['id'],
         name: json['name'] ?? '',
         description: json['description'],
+        icon: json['icon'],
         position: json['position'] ?? 0,
         active: json['active'] ?? true,
         items: (json['items'] as List? ?? []).map((e) => MenuItem.fromJson(e)).toList(),
@@ -59,6 +64,7 @@ class MenuItem {
   final double? promotionalPrice;
   final double currentPrice;
   final String? imageUrl;
+  final List<String> badges;
   final bool available;
   final bool active;
   final int? preparationTime;
@@ -73,6 +79,7 @@ class MenuItem {
     this.promotionalPrice,
     required this.currentPrice,
     this.imageUrl,
+    this.badges = const [],
     required this.available,
     required this.active,
     this.preparationTime,
@@ -90,6 +97,7 @@ class MenuItem {
         promotionalPrice: json['promotionalPrice'] != null ? _money(json['promotionalPrice']) : null,
         currentPrice: _money(json['currentPrice'] ?? json['price']),
         imageUrl: json['imageUrl'],
+        badges: List<String>.from(json['badges'] ?? const []),
         available: json['available'] ?? true,
         active: json['active'] ?? true,
         preparationTime: json['preparationTime'],

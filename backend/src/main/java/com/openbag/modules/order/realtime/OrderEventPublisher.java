@@ -33,9 +33,11 @@ public class OrderEventPublisher {
     @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
     public void onOrderChanged(OrderChangedEvent event) {
         orderRepository.findById(event.orderId()).ifPresent(order -> {
-            OrderMessage message = new OrderMessage(event.type(), OrderDTO.from(order));
-            messaging.convertAndSend("/topic/restaurants/" + order.getRestaurant().getId() + "/orders", message);
-            messaging.convertAndSend("/topic/orders/" + order.getId(), message);
+            messaging.convertAndSend("/topic/restaurants/" + order.getRestaurant().getId() + "/orders",
+                    new OrderMessage(event.type(), OrderDTO.from(order)));
+            // Tópico do cliente: sem dados internos da operação da loja
+            messaging.convertAndSend("/topic/orders/" + order.getId(),
+                    new OrderMessage(event.type(), OrderDTO.forCustomer(order)));
             log.debug("Evento {} do pedido {} enviado", event.type(), order.getId());
         });
     }

@@ -73,7 +73,7 @@ Certifique-se de ter instalado:
 
 #### 1. Fork do Repositório
 
-Clique em "Fork" no topo da [página do projeto](https://github.com/seu-usuario/openbag).
+Clique em "Fork" no topo da [página do projeto](https://github.com/LucasRamos-Developer/openbag).
 
 #### 2. Clone Seu Fork
 
@@ -86,7 +86,7 @@ cd openbag
 #### 3. Adicione o Remote Upstream
 
 ```bash
-git remote add upstream https://github.com/seu-usuario/openbag.git
+git remote add upstream https://github.com/LucasRamos-Developer/openbag.git
 ```
 
 #### 4. Configure o Ambiente
@@ -411,7 +411,7 @@ Closes #[número da issue]
 
 ### Como Reportar
 
-Abra uma [nova issue](https://github.com/seu-usuario/openbag/issues/new) com:
+Abra uma [nova issue](https://github.com/LucasRamos-Developer/openbag/issues/new) com:
 
 **Template:**
 
@@ -451,7 +451,7 @@ Abra uma [nova issue](https://github.com/seu-usuario/openbag/issues/new) com:
 
 ### Feature Requests
 
-Abra uma [discussion](https://github.com/seu-usuario/openbag/discussions) ou [issue](https://github.com/seu-usuario/openbag/issues) com:
+Abra uma [discussion](https://github.com/LucasRamos-Developer/openbag/discussions) ou [issue](https://github.com/LucasRamos-Developer/openbag/issues) com:
 
 ```markdown
 ## Problema que Resolve
@@ -522,7 +522,7 @@ Reporte comportamentos inadequados para: **conduct@openbag.app**
 
 - [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
 - [First Contributions](https://github.com/firstcontributions/first-contributions)
-- [Good First Issues](https://github.com/seu-usuario/openbag/labels/good%20first%20issue)
+- [Good First Issues](https://github.com/LucasRamos-Developer/openbag/labels/good%20first%20issue)
 
 ### Aprendendo as Tecnologias
 
@@ -543,9 +543,9 @@ Obrigado por dedicar seu tempo para contribuir com o OpenBag! Cada contribuiçã
 
 ## 📞 Precisa de Ajuda?
 
-- 💬 [GitHub Discussions](https://github.com/seu-usuario/openbag/discussions)
-- 🐛 [Issues](https://github.com/seu-usuario/openbag/issues)
-- 📧 Email: dev@openbag.app
+- 💬 [GitHub Discussions](https://github.com/LucasRamos-Developer/openbag/discussions)
+- 🐛 [Issues](https://github.com/LucasRamos-Developer/openbag/issues)
+- 📧 Email: [lucasramos.developer@gmail.com](mailto:lucasramos.developer@gmail.com)
 - 📖 [Documentação Técnica](README-DEVELOPER.md)
 
 ---

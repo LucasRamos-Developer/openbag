@@ -15,6 +15,7 @@ class _UIComponentsShowcaseState extends State<UIComponentsShowcase> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  int _panelTab = 0;
 
   @override
   void dispose() {
@@ -361,6 +362,46 @@ class _UIComponentsShowcaseState extends State<UIComponentsShowcase> {
           
           const SizedBox(height: 32),
           
+          // Panel Scaffold
+          _buildSection(
+            'Menu lateral dos painéis',
+            Icons.view_sidebar_outlined,
+            [
+              const Text('AppPanelScaffold + AppPanelProfileHeader (☰ recolhe/expande; no celular vira gaveta):'),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 420,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  child: AppPanelScaffold(
+                    header: AppPanelProfileHeader(
+                      avatar: const AppImageAvatar(url: null, name: 'Burger da Vila', size: 40),
+                      title: 'Burger da Vila',
+                      subtitle: 'Restaurante',
+                      sections: [
+                        AppPanelProfileSection(title: 'Seus perfis', options: [
+                          AppPanelProfileOption(icon: Icons.storefront_outlined, label: 'Restaurante', selected: true, onTap: () {}),
+                          AppPanelProfileOption(icon: Icons.shopping_bag_outlined, label: 'Cliente', onTap: () {}),
+                        ]),
+                      ],
+                    ),
+                    destinations: const [
+                      AppPanelDestination(icon: Icons.receipt_long_outlined, selectedIcon: Icons.receipt_long, label: 'Pedidos', badge: 3),
+                      AppPanelDestination(icon: Icons.restaurant_menu_outlined, selectedIcon: Icons.restaurant_menu, label: 'Cardápio'),
+                      AppPanelDestination(icon: Icons.storefront_outlined, selectedIcon: Icons.storefront, label: 'Loja'),
+                    ],
+                    selectedIndex: _panelTab,
+                    onDestinationSelected: (i) => setState(() => _panelTab = i),
+                    onLogout: () {},
+                    body: Center(child: Text(['Pedidos', 'Cardápio', 'Loja'][_panelTab])),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 32),
+
           // Colors Showcase
           _buildSection(
             'Paleta de Cores',

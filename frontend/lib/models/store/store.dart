@@ -1,3 +1,5 @@
+import '../restaurant.dart';
+
 /// Restaurante resumido (seletor do painel do dono)
 class RestaurantSummary {
   final int id;
@@ -76,6 +78,18 @@ class Store {
   final String name;
   final String slug;
   final String? logoUrl;
+  final String? bannerUrl;
+  final String? description;
+  final String? phoneNumber;
+  final String? cnpj;
+  final List<int> categoryIds;
+  final List<String> categories;
+  final Address? address;
+  final double rating;
+  final int totalReviews;
+  final String themePreset;
+  final String? brandColor;
+  final String? slogan;
   final bool active;
   final bool open;
   final bool openNow;
@@ -96,6 +110,18 @@ class Store {
     required this.name,
     required this.slug,
     this.logoUrl,
+    this.bannerUrl,
+    this.description,
+    this.phoneNumber,
+    this.cnpj,
+    this.categoryIds = const [],
+    this.categories = const [],
+    this.address,
+    this.rating = 0,
+    this.totalReviews = 0,
+    this.themePreset = 'FRESH_GREEN',
+    this.brandColor,
+    this.slogan,
     required this.active,
     required this.open,
     required this.openNow,
@@ -119,6 +145,18 @@ class Store {
         name: json['name'] ?? '',
         slug: json['slug'] ?? '',
         logoUrl: json['logoUrl'],
+        bannerUrl: json['bannerUrl'],
+        description: json['description'],
+        phoneNumber: json['phoneNumber'],
+        cnpj: json['cnpj'],
+        categoryIds: [for (final id in json['categoryIds'] as List? ?? []) id as int],
+        categories: [for (final name in json['categories'] as List? ?? []) name as String],
+        address: json['address'] != null ? Address.fromJson(json['address']) : null,
+        rating: (json['rating'] as num?)?.toDouble() ?? 0,
+        totalReviews: json['totalReviews'] ?? 0,
+        themePreset: json['themePreset'] ?? 'FRESH_GREEN',
+        brandColor: json['brandColor'],
+        slogan: json['slogan'],
         active: json['active'] ?? false,
         open: json['open'] ?? false,
         openNow: json['openNow'] ?? false,

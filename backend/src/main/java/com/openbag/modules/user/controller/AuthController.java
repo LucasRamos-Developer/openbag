@@ -40,6 +40,9 @@ import java.util.stream.Collectors;
 public class AuthController {
 
     @Autowired
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+
+    @Autowired
     private AuthenticationManager authenticationManager;
 
     @Autowired
@@ -200,8 +203,7 @@ public class AuthController {
             @RequestPart(value = "logo", required = false) MultipartFile logo,
             @RequestPart(value = "banner", required = false) MultipartFile banner) {
         try {
-            // Parse manual do JSON da parte "data"
-            com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            // Parse manual do JSON da parte "data" (mapper do Spring: entende LocalTime dos horários)
             RestaurantOnboardingRequest request = objectMapper.readValue(dataJson, RestaurantOnboardingRequest.class);
             
             Restaurant restaurant = restaurantOnboardingService.completeOnboarding(request, logo, banner);

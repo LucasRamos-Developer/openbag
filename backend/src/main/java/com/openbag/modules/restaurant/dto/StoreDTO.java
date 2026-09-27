@@ -1,6 +1,8 @@
 package com.openbag.modules.restaurant.dto;
 
 import com.openbag.enums.AcceptanceMode;
+import com.openbag.enums.RestaurantThemePreset;
+import com.openbag.modules.user.dto.AddressDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +26,22 @@ public class StoreDTO {
     private String slug;
     private String logoUrl;
     private String bannerUrl;
+    private String description;
+    private String phoneNumber;
+    private String cnpj;
+    private List<Long> categoryIds;
+    private List<String> categories;
+    private AddressDTO address;
     private boolean active;
+
+    // Avaliações dos clientes (média e total)
+    private BigDecimal rating;
+    private Integer totalReviews;
+
+    // Aparência da página pública
+    private RestaurantThemePreset themePreset;
+    private String brandColor;
+    private String slogan;
 
     // "Fechar agora" manual
     private boolean open;

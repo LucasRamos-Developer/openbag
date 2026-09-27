@@ -40,6 +40,11 @@ public class MenuSection {
     @Column(length = 300)
     private String description;
 
+    /** Ícone da seção no cardápio (chave do catálogo do frontend, ex: "lunch_dining") */
+    @Size(max = 30)
+    @Column(length = 30)
+    private String icon;
+
     @Column(nullable = false)
     private int position = 0;
 

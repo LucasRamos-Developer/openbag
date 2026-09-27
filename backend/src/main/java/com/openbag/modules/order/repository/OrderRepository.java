@@ -83,7 +83,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /**
      * Pedidos aceitos que ainda esperam entregador
      */
-    @Query("SELECT o.id FROM Order o WHERE o.deliveryPerson IS NULL AND o.status IN :statuses")
+    @Query("SELECT o.id FROM Order o WHERE o.deliveryPerson IS NULL AND o.staffCourier IS NULL AND o.status IN :statuses")
     List<Long> findIdsAwaitingCourier(@Param("statuses") java.util.Collection<OrderStatus> statuses);
 
     /**
@@ -124,4 +124,56 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             + "WHERE o.deliveryPerson.id = :deliveryPersonId AND o.status = com.openbag.enums.OrderStatus.DELIVERED "
             + "GROUP BY o.restaurant.id ORDER BY MAX(o.deliveredAt) DESC")
     List<Object[]> summarizeRestaurantsByCourier(@Param("deliveryPersonId") Long deliveryPersonId);
+
+    // ============= Caixa do restaurante =============
+
+    /**
+     * Pedidos entregues no período, com quem levou (para o caixa)
+     */
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.deliveryPerson dp LEFT JOIN FETCH dp.user "
+            + "LEFT JOIN FETCH o.staffCourier WHERE o.restaurant.id = :restaurantId "
+            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end")
+    List<Order> findDeliveredByRestaurantBetween(@Param("restaurantId") Long restaurantId,
+                                                @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.restaurant.id = :restaurantId "
+            + "AND o.status = com.openbag.enums.OrderStatus.CANCELLED AND o.cancelledAt >= :start AND o.cancelledAt < :end")
+    long countCancelledByRestaurantBetween(@Param("restaurantId") Long restaurantId,
+                                           @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    /**
+     * Entregas concluídas ainda sem acerto com o entregador (de qualquer data)
+     */
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.deliveryPerson dp LEFT JOIN FETCH dp.user "
+            + "LEFT JOIN FETCH o.staffCourier WHERE o.restaurant.id = :restaurantId "
+            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.settlement IS NULL "
+            + "AND (o.deliveryPerson IS NOT NULL OR o.staffCourier IS NOT NULL)")
+    List<Order> findUnsettledByRestaurant(@Param("restaurantId") Long restaurantId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT o FROM Order o WHERE o.restaurant.id = :restaurantId AND o.deliveryPerson.id = :deliveryPersonId "
+            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.settlement IS NULL")
+    List<Order> findUnsettledForAppCourierForUpdate(@Param("restaurantId") Long restaurantId,
+                                                    @Param("deliveryPersonId") Long deliveryPersonId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT o FROM Order o WHERE o.restaurant.id = :restaurantId AND o.staffCourier.id = :staffCourierId "
+            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.settlement IS NULL")
+    List<Order> findUnsettledForStaffForUpdate(@Param("restaurantId") Long restaurantId,
+                                               @Param("staffCourierId") Long staffCourierId);
+
+    // ============= Rotas =============
+
+    /**
+     * Lojas com pedidos esperando o planejador liberar a chamada do entregador
+     */
+    @Query("SELECT DISTINCT o.restaurant.id FROM Order o WHERE o.status IN :statuses AND o.deliveryPerson IS NULL "
+            + "AND o.staffCourier IS NULL AND o.dispatchReleasedAt IS NULL")
+    List<Long> findRestaurantIdsAwaitingRelease(@Param("statuses") java.util.Collection<OrderStatus> statuses);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT o FROM Order o WHERE o.restaurant.id = :restaurantId AND o.status IN :statuses "
+            + "AND o.deliveryPerson IS NULL AND o.staffCourier IS NULL AND o.dispatchReleasedAt IS NULL ORDER BY o.id")
+    List<Order> findAwaitingReleaseForUpdate(@Param("restaurantId") Long restaurantId,
+                                            @Param("statuses") java.util.Collection<OrderStatus> statuses);
 }

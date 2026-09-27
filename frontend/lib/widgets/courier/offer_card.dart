@@ -38,7 +38,10 @@ class OfferCard extends StatelessWidget {
             children: [
               const Icon(Icons.notifications_active, color: AppColors.primary),
               const SizedBox(width: 8),
-              Expanded(child: Text('Nova entrega', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))),
+              Expanded(
+                child: Text(offer.isRoute ? 'Nova rota · ${offer.stops.length} entregas' : 'Nova entrega',
+                    style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              ),
               Text(formatMoney(offer.courierFee),
                   style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
             ],
@@ -55,12 +58,32 @@ class OfferCard extends StatelessWidget {
             ].join(' · '),
           ),
           const SizedBox(height: 12),
-          _Stop(
-            icon: Icons.location_on,
-            title: 'Entrega · ${_km(offer.deliveryDistanceKm)} do restaurante',
-            subtitle: offer.deliveryAddress ?? '',
-          ),
-          if (offer.paymentMethod != null) ...[
+          if (offer.isRoute) ...[
+            for (var i = 0; i < offer.stops.length; i++) ...[
+              _Stop(
+                icon: Icons.looks_one_outlined,
+                number: i + 1,
+                title: '${offer.stops[i].displayCode ?? 'Entrega'}${offer.stops[i].neighborhood != null ? ' · ${offer.stops[i].neighborhood}' : ''}',
+                subtitle: [
+                  offer.stops[i].deliveryAddress ?? '',
+                  if (offer.stops[i].paymentMethod != null)
+                    '${offer.stops[i].paymentMethod!.label}${offer.stops[i].totalAmount != null ? ' ${formatMoney(offer.stops[i].totalAmount!)}' : ''}',
+                ].where((t) => t.isNotEmpty).join(' · '),
+              ),
+              const SizedBox(height: 8),
+            ],
+            Text(
+              '${offer.routeDistanceKm != null ? 'Rota de ${_km(offer.routeDistanceKm)} saindo do restaurante · ' : ''}'
+              'valor cheio de cada entrega',
+              style: textTheme.bodySmall,
+            ),
+          ] else
+            _Stop(
+              icon: Icons.location_on,
+              title: 'Entrega · ${_km(offer.deliveryDistanceKm)} do restaurante',
+              subtitle: offer.deliveryAddress ?? '',
+            ),
+          if (offer.paymentMethod != null && !offer.isRoute) ...[
             const SizedBox(height: 12),
             Text('Cliente paga na entrega: ${offer.paymentMethod!.label}'
                 '${offer.totalAmount != null ? ' · ${formatMoney(offer.totalAmount!)}' : ''}',
@@ -80,7 +103,7 @@ class OfferCard extends StatelessWidget {
               Expanded(
                 flex: 2,
                 child: AppButton(
-                  text: 'Aceitar entrega',
+                  text: offer.isRoute ? 'Aceitar rota' : 'Aceitar entrega',
                   icon: Icons.check,
                   size: ButtonSize.large,
                   isLoading: busy,
@@ -100,7 +123,10 @@ class _Stop extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _Stop({required this.icon, required this.title, required this.subtitle});
+  /// Posição na rota: substitui o ícone por um número
+  final int? number;
+
+  const _Stop({required this.icon, required this.title, required this.subtitle, this.number});
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +134,13 @@ class _Stop extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: AppColors.textBody),
+        number != null
+            ? CircleAvatar(
+                radius: 12,
+                backgroundColor: context.appColors.primary,
+                child: Text('$number', style: TextStyle(color: context.appColors.onAction, fontSize: 12, fontWeight: FontWeight.w800)),
+              )
+            : Icon(icon, color: AppColors.textBody),
         const SizedBox(width: 12),
         Expanded(
           child: Column(

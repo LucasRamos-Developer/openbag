@@ -199,21 +199,15 @@ public class CourierWorkService {
         }
 
         Order order = orderRepository.findByIdForUpdate(offer.getOrder().getId()).orElseThrow();
-        if (order.getDeliveryPerson() != null || !DispatchService.DISPATCHABLE.contains(order.getStatus())) {
+        if (order.getDeliveryPerson() != null || order.getStaffCourier() != null
+                || !DispatchService.DISPATCHABLE.contains(order.getStatus())) {
             offer.setStatus(DeliveryOfferStatus.CANCELLED);
             offer.setRespondedAt(now);
             offerRepository.save(offer);
             throw new BadRequestException("Este pedido não está mais disponível");
         }
 
-        order.setDeliveryPerson(courier);
-        order.setCourierFee(offer.getCourierFee());
-        order.setRestaurantDeliverySubsidy(DeliveryRateCalculator.subsidy(offer.getCourierFee(), order.getDeliveryFee()));
-        order.setAssignedAt(now);
-        order.setSearchingCourierSince(null);
-        orderService.addTracking(order, order.getStatus(),
-                "Entregador " + courier.getUser().getFullName() + " aceitou a entrega", now);
-        orderRepository.save(order);
+        List<Order> assigned = dispatchService.assignOfferedOrders(offer, courier, now);
 
         offer.setStatus(DeliveryOfferStatus.ACCEPTED);
         offer.setRespondedAt(now);
@@ -223,8 +217,10 @@ public class CourierWorkService {
         courier.setAvailable(false);
         deliveryPersonRepository.save(courier);
 
-        events.publishEvent(new OrderChangedEvent(order.getId(), OrderChangedEvent.Type.ORDER_UPDATED));
-        log.info("Entregador {} aceitou o pedido {} (R$ {})", courier.getId(), order.getId(), offer.getCourierFee());
+        assigned.forEach(o -> events.publishEvent(new OrderChangedEvent(o.getId(), OrderChangedEvent.Type.ORDER_UPDATED)));
+        log.info("Entregador {} aceitou {} (R$ {})", courier.getId(),
+                offer.getRoute() != null ? "a rota " + offer.getRoute().getId() + " com " + assigned.size() + " pedidos"
+                        : "o pedido " + order.getId(), offer.getCourierFee());
         return toState(courier);
     }
 
@@ -381,6 +377,14 @@ public class CourierWorkService {
                 .findFirst()
                 .orElse(BigDecimal.ZERO);
 
+        // Rota: na ordem de entrega (entregues somem da lista)
+        List<CourierOrderDTO> active = orderRepository.findByCourierAndStatusIn(courier.getId(), IN_PROGRESS).stream()
+                .sorted(java.util.Comparator
+                        .comparing((Order o) -> o.getRouteSequence() != null ? o.getRouteSequence() : Integer.MAX_VALUE)
+                        .thenComparing(Order::getAssignedAt, java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())))
+                .map(CourierOrderDTO::from)
+                .toList();
+
         return CourierWorkStateDTO.builder()
                 .deliveryPersonId(courier.getId())
                 .workStatus(courier.getWorkStatus())
@@ -396,10 +400,8 @@ public class CourierWorkService {
                 .pendingOffer(offerRepository.findPendingByCourier(courier.getId())
                         .map(offer -> CourierOfferDTO.from(offer, now))
                         .orElse(null))
-                .activeOrder(orderRepository.findByCourierAndStatusIn(courier.getId(), IN_PROGRESS).stream()
-                        .findFirst()
-                        .map(CourierOrderDTO::from)
-                        .orElse(null))
+                .activeOrder(active.isEmpty() ? null : active.get(0))
+                .activeOrders(active)
                 .earnedToday(earned)
                 .deliveriesToday((int) orderRepository.countDeliveredBetween(courier.getId(), today.atStartOfDay(),
                         today.plusDays(1).atStartOfDay()))

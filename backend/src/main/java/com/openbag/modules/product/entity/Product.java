@@ -5,6 +5,7 @@ import com.openbag.modules.order.entity.OrderItem;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.openbag.modules.menu.entity.MenuSection;
+import com.openbag.modules.shared.entity.StringListConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -48,6 +49,11 @@ public class Product {
 
     @Column(name = "image_url")
     private String imageUrl;
+
+    /** Selos livres do cardápio (ex: "Tradicional", "Picante"), no máximo 2 */
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "badges", length = 60)
+    private List<String> badges = new ArrayList<>();
 
     @Column(name = "is_available")
     private boolean isAvailable = true;

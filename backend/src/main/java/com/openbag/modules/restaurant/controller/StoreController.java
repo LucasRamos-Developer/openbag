@@ -51,6 +51,27 @@ public class StoreController {
         return ResponseEntity.ok(storeService.updateSettings(id, request));
     }
 
+    @PutMapping("/{id}/profile")
+    @IsRestaurantOwner
+    @Operation(summary = "Atualizar dados gerais", description = "Nome, descrição, telefone, categorias e faixa de preço (o slug não muda)")
+    public ResponseEntity<StoreDTO> updateProfile(@PathVariable Long id, @Valid @RequestBody RestaurantProfileRequest request) {
+        return ResponseEntity.ok(storeService.updateProfile(id, request));
+    }
+
+    @PutMapping("/{id}/address")
+    @IsRestaurantOwner
+    @Operation(summary = "Atualizar endereço da loja")
+    public ResponseEntity<StoreDTO> updateAddress(@PathVariable Long id, @Valid @RequestBody StoreAddressRequest request) {
+        return ResponseEntity.ok(storeService.updateAddress(id, request));
+    }
+
+    @PutMapping("/{id}/appearance")
+    @IsRestaurantOwner
+    @Operation(summary = "Atualizar a aparência da página", description = "Tema, cor da marca opcional e slogan do banner")
+    public ResponseEntity<StoreDTO> updateAppearance(@PathVariable Long id, @Valid @RequestBody AppearanceRequest request) {
+        return ResponseEntity.ok(storeService.updateAppearance(id, request));
+    }
+
     @PutMapping("/{id}/opening-hours")
     @IsRestaurantOwner
     @Operation(summary = "Substituir horários de funcionamento",

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../widgets/onboarding/compact_image_picker.dart';
-import '../../../widgets/onboarding/color_picker_field.dart';
+import '../../../widgets/restaurant/theme_preset_picker.dart';
 import '../../../models/onboarding/layout_config.dart';
 import '../../../models/restaurant.dart';
 import '../../../services/category_service.dart';
@@ -30,8 +30,8 @@ class CustomizationStep extends StatefulWidget {
 
 class _CustomizationStepState extends State<CustomizationStep> {
   XFile? _logoFile;
-  String _primaryColor = LayoutConfig.defaultConfig.primaryColor;
-  String _secondaryColor = LayoutConfig.defaultConfig.secondaryColor;
+  AppThemePreset _preset = AppThemePreset.fallback;
+  String? _brandColor;
   List<int> _selectedCategoryIds = [];
   
   final CategoryService _categoryService = CategoryService();
@@ -48,8 +48,8 @@ class _CustomizationStepState extends State<CustomizationStep> {
     // Carregar cores do layoutConfig se existir
     if (widget.initialData['layoutConfig'] != null) {
       final config = LayoutConfig.fromJson(widget.initialData['layoutConfig']);
-      _primaryColor = config.primaryColor;
-      _secondaryColor = config.secondaryColor;
+      _preset = AppThemePreset.fromKey(config.themePreset);
+      _brandColor = config.brandColor;
     }
     
     if (widget.initialData['categoryIds'] != null) {
@@ -94,10 +94,7 @@ class _CustomizationStepState extends State<CustomizationStep> {
   void _notifyChanges() {
     widget.onDataChanged({
       'logoFile': _logoFile,
-      'layoutConfig': {
-        'primaryColor': _primaryColor,
-        'secondaryColor': _secondaryColor,
-      },
+      'layoutConfig': LayoutConfig(themePreset: _preset.key, brandColor: _brandColor).toJson(),
       'categoryIds': _selectedCategoryIds,
     });
   }
@@ -132,59 +129,53 @@ class _CustomizationStepState extends State<CustomizationStep> {
             ),
             const SizedBox(height: 32),
 
-            // Logo | Cores (Primária e Secundária em coluna)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Logo
-                Expanded(
-                  flex: 2,
-                  child: CompactImagePicker(
-                    label: '',
-                    imageFile: _logoFile,
-                    onImageSelected: (file) {
-                      setState(() {
-                        _logoFile = file;
-                        _notifyChanges();
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16),
-                
-                // Cores (coluna)
-                Expanded(
-                  child: Column(
-                    children: [
-                      // Cor Primária
-                      ColorPickerField(
-                        label: 'Cor Primária',
-                        value: _primaryColor,
-                        onColorChanged: (color) {
-                          setState(() {
-                            _primaryColor = color;
-                            _notifyChanges();
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      
-                      // Cor Secundária
-                      ColorPickerField(
-                        label: 'Cor Secundária',
-                        value: _secondaryColor,
-                        onColorChanged: (color) {
-                          setState(() {
-                            _secondaryColor = color;
-                            _notifyChanges();
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            // Logo
+            CompactImagePicker(
+              label: 'Logo (opcional)',
+              imageFile: _logoFile,
+              onImageSelected: (file) {
+                setState(() {
+                  _logoFile = file;
+                  _notifyChanges();
+                });
+              },
             ),
+            const SizedBox(height: 28),
+
+            // Tema da página (dá para trocar depois em Loja > Aparência)
+            Text('Tema da sua página', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 4),
+            Text(
+              'Escolha as cores da sua loja. Você pode trocar quando quiser no painel.',
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 12),
+            ThemePresetPicker(
+              value: _preset,
+              onChanged: (preset) => setState(() {
+                _preset = preset;
+                _notifyChanges();
+              }),
+            ),
+            const SizedBox(height: 8),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Usar a cor da minha marca'),
+              value: _brandColor != null,
+              onChanged: (v) => setState(() {
+                _brandColor = v ? AppThemeColors.toHex(_preset.colors.primary) : null;
+                _notifyChanges();
+              }),
+            ),
+            if (_brandColor != null)
+              AppColorField(
+                label: 'Cor da marca',
+                value: _brandColor!,
+                onChanged: (hex) => setState(() {
+                  _brandColor = hex;
+                  _notifyChanges();
+                }),
+              ),
             const SizedBox(height: 20),
 
             // Categorias (Select multiselect)

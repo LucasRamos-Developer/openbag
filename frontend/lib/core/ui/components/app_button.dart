@@ -126,7 +126,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
     final foregroundColor = widget.textColor ?? colorScheme.onPrimary;
     
     return ElevatedButton(
-      onPressed: widget.isLoading ? null : _handleTap,
+      onPressed: widget.isLoading || widget.onPressed == null ? null : _handleTap,
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor,
         foregroundColor: foregroundColor,
@@ -149,7 +149,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
     final textColor = widget.textColor ?? widget.backgroundColor ?? colorScheme.primary;
     
     return OutlinedButton(
-      onPressed: widget.isLoading ? null : _handleTap,
+      onPressed: widget.isLoading || widget.onPressed == null ? null : _handleTap,
       style: OutlinedButton.styleFrom(
         foregroundColor: textColor,
         disabledForegroundColor: colorScheme.onSurface.withOpacity(0.38),
@@ -171,7 +171,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
     final textColor = widget.textColor ?? widget.backgroundColor ?? colorScheme.primary;
     
     return TextButton(
-      onPressed: widget.isLoading ? null : _handleTap,
+      onPressed: widget.isLoading || widget.onPressed == null ? null : _handleTap,
       style: TextButton.styleFrom(
         foregroundColor: textColor,
         disabledForegroundColor: colorScheme.onSurface.withOpacity(0.38),
@@ -191,7 +191,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
     final textColor = widget.textColor ?? baseColor;
     
     return ElevatedButton(
-      onPressed: widget.isLoading ? null : _handleTap,
+      onPressed: widget.isLoading || widget.onPressed == null ? null : _handleTap,
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor,
         foregroundColor: textColor,

@@ -13,8 +13,9 @@ import '../../../widgets/association/association_logo.dart';
 import '../../../widgets/courier/courier_avatar.dart';
 import '../../../widgets/delivery/courier_link_status_chip.dart';
 import '../../../widgets/delivery/delivery_rate_summary.dart';
+import 'couriers/staff_section.dart';
 
-/// Entregadores do restaurante: quem recebe os pedidos, associações parceiras e entregadores fixos
+/// Entregadores do restaurante: quem recebe os pedidos, associações parceiras, fixos e equipe própria
 class CouriersTab extends StatefulWidget {
   const CouriersTab({super.key});
 
@@ -33,7 +34,7 @@ class _CouriersTabState extends State<CouriersTab> {
     if (id != null) WidgetsBinding.instance.addPostFrameCallback((_) => service.load(id));
   }
 
-  Future<void> _update({CourierPolicy? policy, bool? fallback, bool? covers}) async {
+  Future<void> _update({CourierPolicy? policy, bool? fallback, bool? covers, int? noShowMinutes}) async {
     final service = context.read<RestaurantDeliveryService>();
     final current = service.settings!;
     setState(() => _saving = true);
@@ -43,6 +44,7 @@ class _CouriersTabState extends State<CouriersTab> {
         policy: policy ?? current.courierPolicy,
         fallbackToOpen: fallback ?? current.fallbackToOpen,
         coversDeliveryDifference: covers ?? current.coversDeliveryDifference,
+        courierNoShowMinutes: noShowMinutes,
       ),
       success: 'Regras de entrega atualizadas',
     );
@@ -86,7 +88,7 @@ class _CouriersTabState extends State<CouriersTab> {
         children: [
           Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 820),
+              constraints: const BoxConstraints(maxWidth: AppLayout.maxContentWidth),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -95,6 +97,8 @@ class _CouriersTabState extends State<CouriersTab> {
                   _PartnersSection(settings: settings),
                   const SizedBox(height: 32),
                   const _FixedCouriersSection(),
+                  const SizedBox(height: 32),
+                  const StaffSection(),
                 ],
               ),
             ),
@@ -143,6 +147,26 @@ class _CouriersTabState extends State<CouriersTab> {
                 : 'Pedidos em que a tabela da associação passa da sua taxa não são oferecidos a esses entregadores.',
             style: textTheme.bodySmall,
           ),
+        ),
+        const Divider(height: 32),
+        Text(
+          'Entregador livre que não aparece na loja pode ser trocado depois do tempo abaixo. '
+          'Fixos e equipe da loja podem ser trocados a qualquer momento antes da retirada.',
+          style: textTheme.bodySmall,
+        ),
+        const SizedBox(height: 12),
+        AppSelect<int>(
+          labelText: 'Trocar entregador livre depois de',
+          variant: TextFieldVariant.filled,
+          enabled: !_saving,
+          value: settings.courierNoShowMinutes,
+          items: [
+            for (final m in {5, 8, 10, 15, 20, 30, settings.courierNoShowMinutes}.toList()..sort())
+              SelectItem(value: m, label: '$m minutos'),
+          ],
+          onChanged: (v) {
+            if (v != null && v != settings.courierNoShowMinutes) _update(noShowMinutes: v);
+          },
         ),
       ],
     );

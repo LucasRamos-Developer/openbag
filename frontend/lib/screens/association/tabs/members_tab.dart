@@ -119,6 +119,17 @@ class _MembersTabState extends State<MembersTab> {
 
   @override
   Widget build(BuildContext context) {
+    // Os blocos já têm 24 de margem lateral: a largura máxima soma as duas margens
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: AppLayout.maxContentWidth + 48),
+        child: _buildContent(),
+      ),
+    );
+  }
+
+  Widget _buildContent() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

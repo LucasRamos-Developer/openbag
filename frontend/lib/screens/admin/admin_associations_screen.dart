@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/ui/ui.dart';
 import '../../models/association/association.dart';
+import '../../models/panel_profile.dart';
 import '../../services/admin_association_service.dart';
 import '../../services/api_client.dart';
 import '../../services/auth_service.dart';
 import '../../utils/formatters.dart';
 import '../../widgets/association/association_logo.dart';
 import '../../widgets/association/association_status_chip.dart';
+import '../../widgets/navigation/panel_profiles.dart';
 
 /// Moderação de associações pelo ADMIN: aprovar, recusar (com motivo) e suspender
 class AdminAssociationsScreen extends StatefulWidget {
@@ -94,17 +96,23 @@ class _AdminAssociationsScreenState extends State<AdminAssociationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Associações'),
-        actions: [
-          IconButton(tooltip: 'Sair', icon: const Icon(Icons.logout), onPressed: _logout),
-          const SizedBox(width: 8),
-        ],
+    final user = context.watch<AuthService>().currentUser;
+
+    return AppPanelScaffold(
+      header: AppPanelProfileHeader(
+        avatar: AppImageAvatar(url: null, name: user?.fullName ?? 'Admin', size: 40),
+        title: user?.fullName ?? 'Administração',
+        subtitle: PanelProfile.admin.label,
+        sections: [panelProfilesSection(context, current: PanelProfile.admin)],
       ),
+      destinations: const [
+        AppPanelDestination(icon: Icons.apartment_outlined, selectedIcon: Icons.apartment, label: 'Associações'),
+      ],
+      onDestinationSelected: (_) {},
+      onLogout: _logout,
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 960),
+          constraints: const BoxConstraints(maxWidth: AppLayout.maxContentWidth),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

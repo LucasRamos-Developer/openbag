@@ -95,8 +95,35 @@ class RestaurantPanelService extends ChangeNotifier {
   Future<void> updateSettings(Map<String, dynamic> settings) =>
       _storeAction(() => _api.put('$_base/settings', data: settings));
 
+  /// Nome, descrição, telefone, categorias e faixa de preço (o slug não muda)
+  Future<void> updateProfile(Map<String, dynamic> profile) =>
+      _storeAction(() => _api.put('$_base/profile', data: profile));
+
+  Future<void> updateAddress(Map<String, dynamic> address) =>
+      _storeAction(() => _api.put('$_base/address', data: address));
+
   Future<void> updateOpeningHours(List<OpeningHour> hours) => _storeAction(
       () => _api.put('$_base/opening-hours', data: {'hours': hours.map((h) => h.toJson()).toList()}));
+
+  /// Tema, cor da marca (null = cor do tema) e slogan da página pública
+  Future<void> updateAppearance({required String themePreset, String? brandColor, String? slogan}) => _storeAction(
+      () => _api.put('$_base/appearance', data: {'themePreset': themePreset, 'brandColor': brandColor, 'slogan': slogan}));
+
+  /// Envia o logo ou o banner (a resposta não é a loja, então recarrega a loja em seguida)
+  Future<void> uploadStoreImage(StoreImage kind, XFile file) async {
+    final form = FormData.fromMap({
+      'file': MultipartFile.fromBytes(await file.readAsBytes(), filename: file.name),
+    });
+    await _api.post('$_base/upload-${kind.name}', data: form);
+    await _loadStore();
+    notifyListeners();
+  }
+
+  Future<void> removeStoreImage(StoreImage kind) async {
+    await _api.delete('$_base/${kind.name}');
+    await _loadStore();
+    notifyListeners();
+  }
 
   // ============= Cardápio =============
 
@@ -107,12 +134,13 @@ class RestaurantPanelService extends ChangeNotifier {
     return result;
   }
 
-  Future<void> createSection(String name, {String? description}) => _menuAction(
-      () => _api.post('$_menuBase/sections', data: {'name': name, 'description': description}));
+  Future<void> createSection(String name, {String? description, String? icon}) => _menuAction(
+      () => _api.post('$_menuBase/sections', data: {'name': name, 'description': description, 'icon': icon}));
 
-  Future<void> updateSection(MenuSection section, {required String name, String? description, bool? active}) =>
+  Future<void> updateSection(MenuSection section,
+          {required String name, String? description, String? icon, bool? active}) =>
       _menuAction(() => _api.put('$_menuBase/sections/${section.id}',
-          data: {'name': name, 'description': description, 'active': active}));
+          data: {'name': name, 'description': description, 'icon': icon, 'active': active}));
 
   Future<void> deleteSection(int sectionId) => _menuAction(() => _api.delete('$_menuBase/sections/$sectionId'));
 
@@ -178,3 +206,6 @@ class RestaurantPanelService extends ChangeNotifier {
         return _api.post('$_menuBase/combos/$comboId/image', data: form);
       });
 }
+
+/// Imagens da loja; o nome casa com as rotas do backend (upload-logo, /logo, upload-banner, /banner)
+enum StoreImage { logo, banner }

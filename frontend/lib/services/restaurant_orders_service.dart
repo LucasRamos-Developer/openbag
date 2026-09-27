@@ -34,6 +34,9 @@ class RestaurantOrdersService extends ChangeNotifier {
       _orders.values.where((o) => statuses.contains(o.status)).toList()
         ..sort((a, b) => (a.createdAt ?? DateTime(0)).compareTo(b.createdAt ?? DateTime(0)));
 
+  /// Versão mais recente de um pedido do quadro (atualizada em tempo real)
+  Order? byId(int id) => _orders[id];
+
   List<Order> get pending => _byStatus({OrderStatus.PENDING});
   List<Order> get confirmed => _byStatus({OrderStatus.CONFIRMED});
   List<Order> get preparing => _byStatus({OrderStatus.PREPARING});
