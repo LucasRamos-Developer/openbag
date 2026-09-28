@@ -50,6 +50,7 @@ import 'screens/association/association_section.dart';
 import 'screens/courier/courier_section.dart';
 import 'screens/restaurant_panel/menu_form_route.dart';
 import 'screens/restaurant_panel/restaurant_section.dart';
+import 'screens/restaurant_panel/store_order_screen.dart';
 import 'widgets/navigation/panel_routes.dart';
 
 void main() {
@@ -185,6 +186,10 @@ GoRouter buildRouter(AuthService authService) => GoRouter(
     GoRoute(
       path: '/restaurante/cozinha',
       builder: (context, state) => const KitchenScreen(),
+    ),
+    GoRoute(
+      path: storeOrderPath,
+      builder: (context, state) => const StoreOrderScreen(),
     ),
     GoRoute(
       path: '/restaurante/cardapio/:tipo/:id',

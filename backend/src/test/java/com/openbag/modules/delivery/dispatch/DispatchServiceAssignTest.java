@@ -272,6 +272,19 @@ class DispatchServiceAssignTest {
     }
 
     @Test
+    void pickupOrdersNeverCallACourier() {
+        order.setFulfillment(com.openbag.enums.FulfillmentType.PICKUP);
+        restaurant.setRouteBatchingEnabled(false);
+
+        service.dispatchLocked(order);
+
+        verify(offerRepository, never()).save(any());
+        verify(courierRepository, never()).findFreeOnlineCouriers(any());
+        assertThatThrownBy(() -> service.assignDirect(1L, 10L, new AssignCourierRequest(5L, null)))
+                .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
     void unassignSendsTheOrderBackToDispatch() {
         DeliveryPerson courier = courier(5L, ShiftMode.FIXED);
         service.assignDirect(1L, 10L, new AssignCourierRequest(5L, null));

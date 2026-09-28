@@ -4,7 +4,9 @@ import '../../utils/formatters.dart';
 /// Resumo de valores do pedido: subtotal, taxa de entrega e total
 class PriceSummary extends StatelessWidget {
   final double subtotal;
-  final double deliveryFee;
+
+  /// Nula na retirada na loja: a linha da taxa não aparece
+  final double? deliveryFee;
   final double total;
 
   /// A taxa ainda depende do endereço: mostra "a partir de" e o total como mínimo
@@ -31,12 +33,13 @@ class PriceSummary extends StatelessWidget {
     return Column(
       children: [
         _row('Subtotal', formatMoney(subtotal)),
-        _row(
-          deliveryDistanceKm != null
-              ? 'Taxa de entrega (${formatDistance(deliveryDistanceKm!)})'
-              : 'Taxa de entrega',
-          calculating ? 'Calculando…' : formatDeliveryFee(deliveryFee, byDistance: deliveryFeeFrom),
-        ),
+        if (deliveryFee != null)
+          _row(
+            deliveryDistanceKm != null
+                ? 'Taxa de entrega (${formatDistance(deliveryDistanceKm!)})'
+                : 'Taxa de entrega',
+            calculating ? 'Calculando…' : formatDeliveryFee(deliveryFee!, byDistance: deliveryFeeFrom),
+          ),
         const Divider(height: 24),
         _row('Total', deliveryFeeFrom ? 'a partir de ${formatMoney(total)}' : formatMoney(total), bold: true),
       ],

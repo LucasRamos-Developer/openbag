@@ -12,6 +12,7 @@ import '../../../widgets/order/order_card.dart';
 import '../../../widgets/order/order_status_chip.dart';
 import '../../../widgets/order/order_ticket.dart';
 import '../../../widgets/order/restaurant_order_sheet.dart';
+import '../store_order_screen.dart';
 
 /// Gestor de pedidos: colunas Novos · Em preparo · Prontos · Em entrega, em tempo real
 class OrdersTab extends StatefulWidget {
@@ -107,6 +108,11 @@ class _OrdersTabState extends State<OrdersTab> {
             children: [
               Text('Pedidos', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
               LiveIndicator(connected: orders.connected),
+              AppButton(
+                text: 'Novo pedido',
+                icon: Icons.add,
+                onPressed: () => context.push(storeOrderPath),
+              ),
               if (!orders.alertSound.unlocked)
                 AppButton(
                   text: 'Ativar alertas sonoros',
@@ -271,7 +277,13 @@ class _HistoryState extends State<_History> {
               onTap: () => widget.onOpen(order),
               leading: Text(order.displayCode ?? '', style: const TextStyle(fontWeight: FontWeight.w800)),
               title: Text(order.items.map((i) => '${i.quantity}x ${i.name}').join(', '), maxLines: 1, overflow: TextOverflow.ellipsis),
-              subtitle: Text('${formatTime(order.createdAt)} · ${order.customerName ?? ''} · ${formatMoney(order.totalAmount)}'),
+              subtitle: Text([
+                formatTime(order.createdAt),
+                if (order.customerName != null) order.customerName!,
+                formatMoney(order.totalAmount),
+                if (order.fromStore) order.channel.label,
+                if (order.isPickup) order.fulfillment.label,
+              ].join(' · ')),
               trailing: OrderStatusChip(status: order.status),
             ),
         ],

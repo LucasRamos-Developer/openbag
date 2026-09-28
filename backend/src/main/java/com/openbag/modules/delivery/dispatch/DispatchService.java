@@ -303,6 +303,9 @@ public class DispatchService {
             throw new BadRequestException("Escolha um entregador");
         }
         Order order = lockRestaurantOrder(restaurantId, orderId);
+        if (order.isPickup()) {
+            throw new BadRequestException("Este pedido é para retirada na loja");
+        }
         if (!DISPATCHABLE.contains(order.getStatus())) {
             throw new BadRequestException("Este pedido não pode mais receber entregador");
         }
@@ -662,7 +665,7 @@ public class DispatchService {
      * Oferece o pedido (já travado) ao melhor entregador disponível; sem ninguém, marca que está procurando
      */
     void dispatchLocked(Order order) {
-        if (!DISPATCHABLE.contains(order.getStatus()) || order.getDeliveryPerson() != null
+        if (order.isPickup() || !DISPATCHABLE.contains(order.getStatus()) || order.getDeliveryPerson() != null
                 || order.getStaffCourier() != null) {
             return;
         }

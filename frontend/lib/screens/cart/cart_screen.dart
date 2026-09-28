@@ -5,7 +5,7 @@ import '../../core/ui/ui.dart';
 import '../../services/auth_service.dart';
 import '../../services/cart_service.dart';
 import '../../utils/formatters.dart';
-import '../../widgets/menu/menu_image.dart';
+import '../../widgets/cart/cart_line_tile.dart';
 import '../../widgets/order/price_summary.dart';
 import '../../widgets/restaurant/restaurant_logo.dart';
 import '../../widgets/navigation/storefront_scaffold.dart';
@@ -71,7 +71,8 @@ class CartScreen extends StatelessWidget {
                         onTap: () => context.go('/r/${restaurant.slug}'),
                       ),
                     const Divider(),
-                    for (final line in cart.lines) _CartLineTile(line: line),
+                    for (final line in cart.lines)
+                      CartLineTile(line: line, onQuantityChanged: (v) => cart.updateQuantity(line, v)),
                     const SizedBox(height: 16),
                     PriceSummary(
                       subtotal: cart.subtotal,
@@ -115,47 +116,6 @@ class CartScreen extends StatelessWidget {
                 ),
               ),
             ),
-    );
-  }
-}
-
-class _CartLineTile extends StatelessWidget {
-  final CartLine line;
-
-  const _CartLineTile({required this.line});
-
-  @override
-  Widget build(BuildContext context) {
-    final cart = context.read<CartService>();
-    final muted = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          MenuImage(imageUrl: line.imageUrl, size: 56),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(line.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                if (line.options.isNotEmpty) Text(line.optionsSummary, style: TextStyle(color: muted, fontSize: 13)),
-                if (line.notes != null) Text('Obs.: ${line.notes}', style: TextStyle(color: muted, fontSize: 13)),
-                const SizedBox(height: 6),
-                Text(formatMoney(line.totalPrice), style: const TextStyle(fontWeight: FontWeight.w600)),
-              ],
-            ),
-          ),
-          AppQuantityStepper(
-            value: line.quantity,
-            min: 0,
-            showRemoveIcon: true,
-            onChanged: (v) => cart.updateQuantity(line, v),
-          ),
-        ],
-      ),
     );
   }
 }

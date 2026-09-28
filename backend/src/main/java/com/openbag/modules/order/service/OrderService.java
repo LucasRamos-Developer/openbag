@@ -2,6 +2,8 @@ package com.openbag.modules.order.service;
 
 import com.openbag.enums.AcceptanceMode;
 import com.openbag.enums.CancelledBy;
+import com.openbag.enums.FulfillmentType;
+import com.openbag.enums.OrderChannel;
 import com.openbag.enums.OrderStatus;
 import com.openbag.exception.BadRequestException;
 import com.openbag.exception.ResourceNotFoundException;
@@ -10,6 +12,7 @@ import com.openbag.modules.combo.repository.ComboRepository;
 import com.openbag.modules.delivery.dto.DeliveryQuoteDTO;
 import com.openbag.modules.delivery.service.DeliveryFeeQuoteService;
 import com.openbag.modules.order.dto.CreateOrderRequest;
+import com.openbag.modules.order.dto.CreateStoreOrderRequest;
 import com.openbag.modules.order.dto.DeliveryQuoteRequest;
 import com.openbag.modules.order.dto.OrderDTO;
 import com.openbag.modules.order.entity.Order;
@@ -37,6 +40,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
@@ -117,64 +121,19 @@ public class OrderService {
         BigDecimal deliveryFee = quote.fee();
         BigDecimal total = subtotal.add(deliveryFee);
 
-        BigDecimal changeFor = null;
-        if (request.getPaymentMethod() == Order.PaymentMethod.CASH && request.getChangeFor() != null) {
-            if (request.getChangeFor().compareTo(total) < 0) {
-                throw new BadRequestException("O valor para troco deve ser maior ou igual ao total do pedido");
-            }
-            changeFor = request.getChangeFor();
-        }
-
-        int dailyNumber = orderRepository.findMaxDailyNumber(restaurant.getId(), now.toLocalDate().atStartOfDay()) + 1;
-        CreateOrderRequest.AddressRequest address = request.getAddress();
-
-        Order order = new Order();
+        Order order = newOrder(restaurant, now, lines, subtotal, deliveryFee);
         order.setUser(customer);
-        order.setRestaurant(restaurant);
-        order.setOrderDate(now);
-        order.setDailyNumber(dailyNumber);
-        order.setDisplayCode(String.format("#%04d", dailyNumber));
-        order.setOrderNumber("OB-" + now.format(ORDER_DATE) + "-" + restaurant.getId() + "-" + dailyNumber);
-        order.setSubtotal(subtotal);
-        order.setDeliveryFee(deliveryFee);
-        order.setTotalAmount(total);
+        order.setChannel(OrderChannel.APP);
+        order.setFulfillment(FulfillmentType.DELIVERY);
         order.setPaymentMethod(request.getPaymentMethod());
-        order.setPaymentStatus(Order.PaymentStatus.PENDING);
-        order.setChangeFor(changeFor);
-        order.setOrderNotes(request.getNotes() != null && !request.getNotes().isBlank() ? request.getNotes().trim() : null);
-        order.setDeliveryAddress(address.format());
-        order.setDeliveryLatitude(quote.latitude());
-        order.setDeliveryNeighborhood(address.getNeighborhood().trim());
-        order.setDeliveryLongitude(quote.longitude());
-        order.setDeliveryDistanceKm(quote.distanceKm());
+        order.setChangeFor(changeFor(request.getPaymentMethod(), request.getChangeFor(), total));
+        order.setOrderNotes(trimToNull(request.getNotes()));
+        applyAddress(order, request.getAddress(), quote);
         order.setCustomerName(customer.getFullName());
         order.setCustomerPhone(request.getCustomerPhone() != null && !request.getCustomerPhone().isBlank()
                 ? request.getCustomerPhone().trim()
                 : customer.getPhoneNumber());
         order.setEstimatedDeliveryTime(restaurant.getDeliveryTimeMax());
-
-        for (OrderCalculator.PricedLine line : lines) {
-            OrderItem item = new OrderItem();
-            item.setOrder(order);
-            item.setProduct(line.product());
-            item.setCombo(line.combo());
-            item.setItemName(line.name());
-            item.setQuantity(line.quantity());
-            item.setUnitPrice(line.unitPrice());
-            item.setSubtotal(line.totalPrice());
-            item.setTotalPrice(line.totalPrice());
-            item.setObservations(line.notes());
-            for (OrderCalculator.PricedOption option : line.options()) {
-                OrderItemCustomization customization = new OrderItemCustomization();
-                customization.setOrderItem(item);
-                customization.setCustomizationOption(option.option());
-                customization.setGroupName(option.groupName());
-                customization.setOptionName(option.optionName());
-                customization.setPriceAtPurchase(option.price());
-                item.getCustomizations().add(customization);
-            }
-            order.getItems().add(item);
-        }
 
         addTracking(order, OrderStatus.PENDING, "Pedido recebido", now);
         if (restaurant.getAcceptanceMode() == AcceptanceMode.AUTO) {
@@ -192,6 +151,66 @@ public class OrderService {
         log.info("Pedido {} ({}) criado no restaurante {} com status {}", saved.getId(), saved.getDisplayCode(),
                 restaurant.getId(), saved.getStatus());
         return customerOrderMapper.toDto(saved);
+    }
+
+    /**
+     * Pedido registrado pela própria loja (balcão, telefone, WhatsApp) para um cliente sem conta. Entra já aceito
+     * e segue o fluxo dos pedidos do app: cozinha, despacho (se for entrega) e caixa. A loja fechada ou pausada não
+     * impede o registro, e o pedido mínimo não se aplica: quem decide é quem está atendendo.
+     */
+    public OrderDTO createStoreOrder(Long restaurantId, CreateStoreOrderRequest request) {
+        if (request.getChannel() == OrderChannel.APP) {
+            throw new BadRequestException("Escolha balcão, telefone ou WhatsApp");
+        }
+        boolean pickup = request.getFulfillment() == FulfillmentType.PICKUP;
+        CreateOrderRequest.AddressRequest address = request.getAddress();
+        if (!pickup && address == null) {
+            throw new BadRequestException("Informe o endereço de entrega");
+        }
+        LocalDateTime now = LocalDateTime.now(clock);
+
+        // Localiza o endereço antes de travar a loja: a consulta ao mapa pode levar alguns segundos
+        GeocodingService.Coordinates point = pickup ? null
+                : deliveryFeeQuoteService.locate(address.toQuery(), address.getLatitude(), address.getLongitude());
+
+        Restaurant restaurant = restaurantRepository.findByIdForUpdate(restaurantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurante não encontrado"));
+
+        var lines = calculator.price(request.getItems(), sellableProducts(restaurant.getId()), sellableCombos(restaurant.getId()));
+        BigDecimal subtotal = calculator.subtotal(lines);
+        DeliveryFeeQuoteService.Quote quote = null;
+        if (!pickup) {
+            quote = point != null
+                    ? deliveryFeeQuoteService.quote(restaurant, point.latitude(), point.longitude())
+                    : deliveryFeeQuoteService.quote(restaurant, null, null);
+        }
+        BigDecimal deliveryFee = quote != null ? quote.fee() : BigDecimal.ZERO;
+        BigDecimal total = subtotal.add(deliveryFee);
+
+        Order order = newOrder(restaurant, now, lines, subtotal, deliveryFee);
+        order.setChannel(request.getChannel());
+        order.setFulfillment(request.getFulfillment());
+        order.setPaymentMethod(request.getPaymentMethod());
+        order.setChangeFor(changeFor(request.getPaymentMethod(), request.getChangeFor(), total));
+        order.setOrderNotes(trimToNull(request.getNotes()));
+        order.setCustomerName(request.getCustomerName().trim());
+        order.setCustomerPhone(trimToNull(request.getCustomerPhone()));
+        if (!pickup) {
+            applyAddress(order, address, quote);
+            order.setEstimatedDeliveryTime(restaurant.getDeliveryTimeMax());
+        }
+
+        order.setStatus(OrderStatus.CONFIRMED);
+        order.setAcceptedAt(now);
+        order.setExpectedReadyAt(now.plusMinutes(restaurant.getDefaultPreparationMinutes()));
+        addTracking(order, OrderStatus.CONFIRMED,
+                "Pedido registrado pela loja (" + request.getChannel().getDisplayName().toLowerCase(Locale.ROOT) + ")", now);
+
+        Order saved = orderRepository.save(order);
+        events.publishEvent(new OrderChangedEvent(saved.getId(), OrderChangedEvent.Type.ORDER_CREATED));
+        log.info("Pedido {} ({}) registrado pela loja {} ({}, {})", saved.getId(), saved.getDisplayCode(),
+                restaurant.getId(), request.getChannel(), request.getFulfillment());
+        return OrderDTO.from(saved);
     }
 
     @Transactional(readOnly = true)
@@ -228,6 +247,74 @@ public class OrderService {
     }
 
     // ============= Helpers =============
+
+    /**
+     * Pedido com a numeração do dia, os valores e os itens já precificados. A loja precisa estar travada
+     * ({@code findByIdForUpdate}) para dois pedidos não receberem o mesmo número.
+     */
+    private Order newOrder(Restaurant restaurant, LocalDateTime now, List<OrderCalculator.PricedLine> lines,
+                           BigDecimal subtotal, BigDecimal deliveryFee) {
+        int dailyNumber = orderRepository.findMaxDailyNumber(restaurant.getId(), now.toLocalDate().atStartOfDay()) + 1;
+
+        Order order = new Order();
+        order.setRestaurant(restaurant);
+        order.setOrderDate(now);
+        order.setDailyNumber(dailyNumber);
+        order.setDisplayCode(String.format("#%04d", dailyNumber));
+        order.setOrderNumber("OB-" + now.format(ORDER_DATE) + "-" + restaurant.getId() + "-" + dailyNumber);
+        order.setSubtotal(subtotal);
+        order.setDeliveryFee(deliveryFee);
+        order.setTotalAmount(subtotal.add(deliveryFee));
+        order.setPaymentStatus(Order.PaymentStatus.PENDING);
+
+        for (OrderCalculator.PricedLine line : lines) {
+            OrderItem item = new OrderItem();
+            item.setOrder(order);
+            item.setProduct(line.product());
+            item.setCombo(line.combo());
+            item.setItemName(line.name());
+            item.setQuantity(line.quantity());
+            item.setUnitPrice(line.unitPrice());
+            item.setSubtotal(line.totalPrice());
+            item.setTotalPrice(line.totalPrice());
+            item.setObservations(line.notes());
+            for (OrderCalculator.PricedOption option : line.options()) {
+                OrderItemCustomization customization = new OrderItemCustomization();
+                customization.setOrderItem(item);
+                customization.setCustomizationOption(option.option());
+                customization.setGroupName(option.groupName());
+                customization.setOptionName(option.optionName());
+                customization.setPriceAtPurchase(option.price());
+                item.getCustomizations().add(customization);
+            }
+            order.getItems().add(item);
+        }
+        return order;
+    }
+
+    /** Troco só no dinheiro, e para um valor que cubra o total */
+    private static BigDecimal changeFor(Order.PaymentMethod method, BigDecimal changeFor, BigDecimal total) {
+        if (method != Order.PaymentMethod.CASH || changeFor == null) {
+            return null;
+        }
+        if (changeFor.compareTo(total) < 0) {
+            throw new BadRequestException("O valor para troco deve ser maior ou igual ao total do pedido");
+        }
+        return changeFor;
+    }
+
+    private static void applyAddress(Order order, CreateOrderRequest.AddressRequest address,
+                                     DeliveryFeeQuoteService.Quote quote) {
+        order.setDeliveryAddress(address.format());
+        order.setDeliveryNeighborhood(address.getNeighborhood().trim());
+        order.setDeliveryLatitude(quote.latitude());
+        order.setDeliveryLongitude(quote.longitude());
+        order.setDeliveryDistanceKm(quote.distanceKm());
+    }
+
+    private static String trimToNull(String value) {
+        return value != null && !value.isBlank() ? value.trim() : null;
+    }
 
     private Order findOrder(Long orderId) {
         return orderRepository.findById(orderId)

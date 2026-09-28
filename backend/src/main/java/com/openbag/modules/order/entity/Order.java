@@ -8,6 +8,8 @@ import com.openbag.modules.delivery.entity.DeliveryRoute;
 import com.openbag.modules.delivery.entity.StaffCourier;
 import com.openbag.modules.organization.entity.Organization;
 import com.openbag.enums.CancelledBy;
+import com.openbag.enums.FulfillmentType;
+import com.openbag.enums.OrderChannel;
 import com.openbag.enums.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -119,6 +121,29 @@ public class Order {
     // Pagamento em dinheiro: valor que o cliente vai entregar (para o troco)
     @Column(name = "change_for", precision = 10, scale = 2)
     private BigDecimal changeFor;
+
+    // Origem do pedido (nulo nos pedidos anteriores ao campo = app)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "channel", length = 12)
+    private OrderChannel channel;
+
+    // Entrega ou retirada na loja (nulo nos pedidos anteriores ao campo = entrega)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "fulfillment", length = 12)
+    private FulfillmentType fulfillment;
+
+    public OrderChannel channelOrDefault() {
+        return channel != null ? channel : OrderChannel.APP;
+    }
+
+    public FulfillmentType fulfillmentOrDefault() {
+        return fulfillment != null ? fulfillment : FulfillmentType.DELIVERY;
+    }
+
+    /** Retirada na loja: não passa pelo despacho nem por rotas */
+    public boolean isPickup() {
+        return fulfillment == FulfillmentType.PICKUP;
+    }
 
     // Snapshots do cliente e do endereço no momento do pedido
     @Column(name = "customer_name", length = 100)

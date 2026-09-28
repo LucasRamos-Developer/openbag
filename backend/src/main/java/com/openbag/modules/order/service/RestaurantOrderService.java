@@ -92,23 +92,33 @@ public class RestaurantOrderService {
     }
 
     public OrderDTO dispatch(Long restaurantId, Long orderId) {
-        return transition(restaurantId, orderId, EnumSet.of(OrderStatus.READY_FOR_PICKUP), OrderStatus.OUT_FOR_DELIVERY,
-                "Pedido saiu para entrega", (order, now) -> {
-                    order.setDispatchedAt(now);
+        Order order = findOrder(restaurantId, orderId);
+        if (order.isPickup()) {
+            throw new BadRequestException("Este pedido é para retirada na loja");
+        }
+        return OrderDTO.from(advance(order, EnumSet.of(OrderStatus.READY_FOR_PICKUP), OrderStatus.OUT_FOR_DELIVERY,
+                "Pedido saiu para entrega", (o, now) -> {
+                    o.setDispatchedAt(now);
                     // Equipe própria: a loja marca a saída no lugar do entregador
-                    if (order.getStaffCourier() != null) {
-                        order.setPickedUpAt(now);
+                    if (o.getStaffCourier() != null) {
+                        o.setPickedUpAt(now);
                     }
-                });
+                }));
     }
 
-    /** Entregue: o pagamento (na entrega) é considerado recebido */
+    /**
+     * Entregue: o pagamento (na entrega) é considerado recebido. Na retirada, o cliente busca o pedido pronto
+     * direto no balcão.
+     */
     public OrderDTO deliver(Long restaurantId, Long orderId) {
-        return transition(restaurantId, orderId, EnumSet.of(OrderStatus.OUT_FOR_DELIVERY), OrderStatus.DELIVERED,
-                "Pedido entregue", (order, now) -> {
-                    order.setDeliveredAt(now);
-                    order.setPaymentStatus(Order.PaymentStatus.PAID);
-                });
+        Order order = findOrder(restaurantId, orderId);
+        boolean pickup = order.isPickup();
+        return OrderDTO.from(advance(order,
+                EnumSet.of(pickup ? OrderStatus.READY_FOR_PICKUP : OrderStatus.OUT_FOR_DELIVERY), OrderStatus.DELIVERED,
+                pickup ? "Pedido retirado pelo cliente" : "Pedido entregue", (o, now) -> {
+                    o.setDeliveredAt(now);
+                    o.setPaymentStatus(Order.PaymentStatus.PAID);
+                }));
     }
 
     /**
@@ -154,9 +164,12 @@ public class RestaurantOrderService {
 
     private OrderDTO transition(Long restaurantId, Long orderId, Set<OrderStatus> allowedFrom, OrderStatus target,
                                 String message, StepEffect effect) {
-        Order order = orderRepository.findByIdAndRestaurantId(orderId, restaurantId)
+        return OrderDTO.from(advance(findOrder(restaurantId, orderId), allowedFrom, target, message, effect));
+    }
+
+    private Order findOrder(Long restaurantId, Long orderId) {
+        return orderRepository.findByIdAndRestaurantId(orderId, restaurantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
-        return OrderDTO.from(advance(order, allowedFrom, target, message, effect));
     }
 
     /**

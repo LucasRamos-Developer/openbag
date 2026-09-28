@@ -1,6 +1,7 @@
 package com.openbag.modules.order.service;
 
 import com.openbag.enums.CancelledBy;
+import com.openbag.enums.FulfillmentType;
 import com.openbag.enums.OrderStatus;
 import com.openbag.exception.BadRequestException;
 import com.openbag.exception.ResourceNotFoundException;
@@ -105,6 +106,25 @@ class RestaurantOrderServiceTest {
 
         order.setStatus(OrderStatus.READY_FOR_PICKUP);
         assertThatThrownBy(() -> service.reject(RID, 10L, "Tarde demais")).isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void pickupGoesFromReadyStraightToDeliveredAndNeverOutForDelivery() {
+        order.setFulfillment(FulfillmentType.PICKUP);
+        order.setStatus(OrderStatus.READY_FOR_PICKUP);
+
+        assertThatThrownBy(() -> service.dispatch(RID, 10L)).isInstanceOf(BadRequestException.class);
+
+        var dto = service.deliver(RID, 10L);
+        assertThat(dto.getStatus()).isEqualTo(OrderStatus.DELIVERED);
+        assertThat(order.getPaymentStatus()).isEqualTo(Order.PaymentStatus.PAID);
+        assertThat(dto.getTimeline()).extracting(t -> t.getMessage()).containsExactly("Pedido retirado pelo cliente");
+    }
+
+    @Test
+    void deliveryOnlyFinishesAfterLeaving() {
+        order.setStatus(OrderStatus.READY_FOR_PICKUP);
+        assertThatThrownBy(() -> service.deliver(RID, 10L)).isInstanceOf(BadRequestException.class);
     }
 
     @Test

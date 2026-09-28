@@ -22,6 +22,9 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
+    /** Retirada na loja não passa pelo despacho nem pelas rotas (nulo = pedido antigo, de entrega) */
+    String NOT_PICKUP = "AND (o.fulfillment IS NULL OR o.fulfillment <> com.openbag.enums.FulfillmentType.PICKUP)";
+
     Optional<Order> findByOrderNumber(String orderNumber);
     
     // Método usado pelo OrderService
@@ -84,7 +87,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /**
      * Pedidos aceitos que ainda esperam entregador
      */
-    @Query("SELECT o.id FROM Order o WHERE o.deliveryPerson IS NULL AND o.staffCourier IS NULL AND o.status IN :statuses")
+    @Query("SELECT o.id FROM Order o WHERE o.deliveryPerson IS NULL AND o.staffCourier IS NULL AND o.status IN :statuses "
+            + NOT_PICKUP)
     List<Long> findIdsAwaitingCourier(@Param("statuses") java.util.Collection<OrderStatus> statuses);
 
     /**
@@ -193,12 +197,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * Lojas com pedidos esperando o planejador liberar a chamada do entregador
      */
     @Query("SELECT DISTINCT o.restaurant.id FROM Order o WHERE o.status IN :statuses AND o.deliveryPerson IS NULL "
-            + "AND o.staffCourier IS NULL AND o.dispatchReleasedAt IS NULL")
+            + "AND o.staffCourier IS NULL AND o.dispatchReleasedAt IS NULL " + NOT_PICKUP)
     List<Long> findRestaurantIdsAwaitingRelease(@Param("statuses") java.util.Collection<OrderStatus> statuses);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT o FROM Order o WHERE o.restaurant.id = :restaurantId AND o.status IN :statuses "
-            + "AND o.deliveryPerson IS NULL AND o.staffCourier IS NULL AND o.dispatchReleasedAt IS NULL ORDER BY o.id")
+            + "AND o.deliveryPerson IS NULL AND o.staffCourier IS NULL AND o.dispatchReleasedAt IS NULL " + NOT_PICKUP
+            + " ORDER BY o.id")
     List<Order> findAwaitingReleaseForUpdate(@Param("restaurantId") Long restaurantId,
                                             @Param("statuses") java.util.Collection<OrderStatus> statuses);
 

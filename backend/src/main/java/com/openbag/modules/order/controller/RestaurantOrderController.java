@@ -2,7 +2,9 @@ package com.openbag.modules.order.controller;
 
 import com.openbag.annotation.IsRestaurantOwner;
 import com.openbag.enums.OrderStatus;
+import com.openbag.modules.order.dto.CreateStoreOrderRequest;
 import com.openbag.modules.order.dto.OrderDTO;
+import com.openbag.modules.order.service.OrderService;
 import com.openbag.modules.order.service.RestaurantOrderService;
 import com.openbag.modules.organization.dto.ReasonRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +36,9 @@ public class RestaurantOrderController {
     @Autowired
     private RestaurantOrderService service;
 
+    @Autowired
+    private OrderService orderService;
+
     @GetMapping("/board")
     @IsRestaurantOwner
     @Operation(summary = "Pedidos ativos", description = "Novos, em preparo, prontos e em entrega (mais antigos primeiro)")
@@ -49,6 +55,15 @@ public class RestaurantOrderController {
             @RequestParam(required = false) OrderStatus status,
             @PageableDefault(size = 30) Pageable pageable) {
         return ResponseEntity.ok(service.getHistory(restaurantId, date, status, pageable));
+    }
+
+    @PostMapping
+    @IsRestaurantOwner
+    @Operation(summary = "Registrar pedido do balcão, telefone ou WhatsApp",
+            description = "Cliente sem conta; entra já aceito e segue o fluxo dos pedidos do app. Preços recalculados pelo cardápio.")
+    public ResponseEntity<OrderDTO> create(@PathVariable Long restaurantId,
+                                           @Valid @RequestBody CreateStoreOrderRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createStoreOrder(restaurantId, request));
     }
 
     @PostMapping("/{orderId}/accept")

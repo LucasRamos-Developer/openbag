@@ -41,11 +41,42 @@ enum OrderStatus {
   static const progress = [PENDING, CONFIRMED, PREPARING, READY_FOR_PICKUP, OUT_FOR_DELIVERY, DELIVERED];
 }
 
+/// Por onde o pedido chegou: pelo app ou registrado pela loja
+enum OrderChannel {
+  APP('App', Icons.phone_iphone),
+  COUNTER('Balcão', Icons.storefront_outlined),
+  PHONE('Telefone', Icons.call_outlined),
+  WHATSAPP('WhatsApp', Icons.chat_outlined);
+
+  final String label;
+  final IconData icon;
+  const OrderChannel(this.label, this.icon);
+
+  /// Canais em que a própria loja registra o pedido
+  static const storeChannels = [COUNTER, PHONE, WHATSAPP];
+
+  static OrderChannel fromName(String? name) => values.firstWhere((e) => e.name == name, orElse: () => APP);
+}
+
+/// Entrega (vai para o despacho) ou retirada na loja
+enum FulfillmentType {
+  DELIVERY('Entrega', Icons.delivery_dining_outlined),
+  PICKUP('Retirada', Icons.shopping_bag_outlined);
+
+  final String label;
+  final IconData icon;
+  const FulfillmentType(this.label, this.icon);
+
+  static FulfillmentType fromName(String? name) => values.firstWhere((e) => e.name == name, orElse: () => DELIVERY);
+}
+
 class Order {
   final int id;
   final String orderNumber;
   final String? displayCode;
   final OrderStatus status;
+  final OrderChannel channel;
+  final FulfillmentType fulfillment;
   final OrderRestaurant restaurant;
   final String? customerName;
   final String? customerPhone;
@@ -97,6 +128,8 @@ class Order {
     required this.orderNumber,
     this.displayCode,
     required this.status,
+    this.channel = OrderChannel.APP,
+    this.fulfillment = FulfillmentType.DELIVERY,
     required this.restaurant,
     this.customerName,
     this.customerPhone,
@@ -132,8 +165,15 @@ class Order {
     this.reviewableUntil,
   });
 
+  /// Retirada na loja: sem entregador nem saída para entrega
+  bool get isPickup => fulfillment == FulfillmentType.PICKUP;
+
+  /// Registrado pela loja (balcão, telefone, WhatsApp)
+  bool get fromStore => channel != OrderChannel.APP;
+
   /// Antes da retirada: ainda pode receber ou trocar de entregador
   bool get beforePickup =>
+      !isPickup &&
       pickedUpAt == null &&
       (status == OrderStatus.CONFIRMED || status == OrderStatus.PREPARING || status == OrderStatus.READY_FOR_PICKUP);
 
@@ -154,6 +194,8 @@ class Order {
         orderNumber: json['orderNumber'] ?? '',
         displayCode: json['displayCode'],
         status: OrderStatus.fromName(json['status']),
+        channel: OrderChannel.fromName(json['channel']),
+        fulfillment: FulfillmentType.fromName(json['fulfillment']),
         restaurant: OrderRestaurant.fromJson(json['restaurant'] ?? const {}),
         customerName: json['customerName'],
         customerPhone: json['customerPhone'],
@@ -354,15 +396,18 @@ enum OrderAction {
   start('start', 'Iniciar preparo'),
   ready('ready', 'Pronto'),
   dispatch('dispatch', 'Saiu para entrega'),
-  deliver('deliver', 'Entregue');
+  deliver('deliver', 'Entregue'),
+
+  /// Retirada na loja: o cliente buscou o pedido pronto (mesma rota do "entregue")
+  collect('deliver', 'Cliente retirou');
 
   final String path;
   final String label;
   const OrderAction(this.path, this.label);
 
-  /// Próxima etapa natural a partir do status atual
-  static OrderAction? nextFor(OrderStatus status) {
-    switch (status) {
+  /// Próxima etapa natural do pedido
+  static OrderAction? nextFor(Order order) {
+    switch (order.status) {
       case OrderStatus.PENDING:
         return accept;
       case OrderStatus.CONFIRMED:
@@ -370,7 +415,7 @@ enum OrderAction {
       case OrderStatus.PREPARING:
         return ready;
       case OrderStatus.READY_FOR_PICKUP:
-        return dispatch;
+        return order.isPickup ? collect : dispatch;
       case OrderStatus.OUT_FOR_DELIVERY:
         return deliver;
       default:

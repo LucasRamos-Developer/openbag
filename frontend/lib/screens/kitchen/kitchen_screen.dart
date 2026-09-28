@@ -227,6 +227,12 @@ class _KitchenCard extends StatelessWidget {
             ),
             Text('Pedido às ${formatTime(order.createdAt)}${order.customerName != null ? ' · ${order.customerName}' : ''}',
                 style: const TextStyle(color: Colors.white54)),
+            if (order.isPickup)
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text('RETIRADA NA LOJA',
+                    style: TextStyle(color: AppColors.warningLight, fontSize: 15, fontWeight: FontWeight.w800)),
+              ),
             const Divider(color: Colors.white24, height: 20),
             DefaultTextStyle.merge(
               style: const TextStyle(color: Colors.white),
@@ -255,9 +261,10 @@ class _KitchenCard extends StatelessWidget {
                 ),
               ),
             ] else
-              const Padding(
-                padding: EdgeInsets.only(top: 10),
-                child: Text('Aguardando saída para entrega', style: TextStyle(color: Colors.white54)),
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(order.isPickup ? 'Aguardando o cliente retirar' : 'Aguardando saída para entrega',
+                    style: const TextStyle(color: Colors.white54)),
               ),
           ],
         ),

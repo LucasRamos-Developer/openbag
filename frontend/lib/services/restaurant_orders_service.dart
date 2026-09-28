@@ -143,6 +143,13 @@ class RestaurantOrdersService extends ChangeNotifier {
     return updated;
   }
 
+  /// Registra um pedido do balcão, telefone ou WhatsApp (entra já aceito)
+  Future<Order> createStoreOrder(int restaurantId, Map<String, dynamic> body) async {
+    final order = Order.fromJson(await _api.post('/restaurants/$restaurantId/orders', data: body));
+    if (restaurantId == _restaurantId) _upsert(order);
+    return order;
+  }
+
   /// Histórico do dia (padrão: hoje)
   Future<List<Order>> fetchHistory({DateTime? date, OrderStatus? status}) async {
     String two(int v) => v.toString().padLeft(2, '0');

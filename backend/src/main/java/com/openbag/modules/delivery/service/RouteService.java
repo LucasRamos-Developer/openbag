@@ -65,6 +65,9 @@ public class RouteService {
         Set<Long> seenRoutes = new HashSet<>();
 
         for (Order order : orders) {
+            if (order.isPickup()) {
+                continue; // retirada na loja: não tem entrega
+            }
             boolean withCourier = order.getDeliveryPerson() != null || order.getStaffCourier() != null;
             if (!withCourier && order.getStatus() == OrderStatus.OUT_FOR_DELIVERY) {
                 continue; // saiu com a equipe sem marcar quem: fora do painel
@@ -95,6 +98,9 @@ public class RouteService {
             Order order = orderRepository.findByIdForUpdate(id)
                     .filter(o -> o.getRestaurant().getId().equals(restaurantId))
                     .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
+            if (order.isPickup()) {
+                throw new BadRequestException("O pedido " + order.getDisplayCode() + " é para retirada na loja");
+            }
             if (!DispatchService.DISPATCHABLE.contains(order.getStatus()) || order.getDeliveryPerson() != null
                     || order.getStaffCourier() != null) {
                 throw new BadRequestException("O pedido " + order.getDisplayCode() + " já tem entregador ou saiu");

@@ -6,6 +6,7 @@ import '../../utils/formatters.dart';
 import '../../services/restaurant_orders_service.dart';
 import '../delivery/order_courier_section.dart';
 import 'order_items_list.dart';
+import 'order_origin_badges.dart';
 import 'order_status_chip.dart';
 import 'order_timers.dart';
 import 'price_summary.dart';
@@ -56,7 +57,7 @@ class _RestaurantOrderSheetState extends State<_RestaurantOrderSheet> {
     // Versão em tempo real do pedido: a ficha acompanha a atribuição e as mudanças de etapa
     final order = context.watch<RestaurantOrdersService>().byId(widget.order.id) ?? widget.order;
     final muted = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
-    final next = OrderAction.nextFor(order.status);
+    final next = OrderAction.nextFor(order);
 
     return DraggableScrollableSheet(
       expand: false,
@@ -79,6 +80,10 @@ class _RestaurantOrderSheetState extends State<_RestaurantOrderSheet> {
                   ],
                 ),
                 Text('Feito às ${formatTime(order.createdAt)} · ${order.orderNumber}', style: TextStyle(color: muted)),
+                if (OrderOriginBadges.shows(order)) ...[
+                  const SizedBox(height: 8),
+                  OrderOriginBadges(order: order),
+                ],
                 if (order.status == OrderStatus.PENDING && order.acceptDeadline != null) ...[
                   const SizedBox(height: 8),
                   DeadlineCountdown(deadline: order.acceptDeadline!),
@@ -86,17 +91,26 @@ class _RestaurantOrderSheetState extends State<_RestaurantOrderSheet> {
                 const AppSectionHeader(title: 'Itens', padding: EdgeInsets.only(top: 20, bottom: 8)),
                 OrderItemsList(items: order.items),
                 if (order.notes != null) ...[
-                  const AppSectionHeader(title: 'Observações do cliente', padding: EdgeInsets.only(top: 16, bottom: 8)),
+                  AppSectionHeader(
+                      title: order.fromStore ? 'Observações' : 'Observações do cliente',
+                      padding: const EdgeInsets.only(top: 16, bottom: 8)),
                   Text(order.notes!),
                 ],
                 const SizedBox(height: 12),
-                PriceSummary(subtotal: order.subtotal, deliveryFee: order.deliveryFee, total: order.totalAmount),
-                const AppSectionHeader(title: 'Pagamento na entrega', padding: EdgeInsets.only(top: 20, bottom: 8)),
+                PriceSummary(
+                    subtotal: order.subtotal,
+                    deliveryFee: order.isPickup ? null : order.deliveryFee,
+                    total: order.totalAmount),
+                AppSectionHeader(
+                    title: order.isPickup ? 'Pagamento na retirada' : 'Pagamento na entrega',
+                    padding: const EdgeInsets.only(top: 20, bottom: 8)),
                 Text(order.changeFor != null
                     ? '${order.paymentMethod.label} · troco para ${formatMoney(order.changeFor!)} '
                         '(levar ${formatMoney(order.changeFor! - order.totalAmount)})'
                     : order.paymentMethod.label),
-                const AppSectionHeader(title: 'Entrega', padding: EdgeInsets.only(top: 20, bottom: 8)),
+                AppSectionHeader(
+                    title: order.isPickup ? 'Retirada na loja' : 'Entrega',
+                    padding: const EdgeInsets.only(top: 20, bottom: 8)),
                 if (order.customerName != null) Text(order.customerName!, style: const TextStyle(fontWeight: FontWeight.w600)),
                 if (order.customerPhone != null) Text(order.customerPhone!),
                 if (order.deliveryAddress != null) Text(order.deliveryAddress!),

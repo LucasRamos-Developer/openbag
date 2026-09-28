@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/ui/ui.dart';
 import '../../models/order/order.dart';
 import '../../utils/formatters.dart';
+import 'order_origin_badges.dart';
 import 'order_timers.dart';
 
 /// Cartão de pedido no gestor do restaurante.
@@ -19,7 +20,7 @@ class OrderCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final muted = colorScheme.onSurface.withValues(alpha: 0.6);
     final isNew = order.status == OrderStatus.PENDING;
-    final next = OrderAction.nextFor(order.status);
+    final next = OrderAction.nextFor(order);
     final items = order.items.map((i) => '${i.quantity}x ${i.name}').join(', ');
 
     return AppCard(
@@ -48,6 +49,10 @@ class OrderCard extends StatelessWidget {
                 ),
             ],
           ),
+          if (OrderOriginBadges.shows(order)) ...[
+            const SizedBox(height: 6),
+            OrderOriginBadges(order: order),
+          ],
           const SizedBox(height: 6),
           Text(items, maxLines: 2, overflow: TextOverflow.ellipsis),
           const SizedBox(height: 4),

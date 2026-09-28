@@ -2,6 +2,8 @@ package com.openbag.modules.order.dto;
 
 import com.openbag.modules.delivery.dispatch.ReassignPolicy;
 import com.openbag.enums.CancelledBy;
+import com.openbag.enums.FulfillmentType;
+import com.openbag.enums.OrderChannel;
 import com.openbag.enums.OrderStatus;
 import com.openbag.enums.VehicleType;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
@@ -35,6 +37,10 @@ public class OrderDTO {
     private String orderNumber;
     private String displayCode;
     private OrderStatus status;
+
+    // Por onde chegou (app, balcão, telefone, WhatsApp) e se é entrega ou retirada na loja
+    private OrderChannel channel;
+    private FulfillmentType fulfillment;
 
     private RestaurantInfo restaurant;
     private String customerName;
@@ -169,6 +175,8 @@ public class OrderDTO {
                 .orderNumber(order.getOrderNumber())
                 .displayCode(order.getDisplayCode())
                 .status(order.getStatus())
+                .channel(order.channelOrDefault())
+                .fulfillment(order.fulfillmentOrDefault())
                 .restaurant(new RestaurantInfo(restaurant.getId(), restaurant.getName(), restaurant.getSlug(),
                         restaurant.getLogoUrl(), restaurant.getPhoneNumber(), toDouble(restaurant.getLatitude()),
                         toDouble(restaurant.getLongitude())))
