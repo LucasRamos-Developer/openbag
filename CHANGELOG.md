@@ -56,7 +56,8 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - botão que abre o app de mapas do aparelho (Android: app padrão, iPhone: Mapas, web: Google Maps);
   - situação com horário ("Aberto · fecha às 23:00", "Fechado · abre amanhã às 11:00");
   - prazo, taxa e pedido mínimo.
-- A lista pública de restaurantes passa a enviar `address`, `pausedUntil`, `closesAt` e `nextOpenAt`.
+- O card da vitrine usa as cores de cada loja no logo e na imagem de fundo. Sem foto, aparece o mesmo fundo do banner da página da loja (cor da marca com bolinhas, componente `AppBrandBackdrop`).
+- A lista pública de restaurantes passa a enviar `address`, `pausedUntil`, `closesAt`, `nextOpenAt`, `themePreset`, `brandColor` e `primaryColor`.
 - Script de capturas de tela em `tools/screenshots/`.
 - **Rotas pelas ruas no mapa**: o painel de rotas desenha o caminho real da loja até as entregas.
   - O backend consulta um servidor OSRM (`OPENBAG_OSRM_URL`) com cache em memória e envia o `path` em cada cartão de `GET /restaurants/{id}/routes`.
@@ -73,6 +74,7 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 - O botão `large` tinha fonte menor que a do `medium`.
 - A versão exibida no app era `1.0.0`; agora é `0.2.0`.
+- No card da vitrine, a moldura redonda deixava as pontas do logo (quadrado arredondado) para fora; agora ela tem o mesmo formato do logo.
 
 ---
 

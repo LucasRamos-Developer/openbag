@@ -6,6 +6,7 @@ import '../utils/formatters.dart';
 import 'restaurant/open_in_maps_button.dart';
 import 'restaurant/restaurant_hours_label.dart';
 import 'restaurant/restaurant_logo.dart';
+import 'restaurant/restaurant_theme_scope.dart';
 
 /// Card em caixa da vitrine: imagem de destaque, logo sobreposto, nome e nota, situação com horário
 /// ("Aberto · fecha às 23:00"), endereço com botão para abrir no app de mapas e a linha de
@@ -18,13 +19,15 @@ class RestaurantCard extends StatelessWidget {
 
   static const double _logoSize = 52;
 
+  /// Cores da loja só no logo e no fundo sem foto; o resto do card segue o tema da vitrine
+  Widget _brandTheme(Widget child) =>
+      RestaurantThemeScope(themePreset: restaurant.themePreset, brandColor: restaurant.brandColor, child: child);
+
   @override
   Widget build(BuildContext context) {
     final c = context.appColors;
-    final placeholder = DecoratedBox(
-      decoration: BoxDecoration(gradient: LinearGradient(colors: [c.primary.withValues(alpha: 0.18), c.surfaceAlt])),
-      child: Center(child: Icon(Icons.storefront_outlined, size: 40, color: c.primaryText.withValues(alpha: 0.5))),
-    );
+    // Sem foto: o mesmo fundo do banner da página da loja, na cor que ela escolheu
+    final placeholder = _brandTheme(const AppBrandBackdrop(gap: 18));
     final closedLabel = restaurant.paused ? 'Pausado' : 'Fechado';
     final address = restaurant.address;
 
@@ -73,14 +76,15 @@ class RestaurantCard extends StatelessWidget {
               Positioned(
                 left: 14,
                 bottom: -_logoSize / 2,
+                // Moldura branca com o mesmo formato do logo (quadrado arredondado)
                 child: Container(
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
                     color: c.surface,
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(_logoSize * 0.25 + 3),
                     boxShadow: c.cardShadow,
                   ),
-                  child: RestaurantLogo(logoUrl: restaurant.logoUrl, name: restaurant.name, size: _logoSize),
+                  child: _brandTheme(RestaurantLogo(logoUrl: restaurant.logoUrl, name: restaurant.name, size: _logoSize)),
                 ),
               ),
             ],

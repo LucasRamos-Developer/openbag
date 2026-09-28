@@ -1,6 +1,8 @@
 package com.openbag.modules.restaurant.dto;
 
 import com.openbag.modules.product.entity.Category;
+import com.openbag.enums.RestaurantThemePreset;
+import com.openbag.modules.restaurant.entity.LayoutConfig;
 import com.openbag.modules.restaurant.entity.Restaurant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +27,11 @@ public class RestaurantCardDTO {
     private String slug;
     private String logoUrl;
     private String bannerUrl;
+    /** Cores escolhidas pela loja: o card da vitrine usa na imagem de fundo e no logo */
+    private RestaurantThemePreset themePreset;
+    private String brandColor;
+    /** Cor principal efetiva (cor da marca ou a do tema) */
+    private String primaryColor;
     private BigDecimal rating;
     private Integer totalReviews;
     private BigDecimal deliveryFee;
@@ -41,12 +48,16 @@ public class RestaurantCardDTO {
     private RestaurantPublicDTO.PublicAddress address;
 
     public static RestaurantCardDTO from(Restaurant restaurant, LocalDateTime now) {
+        LayoutConfig layout = restaurant.getLayoutConfig();
         return RestaurantCardDTO.builder()
                 .id(restaurant.getId())
                 .name(restaurant.getName())
                 .slug(restaurant.getSlug())
                 .logoUrl(restaurant.getLogoUrl())
                 .bannerUrl(restaurant.getBannerUrl())
+                .themePreset(layout != null ? layout.getThemePreset() : RestaurantThemePreset.DEFAULT)
+                .brandColor(layout != null ? layout.getBrandColor() : null)
+                .primaryColor(layout != null ? layout.getEffectivePrimaryColor() : RestaurantThemePreset.DEFAULT.getPrimaryHex())
                 .rating(restaurant.getRating())
                 .totalReviews(restaurant.getTotalReviews())
                 .deliveryFee(restaurant.getDeliveryFee())

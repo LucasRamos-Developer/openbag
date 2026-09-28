@@ -29,6 +29,7 @@ export 'components/app_choice_tile.dart';
 export 'components/app_qr_code.dart';
 export 'components/app_countdown.dart';
 export 'components/app_hero_banner.dart';
+export 'components/app_brand_backdrop.dart';
 export 'components/app_badge.dart';
 export 'components/app_meta_item.dart';
 export 'components/app_search_bar.dart';

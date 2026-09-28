@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme_colors.dart';
+import 'app_brand_backdrop.dart';
 
 /// Banner de destaque: foto à direita com degradê da cor da marca vindo da esquerda,
 /// título, subtítulo e um sublinhado na cor accent. Sem [image], mostra só o degradê com textura sutil.
@@ -76,7 +77,7 @@ class AppHeroBanner extends StatelessWidget {
                 ),
               )
             else
-              CustomPaint(painter: _DotsPainter(color: Colors.white.withValues(alpha: 0.08))),
+              const AppBrandBackdrop(dotsFrom: 0.35),
             DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -168,24 +169,4 @@ class _CircleButton extends StatelessWidget {
           onPressed: onPressed,
         ),
       );
-}
-
-class _DotsPainter extends CustomPainter {
-  final Color color;
-
-  _DotsPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color;
-    const gap = 22.0;
-    for (var y = gap / 2; y < size.height; y += gap) {
-      for (var x = size.width * 0.35; x < size.width; x += gap) {
-        canvas.drawCircle(Offset(x, y), 2, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DotsPainter oldDelegate) => oldDelegate.color != color;
 }
