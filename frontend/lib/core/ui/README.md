@@ -166,6 +166,8 @@ AppSectionHeader(
 )
 ```
 
+**Acordeão:** com `onToggle`, o `AppSectionHeader` ganha a seta e o toque no título, e `expanded` diz se o conteúdo está aberto. Quem esconde o conteúdo é a tela. `prominent: true` usa o título grande sem precisar de ícone (ex: seções do cardápio).
+
 ### AppEmptyState
 Estado vazio ou de erro, com ação opcional.
 

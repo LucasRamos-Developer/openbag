@@ -32,10 +32,19 @@ class RoutesMap extends StatelessWidget {
 
   const RoutesMap({super.key, required this.storeLatitude, required this.storeLongitude, required this.cards});
 
+  static AppMapPoint pointOf(RouteStop s) => AppMapPoint(s.latitude!, s.longitude!);
+
+  /// Pelas ruas quando o backend mandou o caminho; senão, linha reta entre as paradas.
+  /// O caminho começa e termina na rua mais próxima: emenda a loja e a última entrega.
+  static List<AppMapPoint> _linePoints(RouteCard card, AppMapPoint store) {
+    final located = card.stops.where((s) => s.hasLocation).map(pointOf).toList();
+    if (card.path.length < 2) return [store, ...located];
+    return [store, for (final (lat, lng) in card.path) AppMapPoint(lat, lng), if (located.isNotEmpty) located.last];
+  }
+
   @override
   Widget build(BuildContext context) {
     final store = AppMapPoint(storeLatitude, storeLongitude);
-    AppMapPoint pointOf(RouteStop s) => AppMapPoint(s.latitude!, s.longitude!);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -52,10 +61,10 @@ class RoutesMap extends StatelessWidget {
           for (final card in cards)
             if (card.stops.any((s) => s.hasLocation))
               AppMapLine(
-                points: [store, for (final s in card.stops) if (s.hasLocation) pointOf(s)],
+                points: _linePoints(card, store),
                 color: RouteColors.of(card.routeId),
-                opacity: card.isRoute ? 0.9 : 0.5,
-                width: card.isRoute ? 3 : 2,
+                opacity: card.isRoute ? 0.9 : 0.6,
+                width: card.isRoute ? 4 : 3,
               ),
         ],
         markers: [

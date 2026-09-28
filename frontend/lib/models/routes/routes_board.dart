@@ -81,6 +81,10 @@ class RouteCard {
   final DateTime? searchingCourierSince;
   final List<RouteStop> stops;
 
+  /// Caminho pelas ruas da loja até a última parada, como pares (latitude, longitude). Vazio quando o
+  /// roteamento não respondeu: o mapa desenha a linha reta
+  final List<(double, double)> path;
+
   RouteCard({
     this.routeId,
     required this.status,
@@ -93,6 +97,7 @@ class RouteCard {
     this.waitReason,
     this.searchingCourierSince,
     required this.stops,
+    this.path = const [],
   });
 
   bool get isRoute => routeId != null;
@@ -111,6 +116,9 @@ class RouteCard {
         waitReason: json['waitReason'],
         searchingCourierSince: _date(json['searchingCourierSince']),
         stops: [for (final s in json['stops'] as List? ?? []) RouteStop.fromJson(s)],
+        path: [
+          for (final p in json['path'] as List? ?? []) (((p as List)[0] as num).toDouble(), (p[1] as num).toDouble()),
+        ],
       );
 }
 

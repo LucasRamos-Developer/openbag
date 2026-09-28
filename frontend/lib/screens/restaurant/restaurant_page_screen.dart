@@ -100,7 +100,26 @@ class _RestaurantPageScreenState extends State<RestaurantPageScreen> {
     if (active != null && active != _activeSectionId) setState(() => _activeSectionId = active);
   }
 
+  // ============= Acordeão das seções =============
+
+  /// Seções recolhidas pelo cliente (o toque no título ou na seta)
+  final Set<int> _collapsed = {};
+
+  bool _isCollapsed(int sectionId) => _query.isEmpty && _collapsed.contains(sectionId);
+
+  void _toggleSection(int sectionId) => setState(() {
+        if (!_collapsed.remove(sectionId)) _collapsed.add(sectionId);
+      });
+
+  static String _countLabel(int count) => '$count ${count == 1 ? 'item' : 'itens'}';
+
   void _scrollToSection(int sectionId) {
+    // O chip de uma seção recolhida abre a seção antes de rolar até ela
+    if (_collapsed.remove(sectionId)) {
+      setState(() {});
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSection(sectionId));
+      return;
+    }
     final context = _sectionKeys[sectionId]?.currentContext;
     if (context == null) return;
     setState(() => _activeSectionId = sectionId);
@@ -271,49 +290,55 @@ class _RestaurantPageScreenState extends State<RestaurantPageScreen> {
                   child: AppSectionHeader(
                     key: _query.isEmpty ? _sectionKeys[s.section.id] : null,
                     title: s.section.name,
-                    subtitle: s.section.description,
-                    leadingIcon: MenuSectionIcons.of(s.section.icon ?? MenuSectionIcons.suggest(s.section.name)),
+                    subtitle: _isCollapsed(s.section.id)
+                        ? _countLabel(s.items.length + s.combos.length)
+                        : s.section.description,
+                    prominent: true,
                     padding: EdgeInsets.zero,
+                    // Na busca, as seções ficam sempre abertas (o resultado não pode sumir)
+                    expanded: !_isCollapsed(s.section.id),
+                    onToggle: _query.isEmpty ? () => _toggleSection(s.section.id) : null,
                   ),
                 ),
               ),
-              SliverPadding(
-                padding: content,
-                sliver: SliverList.list(
-                  children: [
-                    for (final combo in s.combos)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: MenuProductCard(
-                          name: combo.name,
-                          description: combo.description ?? combo.itemsSummary,
-                          imageUrl: combo.imageUrl,
-                          price: combo.originalPrice > combo.price ? combo.originalPrice : combo.price,
-                          promotionalPrice: combo.originalPrice > combo.price ? combo.price : null,
-                          isCombo: true,
-                          available: combo.available,
-                          onTap: () => _open(context, combo: combo),
-                          onAdd: canOrder && combo.available ? () => _quickAdd(context, combo: combo) : null,
+              if (!_isCollapsed(s.section.id))
+                SliverPadding(
+                  padding: content,
+                  sliver: SliverList.list(
+                    children: [
+                      for (final combo in s.combos)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: MenuProductCard(
+                            name: combo.name,
+                            description: combo.description ?? combo.itemsSummary,
+                            imageUrl: combo.imageUrl,
+                            price: combo.originalPrice > combo.price ? combo.originalPrice : combo.price,
+                            promotionalPrice: combo.originalPrice > combo.price ? combo.price : null,
+                            isCombo: true,
+                            available: combo.available,
+                            onTap: () => _open(context, combo: combo),
+                            onAdd: canOrder && combo.available ? () => _quickAdd(context, combo: combo) : null,
+                          ),
                         ),
-                      ),
-                    for (final item in s.items)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: MenuProductCard(
-                          name: item.name,
-                          description: item.description,
-                          imageUrl: item.imageUrl,
-                          price: item.price,
-                          promotionalPrice: item.promotionalPrice,
-                          badges: item.badges,
-                          available: item.available,
-                          onTap: () => _open(context, item: item),
-                          onAdd: canOrder && item.available ? () => _quickAdd(context, item: item) : null,
+                      for (final item in s.items)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: MenuProductCard(
+                            name: item.name,
+                            description: item.description,
+                            imageUrl: item.imageUrl,
+                            price: item.price,
+                            promotionalPrice: item.promotionalPrice,
+                            badges: item.badges,
+                            available: item.available,
+                            onTap: () => _open(context, item: item),
+                            onAdd: canOrder && item.available ? () => _quickAdd(context, item: item) : null,
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
             ],
             const SliverToBoxAdapter(child: SizedBox(height: 48)),
             StorefrontFooter.sliver(),

@@ -7,6 +7,7 @@ import com.openbag.modules.delivery.dto.MergeRouteRequest;
 import com.openbag.modules.delivery.dto.RouteSettingsDTO;
 import com.openbag.modules.delivery.dto.RoutesBoardDTO;
 import com.openbag.modules.delivery.service.RouteService;
+import com.openbag.modules.delivery.service.StreetRoutingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,13 +29,17 @@ public class RestaurantRoutesController {
     private RouteService routeService;
 
     @Autowired
+    private StreetRoutingService streetRoutingService;
+
+    @Autowired
     private DispatchService dispatchService;
 
     @GetMapping
     @IsRestaurantOwner
     @Operation(summary = "Rotas montando e em andamento")
     public ResponseEntity<RoutesBoardDTO> board(@PathVariable Long restaurantId) {
-        return ResponseEntity.ok(routeService.board(restaurantId));
+        // O caminho pelas ruas é buscado fora da transação do painel (consulta HTTP ao roteador)
+        return ResponseEntity.ok(streetRoutingService.withStreetPaths(routeService.board(restaurantId)));
     }
 
     @PostMapping

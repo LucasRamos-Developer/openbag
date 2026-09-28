@@ -64,6 +64,10 @@ Cada restaurante escolhe um dos 8 temas ou usa a cor da marca. O painel de apar�
 |---|---|
 | ![Rodapé com o carrinho](loja-e-vitrine/11-rodape-carrinho.png) | <img src="loja-e-vitrine/12-rodape-celular.png" alt="Rodapé no celular" width="260"> |
 
+| Cardápio em acordeão (a primeira seção recolhida) |
+|---|
+| ![Cardápio em acordeão](loja-e-vitrine/14-cardapio-acordeao.png) |
+
 | Sobre a loja: endereço, mapa e botão para abrir no app de mapas |
 |---|
 | ![Sobre a loja com o mapa](loja-e-vitrine/13-sobre-a-loja-mapa.png) |
@@ -73,6 +77,8 @@ O mapa tem estilo próprio (`frontend/assets/map/openbag_style.json`): é claro,
 ---
 
 ## Caixa e rotas
+
+O caminho de cada rota segue as ruas (roteamento pelo OSRM).
 
 | Rotas sendo montadas | Rota com entregador |
 |---|---|

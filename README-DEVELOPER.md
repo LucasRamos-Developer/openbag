@@ -280,6 +280,17 @@ A criação é idempotente: cada parte só é criada se ainda não existir. A se
 
 O ADMIN inicial de produção é outro: ele vem de `OPENBAG_ADMIN_EMAIL` e `OPENBAG_ADMIN_PASSWORD`.
 
+### Roteamento (rotas pelas ruas)
+
+O caminho das rotas no mapa vem de um servidor [OSRM](https://project-osrm.org). O backend consulta esse servidor, guarda o resultado em memória e, se não houver resposta, o mapa desenha linha reta.
+
+| Variável | Padrão | Uso |
+|---|---|---|
+| `OPENBAG_OSRM_URL` | `https://router.project-osrm.org` | Servidor OSRM |
+| `OPENBAG_ROUTING_ENABLED` | `true` | `false` desliga o roteamento (só linhas retas) |
+
+O servidor padrão é a demonstração pública do OSRM: aceita no máximo 1 consulta por segundo e não é para produção. Em produção, suba um OSRM próprio com o recorte do OSM da região (ex: sul do Brasil, do [Geofabrik](https://download.geofabrik.de/south-america/brazil.html)) e aponte `OPENBAG_OSRM_URL` para ele.
+
 ### Profiles disponíveis
 
 | Profile | Descrição | Uso |

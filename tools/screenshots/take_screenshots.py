@@ -46,7 +46,7 @@ PHONE = (390, 844)
 #   login: "demo" (conta com todos os perfis) ou "owner" (dono das telas do restaurante; --owner)
 #   cart: coloca 2 unidades do primeiro item da loja no carrinho
 #   clicks: textos (acessibilidade do Flutter) clicados em ordem; "aria:..." só no rótulo (tooltip);
-#           "xy:x,y" clica na posição
+#           "xy:x,y" clica na posição; "css:seletor" no primeiro elemento que casa
 #   scroll: quantas "roladinhas" de 400px dar no meio da tela
 #   docs: nome do JPG copiado para docs/assets/screens/
 SHOTS = [
@@ -60,6 +60,8 @@ SHOTS = [
     # Rotas precisa de pedidos em preparo na loja da conta usada
     dict(name="caixa-e-rotas/01-rotas-montando", path="/restaurante/rotas", size=DESKTOP, login="demo",
          docs="restaurante-rotas"),
+    dict(name="loja-e-vitrine/14-cardapio-acordeao", path="/r/{store}", size=DESKTOP, login="demo",
+         clicks=['css:flt-semantics[aria-expanded="true"]']),
     dict(name="loja-e-vitrine/13-sobre-a-loja-mapa", path="/r/{store}", size=DESKTOP, login="demo", clicks=["Sobre"]),
     dict(name="menu/01-desktop-recolhido", path="/restaurante/pedidos", size=LAPTOP, login="owner"),
     dict(name="menu/02-desktop-expandido", path="/restaurante/pedidos", size=LAPTOP, login="owner", clicks=["Menu"],
@@ -142,6 +144,11 @@ async def capture(browser, web: str, shot: dict, init: str, store: str) -> Path:
         if label.startswith("xy:"):
             x, y = (float(v) for v in label[3:].split(","))
             await page.mouse.click(x, y)
+            await page.wait_for_timeout(1500)
+            continue
+        # "css:seletor" clica no primeiro elemento de acessibilidade que casa com o seletor
+        if label.startswith("css:"):
+            await page.locator(label[4:]).first.click(timeout=5000)
             await page.wait_for_timeout(1500)
             continue
         # "aria:Texto" procura só no rótulo de acessibilidade (ex: tooltip de um botão de ícone)

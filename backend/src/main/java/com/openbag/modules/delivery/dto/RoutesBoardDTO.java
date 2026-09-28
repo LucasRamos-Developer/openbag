@@ -18,11 +18,26 @@ public record RoutesBoardDTO(RouteSettingsDTO settings, Double storeLatitude, Do
     /**
      * @param dispatchAt quando o entregador será chamado (ainda montando)
      * @param waitReason aviso de espera, ex.: "Aguardando #0012 ficar pronto (~4 min) para sair junto"
+     * @param path       caminho pelas ruas ([lat, lng]) da loja até a última parada; nulo sem roteamento
      */
     public record RouteCard(Long routeId, RouteStatus status, RouteOrigin origin, String courierName,
                             CourierKind courierKind, Double totalDistanceKm, Double savedDistanceKm,
                             LocalDateTime dispatchAt, String waitReason, LocalDateTime searchingCourierSince,
-                            List<Stop> stops) {
+                            List<Stop> stops, List<double[]> path) {
+
+        public RouteCard(Long routeId, RouteStatus status, RouteOrigin origin, String courierName,
+                         CourierKind courierKind, Double totalDistanceKm, Double savedDistanceKm,
+                         LocalDateTime dispatchAt, String waitReason, LocalDateTime searchingCourierSince,
+                         List<Stop> stops) {
+            this(routeId, status, origin, courierName, courierKind, totalDistanceKm, savedDistanceKm, dispatchAt,
+                    waitReason, searchingCourierSince, stops, null);
+        }
+
+        /** O mesmo cartão com o caminho pelas ruas ([lat, lng] da loja até a última parada) */
+        public RouteCard withPath(List<double[]> path) {
+            return new RouteCard(routeId, status, origin, courierName, courierKind, totalDistanceKm, savedDistanceKm,
+                    dispatchAt, waitReason, searchingCourierSince, stops, path);
+        }
     }
 
     public record Stop(Long orderId, String displayCode, OrderStatus status, String neighborhood, String address,
