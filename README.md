@@ -130,6 +130,7 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 | 0.3.0 | Entregador, cooperativa e cliente | Em andamento |
 | 0.4.0 | Segurança e integridade dos dados | Planejada |
 | 0.5.0 | Auditoria de dados | Planejada |
+| 0.6.0 | Operação do dia a dia | Planejada |
 | 1.0.0 | Primeira versão estável, com piloto real | Planejada |
 
 **0.3.0: Entregador, cooperativa e cliente**
@@ -153,6 +154,16 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [ ] Histórico que não pode ser alterado para caixa e ganhos
 - [ ] Relatórios exportáveis para a loja e para a cooperativa
 - [ ] LGPD: exportação, exclusão e retenção de dados
+
+**0.6.0: Operação do dia a dia** ([detalhes](docs/roadmap/0.6.0-operacao.md))
+- [ ] Pedido feito no balcão ou por telefone, no mesmo fluxo dos pedidos online
+- [ ] Ocorrências ligadas ao pedido
+- [ ] Chegada na loja e no cliente, tempos do pedido e espera média por loja
+- [ ] Km, tempo e médias na aba Ganhos do entregador
+- [ ] Custo estimado do veículo e resultado estimado
+- [ ] Comunicados da cooperativa
+- [ ] Composição do valor na oferta e lembrete de pausa
+- [ ] PIN de entrega
 
 ---
 

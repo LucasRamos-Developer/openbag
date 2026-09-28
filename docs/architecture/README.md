@@ -263,3 +263,4 @@ O roadmap completo, versão por versão, está no [CHANGELOG](../../CHANGELOG.md
 
 - **0.4.0 Segurança e integridade:** travas contra race conditions (`@Version`, restrições no banco), rate limiting, throttling de localização e de WebSocket, idempotência nas ações que mexem com dinheiro e com status, migrações versionadas e trava distribuída para os jobs.
 - **0.5.0 Auditoria de dados:** trilha de auditoria com o valor anterior e o novo, histórico que não pode ser alterado para caixa e ganhos, e LGPD.
+- **0.6.0 Operação do dia a dia:** pedido criado pela loja (sem conta de cliente) no mesmo fluxo do `POST /orders`, ocorrências e novos carimbos de chegada no `Order`, custos do veículo e métricas calculadas em `CourierEarningsService`. O detalhe está em [docs/roadmap/0.6.0-operacao.md](../roadmap/0.6.0-operacao.md).

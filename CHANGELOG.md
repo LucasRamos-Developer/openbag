@@ -48,6 +48,7 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ### Adicionado
 
+- **Roadmap da 0.6.0 (Operação do dia a dia)** em [docs/roadmap/0.6.0-operacao.md](docs/roadmap/0.6.0-operacao.md). O documento compara as sugestões de produto por papel com o código atual e lista oito itens para antes do piloto, cada um com o estado atual, o código relacionado, o que falta e quando fica pronto.
 - **Gestão da associação** no painel da cooperativa:
   - **Financeiro**, com cinco abas:
     - Resumo: saldo da caixinha, arrecadado, gasto, a receber e gráfico de entradas e saídas por mês.
@@ -218,6 +219,7 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 | 0.3.0 | Entregador, cooperativa e cliente | Em andamento |
 | 0.4.0 | Segurança e integridade dos dados | Planejada |
 | 0.5.0 | Auditoria de dados | Planejada |
+| 0.6.0 | Operação do dia a dia | Planejada |
 | 1.0.0 | Primeira versão estável (piloto real) | Planejada |
 
 ### 0.3.0: Entregador, cooperativa e cliente
@@ -241,6 +243,17 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 - Histórico que não pode ser alterado para acertos de caixa e ganhos do entregador.
 - Relatórios exportáveis para a loja e para a cooperativa.
 - LGPD: exportação e exclusão de dados pessoais e política de retenção.
+
+### 0.6.0: Operação do dia a dia
+O detalhe de cada item, com o código em que ele se apoia e o que falta, está em [docs/roadmap/0.6.0-operacao.md](docs/roadmap/0.6.0-operacao.md).
+- Pedido feito no balcão ou por telefone, que entra no mesmo fluxo dos pedidos online.
+- Ocorrências ligadas ao pedido: pedido não pronto, cliente não localizado, endereço incorreto e outras.
+- "Cheguei na loja" e "Cheguei no cliente", tempos de cada pedido e espera média por loja no relatório da cooperativa.
+- Km, tempo em operação e médias (R$ por km e R$ por hora) na aba Ganhos do entregador.
+- Custo estimado do veículo (combustível, manutenção e depreciação) e resultado estimado.
+- Comunicados da cooperativa para os cooperados.
+- Composição do valor na oferta e lembrete de pausa.
+- PIN de entrega, que a loja pode exigir.
 
 ### 1.0.0: Primeira versão estável
 - Piloto com uma cidade e uma cooperativa.

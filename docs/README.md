@@ -8,6 +8,7 @@
 
 - **[README principal](../README.md)**: proposta, telas, roadmap e contato.
 - **[CHANGELOG](../CHANGELOG.md)**: histórico de versões, regras do versionamento semântico e roadmap.
+- **[Roadmap 0.6.0](roadmap/0.6.0-operacao.md)**: operação do dia a dia, com o estado de cada item e o que falta.
 - **[Layout](../layout/)**: todas as capturas de tela da versão atual.
 - **[Guia de contribuição](../CONTRIBUTING.md)**: como contribuir com o projeto.
 
@@ -53,6 +54,8 @@ docs/
 │   └── README.md           # Arquitetura do sistema
 ├── api/
 │   └── README.md           # Índice de APIs
+├── roadmap/
+│   └── 0.6.0-operacao.md   # Itens planejados da 0.6.0
 └── guides/
     └── openstreetmap.md
 ```
