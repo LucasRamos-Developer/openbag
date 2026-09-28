@@ -98,6 +98,24 @@ O caminho de cada rota segue as ruas (roteamento pelo OSRM).
 
 ---
 
+## Rastreio, avaliações e diferença assumida
+
+Depois da retirada, o cliente vê o entregador no mapa, mas só quando é a vez do pedido dele na rota. Depois da entrega, ele avalia a loja e o entregador.
+
+| Entregador a caminho | Avaliação do pedido | Avaliação com resposta da loja |
+|---|---|---|
+| ![Rastreio](entregador-finalizacao/rastreio-cliente.png) | ![Avaliação](entregador-finalizacao/avaliacao-pedido.png) | ![Resposta](entregador-finalizacao/avaliacao-com-resposta.png) |
+
+| Avaliações no painel da loja | Nota no perfil do entregador |
+|---|---|
+| ![Avaliações da loja](entregador-finalizacao/avaliacoes-loja.png) | ![Perfil do entregador](entregador-finalizacao/perfil-entregador-nota.png) |
+
+| Caixa com a diferença assumida nas entregas |
+|---|
+| ![Diferença assumida](entregador-finalizacao/caixa-diferenca-assumida.png) |
+
+---
+
 ## Painel do super admin
 
 Somente leitura: números da plataforma e listas de restaurantes, associações, entregadores, usuários e pedidos. A conta demo (`demo@openbag.local`) tem todos os perfis.

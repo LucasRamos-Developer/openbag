@@ -11,6 +11,7 @@ import com.openbag.modules.order.entity.OrderItem;
 import com.openbag.modules.order.entity.OrderTracking;
 import com.openbag.modules.product.entity.OrderItemCustomization;
 import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.modules.review.dto.OrderReviewDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -78,6 +79,12 @@ public class OrderDTO {
     // Aceito e ainda sem entregador disponível desde este momento
     private LocalDateTime searchingCourierSince;
 
+    // Só para o cliente (CustomerOrderMapper): posição do entregador quando é a vez do pedido,
+    // a avaliação feita e até quando ainda dá para avaliar
+    private Location courierLocation;
+    private OrderReviewDTO review;
+    private LocalDateTime reviewableUntil;
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -87,6 +94,17 @@ public class OrderDTO {
         private String slug;
         private String logoUrl;
         private String phoneNumber;
+        private Double latitude;
+        private Double longitude;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Location {
+        private double latitude;
+        private double longitude;
+        private LocalDateTime at;
     }
 
     @Data
@@ -152,7 +170,8 @@ public class OrderDTO {
                 .displayCode(order.getDisplayCode())
                 .status(order.getStatus())
                 .restaurant(new RestaurantInfo(restaurant.getId(), restaurant.getName(), restaurant.getSlug(),
-                        restaurant.getLogoUrl(), restaurant.getPhoneNumber()))
+                        restaurant.getLogoUrl(), restaurant.getPhoneNumber(), toDouble(restaurant.getLatitude()),
+                        toDouble(restaurant.getLongitude())))
                 .customerName(order.getCustomerName())
                 .customerPhone(order.getCustomerPhone())
                 .items(order.getItems().stream().map(OrderDTO::toItem).toList())
@@ -193,7 +212,8 @@ public class OrderDTO {
 
     /**
      * Versão para o cliente: sem dados da operação da loja (tipo de entregador, prazo de troca). O cliente nunca
-     * fica sabendo de rotas ou de espera por outros pedidos.
+     * fica sabendo de rotas ou de espera por outros pedidos. A posição do entregador e a avaliação são
+     * preenchidas pelo {@code CustomerOrderMapper}.
      */
     public static OrderDTO forCustomer(Order order) {
         OrderDTO dto = from(order);
@@ -213,6 +233,10 @@ public class OrderDTO {
         return new CourierInfo(courier.getId(), courier.getUser().getFullName(), courier.getPhotoUrl(),
                 courier.getSlug(), courier.getUser().getPhoneNumber(),
                 vehicle != null ? vehicle.getType() : null, description, vehicle != null ? vehicle.getPlate() : null);
+    }
+
+    private static Double toDouble(BigDecimal value) {
+        return value == null ? null : value.doubleValue();
     }
 
     private static Item toItem(OrderItem item) {

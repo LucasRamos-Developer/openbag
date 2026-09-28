@@ -109,7 +109,7 @@ class _RestaurantPanelScreenState extends State<RestaurantPanelScreen> {
           const MenuTab(),
           CouriersTab(key: ValueKey('couriers-${service.selectedId}')),
           CashTab(key: _cashKey),
-          const ReviewsTab(),
+          ReviewsTab(key: ValueKey('reviews-${service.selectedId}')),
           StoreTab(section: widget.storeSection),
         ],
       ),

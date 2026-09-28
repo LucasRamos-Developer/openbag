@@ -70,6 +70,9 @@ public class OrderService {
     @Autowired
     private ApplicationEventPublisher events;
 
+    @Autowired
+    private CustomerOrderMapper customerOrderMapper;
+
     public OrderDTO createOrder(CreateOrderRequest request, User customer) {
         LocalDateTime now = LocalDateTime.now(clock);
 
@@ -163,12 +166,12 @@ public class OrderService {
         events.publishEvent(new OrderChangedEvent(saved.getId(), OrderChangedEvent.Type.ORDER_CREATED));
         log.info("Pedido {} ({}) criado no restaurante {} com status {}", saved.getId(), saved.getDisplayCode(),
                 restaurant.getId(), saved.getStatus());
-        return OrderDTO.forCustomer(saved);
+        return customerOrderMapper.toDto(saved);
     }
 
     @Transactional(readOnly = true)
     public Page<OrderDTO> getMyOrders(User customer, Pageable pageable) {
-        return orderRepository.findByUserIdOrderByOrderDateDesc(customer.getId(), pageable).map(OrderDTO::forCustomer);
+        return customerOrderMapper.toDtos(orderRepository.findByUserIdOrderByOrderDateDesc(customer.getId(), pageable));
     }
 
     /**
@@ -176,7 +179,7 @@ public class OrderService {
      */
     @Transactional(readOnly = true)
     public OrderDTO getOrder(Long orderId) {
-        return OrderDTO.forCustomer(findOrder(orderId));
+        return customerOrderMapper.toDto(findOrder(orderId));
     }
 
     /**
@@ -196,7 +199,7 @@ public class OrderService {
         addTracking(order, OrderStatus.CANCELLED, "Pedido cancelado pelo cliente", now);
         Order saved = orderRepository.save(order);
         events.publishEvent(new OrderChangedEvent(saved.getId(), OrderChangedEvent.Type.ORDER_UPDATED));
-        return OrderDTO.forCustomer(saved);
+        return customerOrderMapper.toDto(saved);
     }
 
     // ============= Helpers =============

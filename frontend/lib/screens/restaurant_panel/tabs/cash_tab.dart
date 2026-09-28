@@ -8,6 +8,7 @@ import '../../../services/restaurant_panel_service.dart';
 import '../../../utils/feedback.dart';
 import '../../../utils/formatters.dart';
 import '../../../widgets/courier/courier_avatar.dart';
+import '../../../widgets/cash/subsidy_report_card.dart';
 
 /// Períodos do caixa
 enum CashPeriod {
@@ -126,6 +127,10 @@ class CashTabState extends State<CashTab> {
           else if (report != null) ...[
             _Summary(summary: report.summary),
             const SizedBox(height: 16),
+            if (report.subsidy.total > 0) ...[
+              SubsidyReportCard(subsidy: report.subsidy),
+              const SizedBox(height: 16),
+            ],
             _PaymentsCard(payments: report.payments),
             const SizedBox(height: 16),
             _CouriersCard(lines: report.couriers, settling: _settling, onSettle: _settle),

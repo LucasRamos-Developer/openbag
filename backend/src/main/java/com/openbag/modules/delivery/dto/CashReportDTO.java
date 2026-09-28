@@ -5,6 +5,7 @@ import com.openbag.modules.order.entity.Order;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -12,7 +13,7 @@ import java.util.List;
  * Com pagamento na entrega, o dinheiro fica com o entregador; cartão e Pix caem na maquininha/Pix da loja.
  */
 public record CashReportDTO(LocalDate from, LocalDate to, Summary summary, List<PaymentLine> payments,
-                            List<CourierLine> couriers, List<SettlementDTO> settlements) {
+                            List<CourierLine> couriers, List<SettlementDTO> settlements, Subsidy subsidy) {
 
     /**
      * @param storeBalance     recebido dos clientes − pago aos entregadores
@@ -35,5 +36,25 @@ public record CashReportDTO(LocalDate from, LocalDate to, Summary summary, List<
                               int deliveries, BigDecimal earnings, BigDecimal cashCollected, BigDecimal otherCollected,
                               int pendingOrders, BigDecimal pendingCash, BigDecimal pendingEarnings,
                               BigDecimal pendingBalance) {
+    }
+
+    /**
+     * Diferença que a loja assumiu nas entregas do período (taxa cobrada do cliente menor que a tabela da
+     * associação). O entregador sempre recebe o valor cheio da tabela.
+     */
+    public record Subsidy(BigDecimal total, int orders, List<SubsidyByAssociation> byAssociation,
+                          List<SubsidyLine> lines) {
+    }
+
+    public record SubsidyByAssociation(Long organizationId, String name, int orders, BigDecimal total) {
+    }
+
+    /**
+     * @param customerFee taxa de entrega cobrada do cliente
+     * @param courierFee  valor da tabela pago ao entregador
+     */
+    public record SubsidyLine(Long orderId, String displayCode, LocalDateTime deliveredAt, String courierName,
+                              String organizationName, Double distanceKm, BigDecimal customerFee,
+                              BigDecimal courierFee, BigDecimal subsidy) {
     }
 }

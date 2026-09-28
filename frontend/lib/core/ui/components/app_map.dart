@@ -167,7 +167,7 @@ class _AppMapState extends State<AppMap> {
       southwest: LatLng(lats.reduce((a, b) => a < b ? a : b), lngs.reduce((a, b) => a < b ? a : b)),
       northeast: LatLng(lats.reduce((a, b) => a > b ? a : b), lngs.reduce((a, b) => a > b ? a : b)),
     );
-    controller.moveCamera(CameraUpdate.newLatLngBounds(bounds, left: 48, top: 48, right: 48, bottom: 48)).then((_) {
+    controller.moveCamera(CameraUpdate.newLatLngBounds(bounds, left: 48, top: 48, right: 48, bottom: 64)).then((_) {
       final zoom = controller.cameraPosition?.zoom;
       if (zoom != null && zoom > widget.fitMaxZoom) {
         controller.moveCamera(CameraUpdate.zoomTo(widget.fitMaxZoom));

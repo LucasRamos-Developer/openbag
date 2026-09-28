@@ -13,6 +13,9 @@ import '../../widgets/order/order_items_list.dart';
 import '../../widgets/order/order_status_chip.dart';
 import '../../widgets/courier/order_courier_card.dart';
 import '../../widgets/order/order_status_timeline.dart';
+import '../../widgets/order/order_tracking_map.dart';
+import '../../widgets/review/order_review_card.dart';
+import '../../widgets/review/order_review_sheet.dart';
 import '../../widgets/order/price_summary.dart';
 import '../../widgets/restaurant/restaurant_logo.dart';
 import '../../widgets/navigation/storefront_footer.dart';
@@ -20,6 +23,7 @@ import '../../widgets/navigation/storefront_scaffold.dart';
 
 /// Acompanhamento do pedido pelo cliente.
 /// Atualiza em tempo real pelo WebSocket; a cada 30s recarrega como reserva.
+/// A caminho, mostra o entregador no mapa quando é a vez deste pedido; entregue, convida a avaliar.
 class OrderDetailScreen extends StatefulWidget {
   final int orderId;
 
@@ -31,6 +35,9 @@ class OrderDetailScreen extends StatefulWidget {
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Order? _order;
+
+  // Posição do entregador: vem com o pedido e é atualizada pelas mensagens COURIER_LOCATION
+  GeoPosition? _courierLocation;
   String? _error;
   Timer? _poll;
   VoidCallback? _stopListening;
@@ -42,7 +49,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     _stopListening = context.read<RealtimeService>().listen(
       '/topic/orders/${widget.orderId}',
       (message) {
-        if (mounted) setState(() => _order = Order.fromJson(message['order']));
+        if (!mounted) return;
+        if (message['type'] == 'COURIER_LOCATION') {
+          if (_order?.status == OrderStatus.OUT_FOR_DELIVERY) {
+            setState(() => _courierLocation = GeoPosition.fromJson(message['location']));
+          }
+        } else if (message['order'] != null) {
+          _setOrder(Order.fromJson(message['order']));
+        }
       },
       onReconnect: _load,
     );
@@ -61,10 +75,22 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Future<void> _load() async {
     try {
       final order = await context.read<OrderService>().fetchOrder(widget.orderId);
-      if (mounted) setState(() => _order = order);
+      if (mounted) _setOrder(order);
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
     }
+  }
+
+  void _setOrder(Order order) {
+    setState(() {
+      _order = order;
+      _courierLocation = order.courierLocation;
+    });
+  }
+
+  Future<void> _review(Order order) async {
+    final review = await showOrderReviewSheet(context, order: order);
+    if (review != null && mounted) _load();
   }
 
   Future<void> _cancel() async {
@@ -77,7 +103,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     if (!ok || !mounted) return;
     await runWithFeedback(context, () async {
       final order = await context.read<OrderService>().cancelOrder(widget.orderId);
-      if (mounted) setState(() => _order = order);
+      if (mounted) _setOrder(order);
     }, success: 'Pedido cancelado');
   }
 
@@ -125,6 +151,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
+                if (order.review != null || order.reviewableUntil != null) ...[
+                  OrderReviewCard(order: order, onReview: () => _review(order)),
+                  const SizedBox(height: 12),
+                ],
+                if (order.status == OrderStatus.OUT_FOR_DELIVERY && _courierLocation != null) ...[
+                  OrderTrackingMap(order: order, courier: _courierLocation!),
+                  const SizedBox(height: 12),
+                ],
                 AppCard(
                   padding: const EdgeInsets.all(16),
                   borderColor: Theme.of(context).colorScheme.outline.withValues(alpha: 0.15),

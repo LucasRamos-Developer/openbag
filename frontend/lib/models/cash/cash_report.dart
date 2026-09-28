@@ -11,6 +11,7 @@ class CashReport {
   final List<PaymentLine> payments;
   final List<CourierCashLine> couriers;
   final List<Settlement> settlements;
+  final SubsidyReport subsidy;
 
   CashReport({
     required this.from,
@@ -19,6 +20,7 @@ class CashReport {
     required this.payments,
     required this.couriers,
     required this.settlements,
+    required this.subsidy,
   });
 
   factory CashReport.fromJson(Map<String, dynamic> json) => CashReport(
@@ -28,6 +30,73 @@ class CashReport {
         payments: [for (final p in json['payments'] as List? ?? []) PaymentLine.fromJson(p)],
         couriers: [for (final c in json['couriers'] as List? ?? []) CourierCashLine.fromJson(c)],
         settlements: [for (final s in json['settlements'] as List? ?? []) Settlement.fromJson(s)],
+        subsidy: SubsidyReport.fromJson(json['subsidy'] ?? const {}),
+      );
+}
+
+/// Diferença assumida pela loja nas entregas: taxa cobrada do cliente menor que a tabela da associação.
+/// O entregador sempre recebe o valor cheio da tabela.
+class SubsidyReport {
+  final double total;
+  final int orders;
+  final List<SubsidyByAssociation> byAssociation;
+  final List<SubsidyLine> lines;
+
+  SubsidyReport({required this.total, required this.orders, required this.byAssociation, required this.lines});
+
+  factory SubsidyReport.fromJson(Map<String, dynamic> json) => SubsidyReport(
+        total: _money(json['total']),
+        orders: json['orders'] ?? 0,
+        byAssociation: [for (final a in json['byAssociation'] as List? ?? []) SubsidyByAssociation.fromJson(a)],
+        lines: [for (final l in json['lines'] as List? ?? []) SubsidyLine.fromJson(l)],
+      );
+}
+
+class SubsidyByAssociation {
+  final String name;
+  final int orders;
+  final double total;
+
+  SubsidyByAssociation({required this.name, required this.orders, required this.total});
+
+  factory SubsidyByAssociation.fromJson(Map<String, dynamic> json) =>
+      SubsidyByAssociation(name: json['name'] ?? '', orders: json['orders'] ?? 0, total: _money(json['total']));
+}
+
+/// Um pedido com diferença: taxa cobrada do cliente → valor da tabela → diferença
+class SubsidyLine {
+  final int orderId;
+  final String? displayCode;
+  final DateTime? deliveredAt;
+  final String? courierName;
+  final String? organizationName;
+  final double? distanceKm;
+  final double customerFee;
+  final double courierFee;
+  final double subsidy;
+
+  SubsidyLine({
+    required this.orderId,
+    this.displayCode,
+    this.deliveredAt,
+    this.courierName,
+    this.organizationName,
+    this.distanceKm,
+    required this.customerFee,
+    required this.courierFee,
+    required this.subsidy,
+  });
+
+  factory SubsidyLine.fromJson(Map<String, dynamic> json) => SubsidyLine(
+        orderId: json['orderId'],
+        displayCode: json['displayCode'],
+        deliveredAt: json['deliveredAt'] != null ? DateTime.tryParse(json['deliveredAt']) : null,
+        courierName: json['courierName'],
+        organizationName: json['organizationName'],
+        distanceKm: (json['distanceKm'] as num?)?.toDouble(),
+        customerFee: _money(json['customerFee']),
+        courierFee: _money(json['courierFee']),
+        subsidy: _money(json['subsidy']),
       );
 }
 

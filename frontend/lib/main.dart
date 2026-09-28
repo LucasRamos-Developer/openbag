@@ -29,6 +29,7 @@ import 'services/restaurant_panel_service.dart';
 import 'services/restaurant_service.dart';
 import 'services/cart_service.dart';
 import 'services/order_service.dart';
+import 'services/review_service.dart';
 import 'services/realtime_service.dart';
 import 'services/restaurant_orders_service.dart';
 import 'core/ui/ui.dart';
@@ -82,6 +83,7 @@ class _OpenBagAppState extends State<OpenBagApp> {
         Provider(create: (_) => RestaurantRoutesService(_authService.apiClient)),
         ChangeNotifierProvider(create: (_) => RestaurantService(_authService.apiClient)),
         Provider(create: (_) => OrderService(_authService.apiClient)),
+        Provider(create: (_) => ReviewService(_authService.apiClient)),
         ChangeNotifierProvider.value(value: _realtime),
         ChangeNotifierProvider(create: (_) => RestaurantOrdersService(_authService.apiClient, _realtime)),
         ChangeNotifierProvider(create: (_) => CourierWorkService(_authService.apiClient, _realtime)),

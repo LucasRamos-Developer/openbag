@@ -93,6 +93,26 @@ class _CourierProfileTabState extends State<CourierProfileTab> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _MembershipSection(profile: profile),
+                  const SizedBox(height: 24),
+                  AppResponsiveGrid(
+                    maxColumns: 2,
+                    minItemWidth: 180,
+                    children: [
+                      AppStatTile(
+                        label: 'Entregas',
+                        value: formatCount(profile.totalDeliveries),
+                        icon: Icons.delivery_dining_outlined,
+                      ),
+                      AppStatTile(
+                        label: 'Sua nota',
+                        value: profile.totalReviews > 0 ? profile.rating.toStringAsFixed(1).replaceAll('.', ',') : '–',
+                        icon: Icons.star_rounded,
+                        caption: profile.totalReviews > 0
+                            ? '${formatCount(profile.totalReviews)} ${profile.totalReviews == 1 ? 'avaliação' : 'avaliações'} de clientes'
+                            : 'Os clientes avaliam depois da entrega',
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 32),
                   AppSectionHeader(
                     title: 'Meu perfil',

@@ -268,6 +268,7 @@ public class CourierProfileService {
                 .socialLinks(deliveryPerson.getSocialLinks().stream().map(SocialLinkDTO::from).toList())
                 .activeVehicle(vehicle != null ? VehicleDTO.from(vehicle, true) : null)
                 .rating(deliveryPerson.getRating())
+                .totalReviews(deliveryPerson.getTotalReviews())
                 .totalDeliveries(deliveryPerson.getTotalDeliveries())
                 .memberSince(deliveryPerson.getCreatedAt())
                 .association(findOpenMembership(deliveryPerson).map(CourierAssociationDTO::from).orElse(null))

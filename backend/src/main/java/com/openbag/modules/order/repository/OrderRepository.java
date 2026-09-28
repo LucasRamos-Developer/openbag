@@ -131,7 +131,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * Pedidos entregues no período, com quem levou (para o caixa)
      */
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.deliveryPerson dp LEFT JOIN FETCH dp.user "
-            + "LEFT JOIN FETCH o.staffCourier WHERE o.restaurant.id = :restaurantId "
+            + "LEFT JOIN FETCH dp.organization LEFT JOIN FETCH o.staffCourier WHERE o.restaurant.id = :restaurantId "
             + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end")
     List<Order> findDeliveredByRestaurantBetween(@Param("restaurantId") Long restaurantId,
                                                 @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);

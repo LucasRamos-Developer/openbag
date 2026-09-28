@@ -66,6 +66,13 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - O padrão é o servidor público de demonstração do OSRM, só para desenvolvimento.
 - **Cardápio em acordeão**: as seções da página da loja podem ser recolhidas pelo título ou pela seta. Na busca, todas ficam abertas, e o chip de uma seção recolhida abre a seção antes de rolar até ela. O ícone grande ao lado do título saiu, e o título usa o mesmo estilo com sublinhado da vitrine, na cor da loja. Os chips continuam com ícone.
 
+- **Avaliações do pedido**: depois da entrega, o cliente avalia a loja (obrigatório) e o entregador do app (opcional), com comentário, em até 7 dias. Cada pedido é avaliado uma vez.
+  - As médias da loja e do entregador são recalculadas a cada avaliação e aparecem na vitrine, no perfil público `/e/:slug` e na aba Perfil do entregador.
+  - A aba Avaliações do painel da loja mostra a média, a distribuição por nota e os comentários, e a loja pode responder. A nota do entregador não aparece para a loja.
+  - Rotas: `POST /orders/{id}/review`, `GET /restaurants/{id}/reviews`, `GET /restaurants/{id}/reviews/summary` e `POST /restaurants/{id}/reviews/{reviewId}/reply`.
+- **Entregador no mapa**: depois da retirada, o cliente acompanha o entregador em `/pedidos/:id`, em tempo real (mensagem `COURIER_LOCATION` no tópico do pedido). Numa rota, o mapa só aparece quando é a vez do pedido, então o cliente nunca vê o entregador indo para outra entrega. A equipe própria da loja não usa o app e não aparece no mapa.
+- **Diferença assumida no Caixa**: um card mostra quanto a loja pagou da diferença entre a taxa cobrada do cliente e a tabela da associação, com o total, os valores por associação e o detalhe de cada pedido (km, taxa cobrada, valor da tabela e diferença). O entregador sempre recebe o valor cheio da tabela.
+
 ### Alterado
 
 - **Mapa com estilo próprio**, claro e próximo das cores do Google Maps, sem relevo e com a vegetação discreta. O estilo fica em `frontend/assets/map/openbag_style.json`, no formato do MapLibre. O mapa é desenhado pelo MapLibre (`maplibre_gl`) com os dados do OpenFreeMap, sem chave e sem limite de uso. O componente `AppMap` (`core/ui`) substitui o `flutter_map` nos mapas de rotas e da página da loja. Uma base raster pode entrar no lugar com `--dart-define=MAP_TILE_URL=...`.
@@ -73,6 +80,7 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ### Corrigido
 
+- No perfil público do entregador, a nota aparecia com ponto ("4.0") e "1 avaliações" no plural.
 - O botão `large` tinha fonte menor que a do `medium`.
 - A versão exibida no app era `1.0.0`; agora é `0.2.0`.
 - No card da vitrine, a moldura redonda deixava as pontas do logo (quadrado arredondado) para fora; agora ela tem o mesmo formato do logo.
@@ -162,7 +170,7 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 | 1.0.0 | Primeira versão estável (piloto real) | Planejada |
 
 ### 0.3.0: Entregador, cooperativa e cliente
-- Concluir as telas do entregador.
+- ~~Concluir as telas do entregador~~: avaliações, rastreio no mapa e diferença assumida no Caixa (concluído).
 - Painel da cooperativa: parcerias com lojas, acordos e relatórios para os cooperados.
 - Fluxo do cliente fora da fase de testes, com coleta de avaliações.
 - Visibilidade: página da loja otimizada para buscadores (SEO) e vitrine ordenada por avaliações e proximidade, sem posição paga.

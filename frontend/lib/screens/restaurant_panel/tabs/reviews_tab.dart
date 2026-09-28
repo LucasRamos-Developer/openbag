@@ -1,53 +1,71 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/ui/ui.dart';
+import '../../../models/review/restaurant_review.dart';
 import '../../../services/restaurant_panel_service.dart';
+import '../../../services/review_service.dart';
 import '../../../utils/formatters.dart';
+import '../../../widgets/review/review_card.dart';
 
-/// Avaliações dos clientes: nota média, distribuição das notas e comentários.
-/// A coleta de avaliações ainda não existe (Fase 5); por enquanto mostra o resumo e o estado vazio.
-class ReviewsTab extends StatelessWidget {
+/// Avaliações dos clientes: nota média, distribuição das notas e comentários, com resposta da loja.
+/// Só a parte da loja aparece aqui; a nota do entregador fica com ele.
+class ReviewsTab extends StatefulWidget {
   const ReviewsTab({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final store = context.watch<RestaurantPanelService>().store!;
+  State<ReviewsTab> createState() => _ReviewsTabState();
+}
 
-    return AppPageListView(
-      children: [
-        const AppSectionHeader(title: 'Avaliações', subtitle: 'O que os clientes acham dos seus pedidos'),
-        LayoutBuilder(builder: (context, constraints) {
-          final summary = _SummaryCard(rating: store.rating, total: store.totalReviews);
-          // A distribuição por nota depende das avaliações individuais, que ainda não são coletadas
-          const distribution = _DistributionCard(counts: null);
-          if (constraints.maxWidth < 720) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [summary, const SizedBox(height: 16), distribution],
-            );
-          }
-          return IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(width: 300, child: summary),
-                const SizedBox(width: 16),
-                const Expanded(child: distribution),
-              ],
-            ),
-          );
-        }),
-        const SizedBox(height: 16),
-        const AppPanelCard(
-          title: 'Comentários',
-          child: AppEmptyState(
-            icon: Icons.rate_review_outlined,
-            message: 'As avaliações dos clientes vão aparecer aqui.\n'
-                'Depois de cada entrega, o cliente poderá dar uma nota e deixar um comentário.',
-          ),
-        ),
-      ],
+class _ReviewsTabState extends State<ReviewsTab> {
+  late final int _restaurantId = context.read<RestaurantPanelService>().selectedId!;
+  late final Future<ReviewSummary> _summary = context.read<ReviewService>().summary(_restaurantId);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppPagedList<RestaurantReview>(
+      title: 'Avaliações',
+      subtitle: 'O que os clientes acham dos seus pedidos',
+      header: FutureBuilder<ReviewSummary>(
+        future: _summary,
+        builder: (context, snapshot) => _SummaryRow(summary: snapshot.data),
+      ),
+      fetch: (_, page) => context.read<ReviewService>().restaurantReviews(_restaurantId, page: page),
+      itemBuilder: (context, review) => ReviewCard(restaurantId: _restaurantId, review: review),
+      emptyIcon: Icons.rate_review_outlined,
+      emptyMessage: 'As avaliações dos clientes vão aparecer aqui.\n'
+          'Depois de cada entrega, o cliente pode dar uma nota e deixar um comentário.',
     );
+  }
+}
+
+class _SummaryRow extends StatelessWidget {
+  final ReviewSummary? summary;
+
+  const _SummaryRow({required this.summary});
+
+  @override
+  Widget build(BuildContext context) {
+    final summary = this.summary;
+    return LayoutBuilder(builder: (context, constraints) {
+      final card = _SummaryCard(rating: summary?.average ?? 0, total: summary?.total ?? 0);
+      final distribution = _DistributionCard(summary: summary);
+      if (constraints.maxWidth < 720) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [card, const SizedBox(height: 16), distribution],
+        );
+      }
+      return IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(width: 300, child: card),
+            const SizedBox(width: 16),
+            Expanded(child: distribution),
+          ],
+        ),
+      );
+    });
   }
 }
 
@@ -74,19 +92,7 @@ class _SummaryCard extends StatelessWidget {
             style: TextStyle(fontSize: 48, fontWeight: FontWeight.w800, color: c.text, height: 1.1),
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var i = 1; i <= 5; i++)
-                Icon(
-                  hasReviews && rating >= i - 0.25
-                      ? Icons.star_rounded
-                      : (hasReviews && rating >= i - 0.75 ? Icons.star_half_rounded : Icons.star_outline_rounded),
-                  color: c.rating,
-                  size: 26,
-                ),
-            ],
-          ),
+          AppRatingStars(rating: hasReviews ? rating : 0, size: 26),
           const SizedBox(height: 8),
           Text(
             hasReviews ? '${formatCount(total)} ${total == 1 ? 'avaliação' : 'avaliações'}' : 'Ainda sem avaliações',
@@ -99,16 +105,16 @@ class _SummaryCard extends StatelessWidget {
 }
 
 class _DistributionCard extends StatelessWidget {
-  /// Quantidade de avaliações por nota (5 a 1); nula enquanto não há avaliações individuais
-  final Map<int, int>? counts;
+  /// Nulo enquanto carrega
+  final ReviewSummary? summary;
 
-  const _DistributionCard({required this.counts});
+  const _DistributionCard({required this.summary});
 
   @override
   Widget build(BuildContext context) {
     final c = context.appColors;
-    final counts = this.counts;
-    final total = counts?.values.fold(0, (sum, v) => sum + v) ?? 0;
+    final summary = this.summary;
+    final total = summary?.total ?? 0;
 
     return AppCard(
       padding: const EdgeInsets.all(24),
@@ -130,7 +136,7 @@ class _DistributionCard extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(AppRadius.pill),
                       child: LinearProgressIndicator(
-                        value: counts == null || total == 0 ? 0 : counts[star]! / total,
+                        value: summary == null || total == 0 ? 0 : summary.countOf(star) / total,
                         minHeight: 8,
                         backgroundColor: c.surfaceAlt,
                         color: c.rating,
@@ -140,20 +146,12 @@ class _DistributionCard extends StatelessWidget {
                   const SizedBox(width: 12),
                   SizedBox(
                     width: 32,
-                    child: Text(counts == null ? '–' : formatCount(counts[star]!),
+                    child: Text(summary == null ? '–' : formatCount(summary.countOf(star)),
                         textAlign: TextAlign.end, style: TextStyle(color: c.textMuted)),
                   ),
                 ],
               ),
             ),
-          if (counts == null) ...[
-            const SizedBox(height: 8),
-            Text(
-              'A distribuição por nota aparece quando os clientes começarem a avaliar pelo app.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: c.textMuted, fontSize: 12),
-            ),
-          ],
         ],
       ),
     );

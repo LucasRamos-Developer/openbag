@@ -18,7 +18,9 @@ import com.openbag.modules.delivery.repository.CourierShiftRepository;
 import com.openbag.modules.delivery.repository.DeliveryOfferRepository;
 import com.openbag.modules.delivery.repository.DeliveryPersonRepository;
 import com.openbag.modules.delivery.repository.RestaurantCourierLinkRepository;
+import com.openbag.modules.delivery.tracking.CourierTracking;
 import com.openbag.modules.order.entity.Order;
+import com.openbag.modules.order.realtime.CourierLocationEvent;
 import com.openbag.modules.order.realtime.OrderChangedEvent;
 import com.openbag.modules.order.repository.OrderRepository;
 import com.openbag.modules.order.service.OrderService;
@@ -126,10 +128,16 @@ public class CourierWorkService {
         return toState(courier);
     }
 
+    /**
+     * Posição enviada pelo app enquanto online. Vai também para o cliente da entrega que está na vez.
+     */
     public void updateLocation(User user, LocationRequest location) {
         DeliveryPerson courier = findCourier(user);
         updatePosition(courier, location);
         deliveryPersonRepository.save(courier);
+        CourierTracking.currentStop(ordersOnTheWay(courier)).ifPresent(order ->
+                events.publishEvent(new CourierLocationEvent(order.getId(), location.getLatitude(),
+                        location.getLongitude(), courier.getLastSeenAt())));
     }
 
     /**
@@ -261,6 +269,10 @@ public class CourierWorkService {
                     o.setDeliveredAt(now);
                     o.setPaymentStatus(Order.PaymentStatus.PAID);
                 });
+        // Próxima entrega da rota: o cliente dela passa a ver o entregador no mapa
+        CourierTracking.currentStop(ordersOnTheWay(courier).stream()
+                        .filter(o -> !o.getId().equals(orderId)).toList())
+                .ifPresent(next -> events.publishEvent(new OrderChangedEvent(next.getId(), OrderChangedEvent.Type.ORDER_UPDATED)));
         // Liberação do entregador e contadores: DispatchService, depois do commit
         return toState(courier);
     }
@@ -358,6 +370,10 @@ public class CourierWorkService {
         courier.setLastLatitude(location.getLatitude());
         courier.setLastLongitude(location.getLongitude());
         courier.setLastSeenAt(LocalDateTime.now(clock));
+    }
+
+    private List<Order> ordersOnTheWay(DeliveryPerson courier) {
+        return orderRepository.findByCourierAndStatusIn(courier.getId(), EnumSet.of(OrderStatus.OUT_FOR_DELIVERY));
     }
 
     private Order findAssignedOrder(DeliveryPerson courier, Long orderId) {

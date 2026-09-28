@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../courier/vehicle_type.dart';
+import 'order_review.dart';
 
 double _money(dynamic value) => (value as num?)?.toDouble() ?? 0;
 DateTime? _date(dynamic value) => value is String ? DateTime.tryParse(value) : null;
@@ -55,6 +56,8 @@ class Order {
   final PaymentMethod paymentMethod;
   final double? changeFor;
   final String? deliveryAddress;
+  final double? deliveryLatitude;
+  final double? deliveryLongitude;
   final String? notes;
   final int? estimatedDeliveryTime;
   final DateTime? createdAt;
@@ -80,6 +83,15 @@ class Order {
   /// Aceito e sem entregador disponível desde este momento
   final DateTime? searchingCourierSince;
 
+  /// Posição do entregador (só para o cliente, e só quando é a vez deste pedido)
+  final GeoPosition? courierLocation;
+
+  /// Avaliação feita pelo cliente
+  final OrderReview? review;
+
+  /// Até quando o cliente ainda pode avaliar (nulo: não pode)
+  final DateTime? reviewableUntil;
+
   Order({
     required this.id,
     required this.orderNumber,
@@ -95,6 +107,8 @@ class Order {
     required this.paymentMethod,
     this.changeFor,
     this.deliveryAddress,
+    this.deliveryLatitude,
+    this.deliveryLongitude,
     this.notes,
     this.estimatedDeliveryTime,
     this.createdAt,
@@ -113,6 +127,9 @@ class Order {
     this.assignedAt,
     this.pickedUpAt,
     this.searchingCourierSince,
+    this.courierLocation,
+    this.review,
+    this.reviewableUntil,
   });
 
   /// Antes da retirada: ainda pode receber ou trocar de entregador
@@ -147,6 +164,8 @@ class Order {
         paymentMethod: PaymentMethod.fromName(json['paymentMethod']),
         changeFor: json['changeFor'] != null ? _money(json['changeFor']) : null,
         deliveryAddress: json['deliveryAddress'],
+        deliveryLatitude: (json['deliveryLatitude'] as num?)?.toDouble(),
+        deliveryLongitude: (json['deliveryLongitude'] as num?)?.toDouble(),
         notes: json['notes'],
         estimatedDeliveryTime: json['estimatedDeliveryTime'],
         createdAt: _date(json['createdAt']),
@@ -165,6 +184,24 @@ class Order {
         assignedAt: _date(json['assignedAt']),
         pickedUpAt: _date(json['pickedUpAt']),
         searchingCourierSince: _date(json['searchingCourierSince']),
+        courierLocation: json['courierLocation'] != null ? GeoPosition.fromJson(json['courierLocation']) : null,
+        review: json['review'] != null ? OrderReview.fromJson(json['review']) : null,
+        reviewableUntil: _date(json['reviewableUntil']),
+      );
+}
+
+/// Ponto no mapa com o momento em que foi registrado (posição do entregador)
+class GeoPosition {
+  final double latitude;
+  final double longitude;
+  final DateTime? at;
+
+  const GeoPosition({required this.latitude, required this.longitude, this.at});
+
+  factory GeoPosition.fromJson(Map<String, dynamic> json) => GeoPosition(
+        latitude: (json['latitude'] as num).toDouble(),
+        longitude: (json['longitude'] as num).toDouble(),
+        at: _date(json['at']),
       );
 }
 
@@ -239,8 +276,10 @@ class OrderRestaurant {
   final String? slug;
   final String? logoUrl;
   final String? phoneNumber;
+  final double? latitude;
+  final double? longitude;
 
-  OrderRestaurant({this.id, required this.name, this.slug, this.logoUrl, this.phoneNumber});
+  OrderRestaurant({this.id, required this.name, this.slug, this.logoUrl, this.phoneNumber, this.latitude, this.longitude});
 
   factory OrderRestaurant.fromJson(Map<String, dynamic> json) => OrderRestaurant(
         id: json['id'],
@@ -248,6 +287,8 @@ class OrderRestaurant {
         slug: json['slug'],
         logoUrl: json['logoUrl'],
         phoneNumber: json['phoneNumber'],
+        latitude: (json['latitude'] as num?)?.toDouble(),
+        longitude: (json['longitude'] as num?)?.toDouble(),
       );
 }
 

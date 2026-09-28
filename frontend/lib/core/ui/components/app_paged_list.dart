@@ -43,6 +43,9 @@ class AppPagedList<T> extends StatefulWidget {
   final Future<AppPage<T>> Function(String query, int page) fetch;
   final Widget Function(BuildContext context, T item) itemBuilder;
 
+  /// Conteúdo fixo entre o título e a lista (ex: um resumo)
+  final Widget? header;
+
   /// Filtros abaixo da busca (ex: chips de status); troque [filterKey] para recarregar
   final Widget? filters;
   final Object? filterKey;
@@ -57,6 +60,7 @@ class AppPagedList<T> extends StatefulWidget {
     this.subtitle,
     this.leadingIcon,
     this.searchHint,
+    this.header,
     this.filters,
     this.filterKey,
     this.emptyMessage = 'Nada por aqui ainda.',
@@ -147,6 +151,7 @@ class _AppPagedListState<T> extends State<AppPagedList<T>> {
       child: AppPageListView(
         children: [
           AppSectionHeader(title: widget.title, subtitle: subtitle, leadingIcon: widget.leadingIcon),
+          if (widget.header != null) ...[widget.header!, const SizedBox(height: 16)],
           if (widget.searchHint != null) ...[
             AppSearchBar(controller: _search, hintText: widget.searchHint!, onChanged: _onSearchChanged),
             const SizedBox(height: 12),

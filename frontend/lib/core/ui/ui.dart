@@ -45,6 +45,7 @@ export 'components/app_stat_tile.dart';
 export 'components/app_top_nav_bar.dart';
 export 'components/app_map.dart';
 export 'components/app_paged_list.dart';
+export 'components/app_rating_stars.dart';
 
 // ========== TEMA ==========
 export 'theme/app_colors.dart';

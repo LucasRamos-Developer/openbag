@@ -44,6 +44,7 @@ class CourierProfile {
   final List<SocialLink> socialLinks;
   final Vehicle? activeVehicle;
   final double rating;
+  final int totalReviews;
   final int totalDeliveries;
   final DateTime? memberSince;
   final CourierAssociation? association;
@@ -60,6 +61,7 @@ class CourierProfile {
     required this.socialLinks,
     this.activeVehicle,
     required this.rating,
+    this.totalReviews = 0,
     required this.totalDeliveries,
     this.memberSince,
     this.association,
@@ -77,6 +79,7 @@ class CourierProfile {
         socialLinks: [for (final l in (json['socialLinks'] as List? ?? [])) SocialLink.fromJson(l)],
         activeVehicle: json['activeVehicle'] != null ? Vehicle.fromJson(json['activeVehicle']) : null,
         rating: (json['rating'] as num?)?.toDouble() ?? 0,
+        totalReviews: json['totalReviews'] ?? 0,
         totalDeliveries: json['totalDeliveries'] ?? 0,
         memberSince: parseDate(json['memberSince']),
         association: json['association'] != null ? CourierAssociation.fromJson(json['association']) : null,

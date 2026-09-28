@@ -29,6 +29,7 @@ public class CourierProfileDTO {
     private List<SocialLinkDTO> socialLinks;
     private VehicleDTO activeVehicle;
     private BigDecimal rating;
+    private Integer totalReviews;
     private Integer totalDeliveries;
     private LocalDateTime memberSince;
     // null quando não há vínculo aberto

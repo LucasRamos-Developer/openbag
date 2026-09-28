@@ -11,6 +11,7 @@ import com.openbag.modules.delivery.entity.StaffCourier;
 import com.openbag.modules.delivery.repository.CourierSettlementRepository;
 import com.openbag.modules.order.entity.Order;
 import com.openbag.modules.order.repository.OrderRepository;
+import com.openbag.modules.organization.entity.Organization;
 import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.restaurant.repository.RestaurantRepository;
 import com.openbag.modules.user.entity.User;
@@ -170,5 +171,40 @@ class CashReportServiceTest {
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("Não há entregas");
         verify(settlementRepository, never()).save(any());
+    }
+
+    @Test
+    void subsidyListsTheDifferenceByAssociationAndByOrder() {
+        Organization coop = new Organization();
+        coop.setId(9L);
+        coop.setTradingName("Coop Centro");
+        courier.setOrganization(coop);
+        Order early = byCourier(order("30.00", "5.00", "8.00", Order.PaymentMethod.PIX));
+        early.setRestaurantDeliverySubsidy(new BigDecimal("3.00"));
+        early.setDeliveredAt(LocalDateTime.of(2026, 9, 27, 19, 0));
+        early.setDeliveryDistanceKm(4.2);
+        Order late = byCourier(order("30.00", "5.00", "6.50", Order.PaymentMethod.CASH));
+        late.setRestaurantDeliverySubsidy(new BigDecimal("1.50"));
+        late.setDeliveredAt(LocalDateTime.of(2026, 9, 27, 21, 0));
+        Order covered = byCourier(order("30.00", "8.00", "7.00", Order.PaymentMethod.CASH));
+        covered.setRestaurantDeliverySubsidy(BigDecimal.ZERO);
+        when(orderRepository.findDeliveredByRestaurantBetween(eq(1L), any(), any())).thenReturn(List.of(early, late, covered));
+        when(orderRepository.findUnsettledByRestaurant(1L)).thenReturn(List.of());
+
+        CashReportDTO.Subsidy subsidy = service.report(1L, null, null).subsidy();
+
+        assertThat(subsidy.total()).isEqualByComparingTo("4.50");
+        assertThat(subsidy.orders()).isEqualTo(2);
+        assertThat(subsidy.byAssociation()).singleElement().satisfies(line -> {
+            assertThat(line.name()).isEqualTo("Coop Centro");
+            assertThat(line.orders()).isEqualTo(2);
+            assertThat(line.total()).isEqualByComparingTo("4.50");
+        });
+        // Mais recentes primeiro
+        assertThat(subsidy.lines()).extracting(CashReportDTO.SubsidyLine::subsidy)
+                .containsExactly(new BigDecimal("1.50"), new BigDecimal("3.00"));
+        assertThat(subsidy.lines().get(1).customerFee()).isEqualByComparingTo("5.00");
+        assertThat(subsidy.lines().get(1).courierFee()).isEqualByComparingTo("8.00");
+        assertThat(subsidy.lines().get(1).distanceKm()).isEqualTo(4.2);
     }
 }

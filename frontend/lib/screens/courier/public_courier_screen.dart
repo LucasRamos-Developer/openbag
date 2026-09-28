@@ -91,8 +91,10 @@ class _PublicProfileBody extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _Stat(
-                        value: courier.totalReviews > 0 ? courier.rating.toStringAsFixed(1) : '–',
-                        label: courier.totalReviews > 0 ? '${courier.totalReviews} avaliações' : 'sem avaliações',
+                        value: courier.totalReviews > 0 ? courier.rating.toStringAsFixed(1).replaceAll('.', ',') : '–',
+                        label: courier.totalReviews > 0
+                            ? '${courier.totalReviews} ${courier.totalReviews == 1 ? 'avaliação' : 'avaliações'}'
+                            : 'sem avaliações',
                         icon: Icons.star_rounded,
                       ),
                     ),

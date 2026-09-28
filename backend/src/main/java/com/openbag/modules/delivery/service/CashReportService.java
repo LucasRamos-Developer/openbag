@@ -12,6 +12,7 @@ import com.openbag.modules.delivery.entity.StaffCourier;
 import com.openbag.modules.delivery.repository.CourierSettlementRepository;
 import com.openbag.modules.order.entity.Order;
 import com.openbag.modules.order.repository.OrderRepository;
+import com.openbag.modules.organization.entity.Organization;
 import com.openbag.modules.restaurant.repository.RestaurantRepository;
 import com.openbag.modules.user.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +71,7 @@ public class CashReportService {
                 .toList();
 
         return new CashReportDTO(start, end, summary(delivered, cancelled), payments(delivered),
-                couriers(delivered, unsettled), settlements);
+                couriers(delivered, unsettled), settlements, subsidy(delivered));
     }
 
     /**
@@ -126,6 +127,50 @@ public class CashReportService {
                 received.subtract(paidToCouriers),
                 average,
                 (int) delivered.stream().filter(o -> !hasCourier(o)).count());
+    }
+
+    /**
+     * Pedidos em que a loja assumiu a diferença, por associação e um a um (mais recentes primeiro)
+     */
+    private static CashReportDTO.Subsidy subsidy(List<Order> delivered) {
+        List<Order> subsidized = delivered.stream()
+                .filter(o -> o.getRestaurantDeliverySubsidy() != null && o.getRestaurantDeliverySubsidy().signum() > 0)
+                .sorted(Comparator.comparing(Order::getDeliveredAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+
+        Map<Long, List<Order>> byOrganization = new LinkedHashMap<>();
+        for (Order order : subsidized) {
+            Organization organization = organizationOf(order);
+            byOrganization.computeIfAbsent(organization != null ? organization.getId() : null, id -> new ArrayList<>())
+                    .add(order);
+        }
+        List<CashReportDTO.SubsidyByAssociation> associations = byOrganization.values().stream()
+                .map(orders -> {
+                    Organization organization = organizationOf(orders.get(0));
+                    return new CashReportDTO.SubsidyByAssociation(
+                            organization != null ? organization.getId() : null,
+                            organization != null ? organization.getTradingName() : "Sem associação",
+                            orders.size(), sum(orders, Order::getRestaurantDeliverySubsidy));
+                })
+                .sorted(Comparator.comparing(CashReportDTO.SubsidyByAssociation::total).reversed())
+                .toList();
+
+        List<CashReportDTO.SubsidyLine> lines = subsidized.stream()
+                .map(o -> {
+                    Organization organization = organizationOf(o);
+                    return new CashReportDTO.SubsidyLine(o.getId(), o.getDisplayCode(), o.getDeliveredAt(),
+                            o.getDeliveryPerson() != null ? o.getDeliveryPerson().getUser().getFullName() : null,
+                            organization != null ? organization.getTradingName() : null,
+                            o.getDeliveryDistanceKm(), o.getDeliveryFee(), o.getCourierFee(),
+                            o.getRestaurantDeliverySubsidy());
+                })
+                .toList();
+        return new CashReportDTO.Subsidy(sum(subsidized, Order::getRestaurantDeliverySubsidy), subsidized.size(),
+                associations, lines);
+    }
+
+    private static Organization organizationOf(Order order) {
+        return order.getDeliveryPerson() != null ? order.getDeliveryPerson().getOrganization() : null;
     }
 
     private static List<CashReportDTO.PaymentLine> payments(List<Order> delivered) {
