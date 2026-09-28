@@ -32,7 +32,8 @@ class AppNavLink {
 /// )
 /// ```
 class AppTopNavBar extends StatelessWidget implements PreferredSizeWidget {
-  final Widget logo;
+  /// Opcional: a vitrine deixa a barra livre (a marca fica no rodapé)
+  final Widget? logo;
   final List<AppNavLink> links;
   final List<Widget> trailing;
   final double height;
@@ -40,7 +41,7 @@ class AppTopNavBar extends StatelessWidget implements PreferredSizeWidget {
 
   const AppTopNavBar({
     super.key,
-    required this.logo,
+    this.logo,
     this.links = const [],
     this.trailing = const [],
     this.height = 64,
@@ -75,9 +76,9 @@ class AppTopNavBar extends StatelessWidget implements PreferredSizeWidget {
                   padding: AppLayout.contentPadding(constraints.maxWidth, top: 0, bottom: 0),
                   child: Row(
                     children: [
-                      logo,
+                      if (logo != null) logo!,
                       if (!compact && links.isNotEmpty) ...[
-                        const SizedBox(width: 32),
+                        if (logo != null) const SizedBox(width: 32),
                         for (final link in links) ...[_NavLinkButton(link: link), const SizedBox(width: 4)],
                       ],
                       const Spacer(),

@@ -50,7 +50,7 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 - **Painel do super admin** em `/admin`. É somente leitura e tem Visão geral, Restaurantes, Associações, Entregadores, Usuários e Pedidos. A busca e a paginação usam as rotas `GET /admin/overview|restaurants|couriers|users|orders`. A moderação de associações continua na aba Associações.
 - **Conta de demonstração** com todos os perfis, inclusive ADMIN: `demo@openbag.local` / `demo1234`. Ela vem com a loja Cantina Demo (com cardápio), a Cooperativa Demo aprovada (com tabela de entrega) e o perfil de entregador vinculado. Só é criada com `OPENBAG_DEMO_ENABLED=true`, nunca em produção.
-- **Rodapé da área do cliente**, com a proposta do projeto, os links para clientes e parceiros, o contato e a versão. O carrinho flutua sobre a página e o rodapé reserva o espaço dele, então nada fica escondido.
+- **Rodapé da área do cliente**, com a proposta do projeto, os links para clientes e parceiros, o contato e a versão. O carrinho flutua sobre a página e o rodapé reserva o espaço dele, então nada fica escondido. A barra do topo ficou sem o logo, que agora aparece só no rodapé.
 - **Card da vitrine com todas as informações**:
   - endereço no lugar da categoria;
   - botão que abre o app de mapas do aparelho (Android: app padrão, iPhone: Mapas, web: Google Maps);

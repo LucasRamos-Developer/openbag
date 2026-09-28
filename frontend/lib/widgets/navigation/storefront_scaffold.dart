@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/ui/ui.dart';
-import '../brand/openbag_logo.dart';
 import '../cart/cart_nav_button.dart';
 import 'panel_profiles.dart';
 
 /// Link ativo da barra da vitrine
 enum StorefrontLink { restaurants, orders, none }
 
-/// Estrutura das telas do cliente: barra horizontal de vidro no topo (logo, links, carrinho e conta)
+/// Estrutura das telas do cliente: barra horizontal de vidro no topo (links, carrinho e conta; sem logo,
+/// que fica no rodapé, para a barra ficar mais livre)
 /// com o conteúdo passando por baixo dela, e o [bottomNavigationBar] (ex: `CartBar`) flutuando
 /// sobre o fim da tela. Termine a rolagem com `StorefrontFooter` (ou [bottomInset]) para nada
 /// ficar escondido atrás dele.
@@ -60,7 +60,6 @@ class StorefrontScaffold extends StatelessWidget {
       // O carrinho flutua sobre o conteúdo; a altura dele entra no padding de baixo (bottomInset)
       extendBody: floatingBottomBar,
       appBar: AppTopNavBar(
-        logo: OpenBagLogo(onTap: () => context.go('/home')),
         links: [
           AppNavLink(
             label: 'Restaurantes',
