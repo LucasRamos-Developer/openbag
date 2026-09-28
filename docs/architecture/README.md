@@ -23,7 +23,7 @@ flowchart LR
         JOBS[Jobs agendados<br/>despacho, rotas, prazos]
     end
 
-    DB[(PostgreSQL)]
+    DB[(PostgreSQL<br/>+ PostGIS)]
     OSM[OpenStreetMap<br/>tiles e endereços]
 
     App -- HTTP --> REST
@@ -39,8 +39,8 @@ flowchart LR
 | App | Flutter 3.16+ (web e mobile), Provider, GoRouter, `flutter_map`, `stomp_dart_client` |
 | API | Java 25, Spring Boot 3.3, Spring Security + JWT, Spring Data JPA, SpringDoc |
 | Tempo real | WebSocket com STOMP (broker simples do Spring) |
-| Banco | PostgreSQL 15 |
-| Infra local | Docker Compose: PostgreSQL, Redis, Elasticsearch e Kibana |
+| Banco | PostgreSQL 15 com PostGIS 3 (caminho das rotas) |
+| Infra local | Docker Compose: PostgreSQL com PostGIS, Redis, Elasticsearch e Kibana |
 
 Hoje o Redis só tem a configuração e o Elasticsearch não é usado pelo código. Os dois continuam no `docker-compose.yml` para a busca e o cache que virão.
 
@@ -173,6 +173,7 @@ flowchart LR
 - O `RoutePlanningService` roda a cada 10 s (`app.delivery.route-planning-ms`) e grava os grupos como `DeliveryRoute`.
 - O entregador é chamado `leadMinutes` antes de o último pedido do grupo ficar pronto. Nenhum pedido sai antes de `dispatchReleasedAt`.
 - A loja vê e ajusta as rotas em `/restaurante/rotas`: junta, separa e escolhe o entregador.
+- O caminho pelas ruas vem do OSRM (`StreetRoutingService`) e fica salvo na rota (`street_path`, uma `LineString` do PostGIS), junto com as paradas usadas no cálculo (`street_path_key`). O painel só pede um caminho novo quando as paradas mudam. Sem resposta do OSRM, o mapa desenha linha reta.
 
 **Duas regras fixas, travadas por testes:**
 1. **O ganho do entregador nunca cai por causa da rota.** A oferta de rota paga a soma do valor cheio de cada entrega (teste `routeOfferPaysTheFullTableValueOfEveryDelivery`).
@@ -212,6 +213,7 @@ O agendamento é ativado por `@EnableScheduling` no `AppConfig`.
   - colunas novas em tabelas existentes chegam `NULL`, então use tipos wrapper ou getters com valor padrão;
   - as restrições `CHECK` de enums não são atualizadas, então um valor novo de enum exige ajuste manual.
 - A troca por migrações versionadas está no roadmap da versão **0.4.0**.
+- O banco precisa do PostGIS: o `schema.sql` cria a extensão antes do Hibernate (`spring.sql.init.mode=always`).
 
 ---
 

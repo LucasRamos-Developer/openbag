@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.locationtech.jts.geom.LineString;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -72,6 +73,14 @@ public class DeliveryRoute {
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
+
+    // Caminho pelas ruas (loja → paradas na ordem), calculado pelo OSRM; SRID 4326 (x = lng, y = lat)
+    @Column(name = "street_path", columnDefinition = "geometry(LineString,4326)")
+    private LineString streetPath;
+
+    // Paradas usadas no cálculo do caminho; se mudarem, o caminho é refeito
+    @Column(name = "street_path_key", columnDefinition = "text")
+    private String streetPathKey;
 
     @OneToMany(mappedBy = "route", fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>();

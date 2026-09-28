@@ -164,7 +164,7 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - **[Design system](frontend/lib/core/ui/README.md)**: componentes e temas do app.
 - **[Layout](layout/)**: capturas de tela de referência.
 
-Stack: **Java 25 + Spring Boot**, **Flutter** (web e mobile), **PostgreSQL**, **Redis**, **WebSocket/STOMP** e **OpenStreetMap**.
+Stack: **Java 25 + Spring Boot**, **Flutter** (web e mobile), **PostgreSQL** com **PostGIS**, **Redis**, **WebSocket/STOMP** e **OpenStreetMap**.
 
 ---
 

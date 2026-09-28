@@ -120,6 +120,8 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ### Alterado
 
+- **O caminho pelas ruas de cada rota fica salvo no banco.** Ele é gravado na própria rota (`delivery_routes.street_path`, uma `LineString` do PostGIS), junto com as paradas usadas no cálculo. O painel só pede um caminho novo ao OSRM quando as paradas mudam, e o caminho não se perde quando o backend reinicia. O pedido sozinho, sem rota, continua só no cache em memória.
+  - O banco agora precisa do **PostGIS**: o `docker-compose.yml` monta a imagem `database/Dockerfile` (a `postgres:15` oficial com o pacote do PostGIS), e o backend cria a extensão na subida (`schema.sql`). A base continua a mesma da `postgres:15`, então o volume atual continua valendo, sem diferença de collation. Para trocar a imagem: `docker compose up -d --build postgres`.
 - **Mapa com estilo próprio**, claro e próximo das cores do Google Maps, sem relevo e com a vegetação discreta. O estilo fica em `frontend/assets/map/openbag_style.json`, no formato do MapLibre. O mapa é desenhado pelo MapLibre (`maplibre_gl`) com os dados do OpenFreeMap, sem chave e sem limite de uso. O componente `AppMap` (`core/ui`) substitui o `flutter_map` nos mapas de rotas e da página da loja. Uma base raster pode entrar no lugar com `--dart-define=MAP_TILE_URL=...`.
 - **A parceria com uma associação agora precisa do aceite dela.** `POST /restaurants/{id}/delivery/partners` passou a enviar um pedido, não mais a criar a parceria direto. As parcerias que já existiam continuam ativas.
 - No painel da associação, a seção Entregas passou a se chamar **Tabela de entrega**.

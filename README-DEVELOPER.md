@@ -70,7 +70,7 @@ Documentação técnica completa para desenvolvedores que desejam contribuir com
 
 ### Opcionais (para desenvolvimento local sem Docker)
 
-- **PostgreSQL 15+**
+- **PostgreSQL 15+** com a extensão **PostGIS 3** (ex.: pacote `postgresql-15-postgis-3`)
 - **Redis 7+**
 - **Elasticsearch 8.11+**
 
@@ -123,7 +123,7 @@ docker logs -f open-bag-app
 
 ### Opção 3: Desenvolvimento Local (sem Docker)
 
-Para desenvolvimento sem Docker, você precisa instalar PostgreSQL, Redis e Elasticsearch localmente.
+Para desenvolvimento sem Docker, você precisa instalar PostgreSQL (com PostGIS), Redis e Elasticsearch localmente. Sem o PostGIS, o backend não sobe: ele roda `CREATE EXTENSION IF NOT EXISTS postgis` na subida.
 
 ```bash
 # 1. Criar banco de dados PostgreSQL
@@ -282,7 +282,7 @@ O ADMIN inicial de produção é outro: ele vem de `OPENBAG_ADMIN_EMAIL` e `OPEN
 
 ### Roteamento (rotas pelas ruas)
 
-O caminho das rotas no mapa vem de um servidor [OSRM](https://project-osrm.org). O backend consulta esse servidor, guarda o resultado em memória e, se não houver resposta, o mapa desenha linha reta.
+O caminho das rotas no mapa vem de um servidor [OSRM](https://project-osrm.org). O backend consulta esse servidor e salva o caminho na própria rota (`delivery_routes.street_path`, PostGIS), junto com as paradas usadas no cálculo (`street_path_key`). Enquanto as paradas não mudam, o painel usa o caminho salvo, sem consultar o OSRM de novo. O caminho de um pedido sozinho fica só em memória. Se o OSRM não responder, o mapa desenha linha reta.
 
 | Variável | Padrão | Uso |
 |---|---|---|
@@ -423,7 +423,9 @@ Consumer<CartService>(
 
 ### PostgreSQL
 
-O projeto usa **PostgreSQL 15** como banco de dados principal.
+O projeto usa **PostgreSQL 15** com **PostGIS 3** como banco de dados principal (imagem montada por `database/Dockerfile`: a `postgres:15` oficial com o pacote `postgresql-15-postgis-3`, na mesma base Debian, para não mudar a collation dos volumes já criados). O PostGIS guarda o caminho pelas ruas das rotas.
+
+O `backend/src/main/resources/schema.sql` cria a extensão antes do Hibernate (`spring.sql.init.mode=always`), então vale também para um volume antigo, criado com a imagem `postgres:15`.
 
 #### Schema
 
