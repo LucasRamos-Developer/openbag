@@ -168,6 +168,12 @@ AppSectionHeader(
 
 **Acordeão:** com `onToggle`, o `AppSectionHeader` ganha a seta e o toque no título, e `expanded` diz se o conteúdo está aberto. Quem esconde o conteúdo é a tela. `prominent: true` usa o título grande sem precisar de ícone (ex: seções do cardápio).
 
+### AppSectionTitle
+Título de seção com sublinhado: texto na cor da marca, traço da mesma cor na largura do texto e linha fina até o fim, com `trailing` opcional à direita (ex: "4 lojas"). É usado na vitrine.
+
+### AppPillSelect
+Escolha compacta em pílula, da altura da busca (`AppSearchBar`), que abre um menu com as opções (`SelectItem`). Serve para ordenar ou filtrar uma lista.
+
 ### AppEmptyState
 Estado vazio ou de erro, com ação opcional.
 

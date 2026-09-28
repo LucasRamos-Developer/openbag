@@ -18,6 +18,8 @@ export 'components/app_toast.dart';
 export 'components/app_select.dart';
 export 'components/app_responsive_row.dart';
 export 'components/app_section_header.dart';
+export 'components/app_section_title.dart';
+export 'components/app_pill_select.dart';
 export 'components/app_empty_state.dart';
 export 'components/app_status_chip.dart';
 export 'components/app_filter_chips.dart';

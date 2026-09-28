@@ -58,6 +58,7 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - prazo, taxa e pedido mínimo.
 - O card da vitrine usa as cores de cada loja no logo e na imagem de fundo. Sem foto, aparece o mesmo fundo do banner da página da loja (cor da marca com bolinhas, componente `AppBrandBackdrop`).
 - A lista pública de restaurantes passa a enviar `address`, `pausedUntil`, `closesAt`, `nextOpenAt`, `themePreset`, `brandColor` e `primaryColor`.
+- **Busca e ordenação na vitrine**: a busca procura por nome, categoria, bairro ou cidade, sem diferenciar acentos. Há cinco ordenações: recomendados, melhor avaliados, entrega mais rápida, menor taxa e menor pedido mínimo; nelas, as lojas abertas vêm primeiro. O título "Restaurantes" ganhou o estilo com sublinhado (`AppSectionTitle`), sem o ícone.
 - Script de capturas de tela em `tools/screenshots/`.
 - **Rotas pelas ruas no mapa**: o painel de rotas desenha o caminho real da loja até as entregas.
   - O backend consulta um servidor OSRM (`OPENBAG_OSRM_URL`) com cache em memória e envia o `path` em cada cartão de `GET /restaurants/{id}/routes`.

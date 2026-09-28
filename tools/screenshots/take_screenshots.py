@@ -51,6 +51,9 @@ PHONE = (390, 844)
 #   docs: nome do JPG copiado para docs/assets/screens/
 SHOTS = [
     dict(name="loja-e-vitrine/08-vitrine-grade", path="/home", size=DESKTOP, login="demo", docs="cliente-restaurantes"),
+    dict(name="loja-e-vitrine/15-vitrine-ordenacao", path="/home", size=DESKTOP, login="demo",
+         clicks=["Recomendados"]),
+    dict(name="loja-e-vitrine/16-vitrine-celular", path="/home", size=PHONE, login="demo"),
     dict(name="loja-e-vitrine/09-restaurante-barra-vidro", path="/r/{store}", size=DESKTOP, login="demo", scroll=3),
     dict(name="loja-e-vitrine/11-rodape-carrinho", path="/r/{store}", size=DESKTOP, login="demo", cart=True, scroll=80),
     dict(name="loja-e-vitrine/12-rodape-celular", path="/r/{store}", size=PHONE, login="demo", cart=True, scroll=120),
