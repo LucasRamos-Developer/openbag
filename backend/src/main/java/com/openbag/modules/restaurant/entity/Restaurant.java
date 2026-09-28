@@ -14,6 +14,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import com.openbag.enums.CourierPolicy;
+import com.openbag.enums.DeliveryFeeMode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -134,12 +135,21 @@ public class Restaurant {
     @Column(name = "fallback_to_open")
     private Boolean fallbackToOpen;
 
+    // Taxa fixa da loja (padrão) ou repassada ao cliente pela distância ("a partir de")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delivery_fee_mode", length = 20)
+    private DeliveryFeeMode deliveryFeeMode;
+
     // O restaurante assume a diferença quando o valor da tabela da associação passa da taxa cobrada do cliente
     @Column(name = "covers_delivery_difference")
     private Boolean coversDeliveryDifference;
 
     @Column(name = "covers_delivery_difference_at")
     private LocalDateTime coversDeliveryDifferenceAcceptedAt;
+
+    // A associação encerrou a última parceria de uma loja PARTNERS_ONLY e a loja passou a OPEN; aviso até salvar
+    @Column(name = "partners_ended_notice_at")
+    private LocalDateTime partnersEndedNoticeAt;
 
     // Entregador livre que não aparece na loja: depois destes minutos a loja pode trocá-lo
     @Column(name = "courier_no_show_minutes")
@@ -192,6 +202,15 @@ public class Restaurant {
 
     public boolean isCoversDeliveryDifference() {
         return Boolean.TRUE.equals(coversDeliveryDifference);
+    }
+
+    public DeliveryFeeMode getDeliveryFeeMode() {
+        return deliveryFeeMode != null ? deliveryFeeMode : DeliveryFeeMode.ASSUME;
+    }
+
+    /** O cliente paga a entrega pela distância e o entregador recebe esse valor inteiro */
+    public boolean passesDeliveryFee() {
+        return getDeliveryFeeMode() == DeliveryFeeMode.PASS_THROUGH;
     }
 
     @CreationTimestamp

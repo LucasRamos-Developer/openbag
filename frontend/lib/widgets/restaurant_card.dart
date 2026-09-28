@@ -151,13 +151,18 @@ class RestaurantCard extends StatelessWidget {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: _Info(label: 'Entrega', value: restaurant.deliveryTimeRange)),
+                    Expanded(flex: 3, child: _Info(label: 'Entrega', value: restaurant.deliveryTimeRange)),
+                    // Com "Taxa a partir de" (o rótulo mais longo) a coluna da taxa ganha mais espaço
                     Expanded(
-                      child: restaurant.deliveryFee > 0
-                          ? _Info(label: 'Taxa', value: formatMoney(restaurant.deliveryFee))
-                          : _Info(label: 'Taxa', value: 'Grátis', color: c.success),
+                      flex: restaurant.deliveryFeeByDistance ? 4 : 3,
+                      child: restaurant.deliveryFeeByDistance
+                          ? _Info(label: 'Taxa a partir de', value: formatMoney(restaurant.deliveryFee))
+                          : restaurant.deliveryFee > 0
+                              ? _Info(label: 'Taxa', value: formatMoney(restaurant.deliveryFee))
+                              : _Info(label: 'Taxa', value: 'Grátis', color: c.success),
                     ),
                     Expanded(
+                      flex: 3,
                       child: _Info(
                         label: 'Mínimo',
                         value: restaurant.minimumOrder > 0 ? formatMoney(restaurant.minimumOrder) : 'Sem mínimo',

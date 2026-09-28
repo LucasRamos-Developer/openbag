@@ -12,6 +12,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -82,6 +83,10 @@ public class AssociationMembership {
     @Size(max = 500)
     @Column(length = 500)
     private String reason;
+
+    // Quanto o cooperado quer dar por mês à caixinha solidária (entra na fatura; nulo ou zero = nada)
+    @Column(name = "solidarity_contribution", precision = 10, scale = 2)
+    private BigDecimal solidarityContribution;
 
     @CreationTimestamp
     @Column(name = "created_at")

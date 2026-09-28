@@ -84,7 +84,7 @@ public class SecurityConfig {
                 .requestMatchers("/ws/**", "/ws").permitAll()
                 .requestMatchers("/public/**").permitAll()
                 // Imagens públicas (logos, banners, fotos do cardápio): vistas por visitantes e buscadores
-                .requestMatchers(HttpMethod.GET, "/files/restaurants/**", "/files/products/**", "/files/associations/**", "/files/couriers/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/files/restaurants/**", "/files/products/**", "/files/associations/**", "/files/couriers/**", "/files/benefits/**").permitAll()
                 .requestMatchers("/api-docs/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/swagger-ui.html").permitAll()

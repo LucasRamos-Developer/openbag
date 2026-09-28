@@ -7,16 +7,38 @@ class PriceSummary extends StatelessWidget {
   final double deliveryFee;
   final double total;
 
-  const PriceSummary({super.key, required this.subtotal, required this.deliveryFee, required this.total});
+  /// A taxa ainda depende do endereço: mostra "a partir de" e o total como mínimo
+  final bool deliveryFeeFrom;
+
+  /// Distância usada no cálculo da taxa, quando ela é por distância
+  final double? deliveryDistanceKm;
+
+  /// Mostra "Calculando…" no lugar da taxa (consulta em andamento)
+  final bool calculating;
+
+  const PriceSummary({
+    super.key,
+    required this.subtotal,
+    required this.deliveryFee,
+    required this.total,
+    this.deliveryFeeFrom = false,
+    this.deliveryDistanceKm,
+    this.calculating = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         _row('Subtotal', formatMoney(subtotal)),
-        _row('Taxa de entrega', deliveryFee == 0 ? 'Grátis' : formatMoney(deliveryFee)),
+        _row(
+          deliveryDistanceKm != null
+              ? 'Taxa de entrega (${formatDistance(deliveryDistanceKm!)})'
+              : 'Taxa de entrega',
+          calculating ? 'Calculando…' : formatDeliveryFee(deliveryFee, byDistance: deliveryFeeFrom),
+        ),
         const Divider(height: 24),
-        _row('Total', formatMoney(total), bold: true),
+        _row('Total', deliveryFeeFrom ? 'a partir de ${formatMoney(total)}' : formatMoney(total), bold: true),
       ],
     );
   }

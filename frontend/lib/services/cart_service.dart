@@ -92,7 +92,9 @@ class CartRestaurant {
   final String slug;
   final String name;
   final String? logoUrl;
+  /// Taxa fixa ou, com [deliveryFeeByDistance], o valor "a partir de" (o exato sai no checkout)
   final double deliveryFee;
+  final bool deliveryFeeByDistance;
   final double minimumOrder;
 
   const CartRestaurant({
@@ -101,6 +103,7 @@ class CartRestaurant {
     required this.name,
     this.logoUrl,
     required this.deliveryFee,
+    this.deliveryFeeByDistance = false,
     required this.minimumOrder,
   });
 
@@ -110,6 +113,7 @@ class CartRestaurant {
         'name': name,
         'logoUrl': logoUrl,
         'deliveryFee': deliveryFee,
+        'deliveryFeeByDistance': deliveryFeeByDistance,
         'minimumOrder': minimumOrder,
       };
 
@@ -119,6 +123,7 @@ class CartRestaurant {
         name: json['name'] ?? '',
         logoUrl: json['logoUrl'],
         deliveryFee: (json['deliveryFee'] as num).toDouble(),
+        deliveryFeeByDistance: json['deliveryFeeByDistance'] ?? false,
         minimumOrder: (json['minimumOrder'] as num).toDouble(),
       );
 }
@@ -146,6 +151,9 @@ class CartService extends ChangeNotifier {
   int get itemCount => _lines.fold(0, (sum, l) => sum + l.quantity);
   double get subtotal => _lines.fold(0.0, (sum, l) => sum + l.totalPrice);
   double get deliveryFee => _restaurant?.deliveryFee ?? 0;
+
+  /// A taxa depende do endereço: até o checkout, [deliveryFee] é o valor "a partir de"
+  bool get deliveryFeeByDistance => _restaurant?.deliveryFeeByDistance ?? false;
   double get total => subtotal + deliveryFee;
 
   /// Quanto falta para o pedido mínimo (0 se já atingiu)

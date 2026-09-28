@@ -1,9 +1,11 @@
 package com.openbag.modules.delivery.dispatch;
 
 import com.openbag.enums.CourierWorkStatus;
+import com.openbag.enums.DeliveryFeeMode;
 import com.openbag.enums.DeliveryOfferStatus;
 import com.openbag.enums.OrderStatus;
 import com.openbag.enums.OrganizationStatus;
+import com.openbag.enums.PartnershipStatus;
 import com.openbag.enums.ShiftMode;
 import com.openbag.exception.BadRequestException;
 import com.openbag.modules.delivery.dto.AssignCourierRequest;
@@ -11,10 +13,12 @@ import com.openbag.modules.delivery.dto.CourierMessage;
 import com.openbag.modules.delivery.entity.CourierShift;
 import com.openbag.modules.delivery.entity.DeliveryOffer;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
+import com.openbag.modules.delivery.entity.RestaurantPartnership;
 import com.openbag.modules.delivery.entity.StaffCourier;
 import com.openbag.modules.delivery.repository.CourierShiftRepository;
 import com.openbag.modules.delivery.repository.DeliveryOfferRepository;
 import com.openbag.modules.delivery.repository.DeliveryPersonRepository;
+import com.openbag.modules.delivery.repository.RestaurantPartnershipRepository;
 import com.openbag.modules.delivery.repository.StaffCourierRepository;
 import com.openbag.modules.order.entity.Order;
 import com.openbag.modules.order.repository.OrderRepository;
@@ -55,6 +59,7 @@ class DispatchServiceAssignTest {
     private final DeliveryOfferRepository offerRepository = mock(DeliveryOfferRepository.class);
     private final CourierShiftRepository shiftRepository = mock(CourierShiftRepository.class);
     private final StaffCourierRepository staffRepository = mock(StaffCourierRepository.class);
+    private final RestaurantPartnershipRepository partnershipRepository = mock(RestaurantPartnershipRepository.class);
     private final CourierNotifier notifier = mock(CourierNotifier.class);
     private final DispatchProperties properties = mock(DispatchProperties.class);
 
@@ -71,6 +76,7 @@ class DispatchServiceAssignTest {
         ReflectionTestUtils.setField(service, "offerRepository", offerRepository);
         ReflectionTestUtils.setField(service, "shiftRepository", shiftRepository);
         ReflectionTestUtils.setField(service, "staffRepository", staffRepository);
+        ReflectionTestUtils.setField(service, "partnershipRepository", partnershipRepository);
         ReflectionTestUtils.setField(service, "orderService", mock(OrderService.class));
         ReflectionTestUtils.setField(service, "notifier", notifier);
         ReflectionTestUtils.setField(service, "properties", properties);
@@ -84,6 +90,7 @@ class DispatchServiceAssignTest {
         restaurant.setLongitude(new BigDecimal("-49.0661"));
 
         organization = new Organization();
+        organization.setId(3L);
         organization.setStatus(OrganizationStatus.ACTIVE);
         organization.setDeliveryRate(new DeliveryRate(new BigDecimal("7.00"), new BigDecimal("3.0"), new BigDecimal("1.50")));
 
@@ -139,6 +146,67 @@ class DispatchServiceAssignTest {
         ArgumentCaptor<CourierMessage> message = ArgumentCaptor.forClass(CourierMessage.class);
         verify(notifier).send(eq(5L), message.capture());
         assertThat(message.getValue().type()).isEqualTo(CourierMessage.Type.ORDER_ASSIGNED);
+    }
+
+    @Test
+    void recordsTheCourierAssociationOnTheOrder() {
+        courier(5L, ShiftMode.FREE);
+
+        service.assignDirect(1L, 10L, new AssignCourierRequest(5L, null));
+
+        assertThat(order.getCourierOrganization()).isSameAs(organization);
+    }
+
+    @Test
+    void agreedRateOfThePartnershipReplacesTheAssociationTable() {
+        courier(5L, ShiftMode.FREE);
+        order.setDeliveryFee(new BigDecimal("5.00"));
+        agreeRate(new DeliveryRate(new BigDecimal("5.00"), new BigDecimal("4.0"), new BigDecimal("1.00")));
+
+        // A tabela padrão (R$ 7,00) passaria da taxa; a combinada com a loja (R$ 5,00 até 4 km) cabe
+        service.assignDirect(1L, 10L, new AssignCourierRequest(5L, null));
+
+        assertThat(order.getCourierFee()).isEqualByComparingTo("5.00");
+        assertThat(order.getRestaurantDeliverySubsidy()).isEqualByComparingTo("0.00");
+    }
+
+    @Test
+    void agreedRateAboveTheFeeIsPaidInFullWithTheStoreCoveringTheDifference() {
+        courier(5L, ShiftMode.FREE);
+        restaurant.setCoversDeliveryDifference(true);
+        order.setDeliveryDistanceKm(5.0);
+        agreeRate(new DeliveryRate(new BigDecimal("9.00"), new BigDecimal("3.0"), new BigDecimal("2.00")));
+
+        service.assignDirect(1L, 10L, new AssignCourierRequest(5L, null));
+
+        // 9,00 + 2 km × 2,00 = 13,00; a loja cobra 8,00 e assume 5,00
+        assertThat(order.getCourierFee()).isEqualByComparingTo("13.00");
+        assertThat(order.getRestaurantDeliverySubsidy()).isEqualByComparingTo("5.00");
+    }
+
+    @Test
+    void storeThatPassesTheFeePaysTheCourierEverythingTheCustomerPaid() {
+        courier(5L, ShiftMode.FREE);
+        restaurant.setDeliveryFeeMode(DeliveryFeeMode.PASS_THROUGH);
+        // O cliente pagou R$ 13,00, calculado pela maior tabela entre as associações
+        order.setDeliveryDistanceKm(4.0);
+        order.setDeliveryFee(new BigDecimal("13.00"));
+
+        service.assignDirect(1L, 10L, new AssignCourierRequest(5L, null));
+
+        // A tabela dele a 4 km daria 7 + 1 × 1,50 = 8,50, mas ele recebe o valor inteiro da entrega
+        assertThat(order.getCourierFee()).isEqualByComparingTo("13.00");
+        assertThat(order.getRestaurantDeliverySubsidy()).isEqualByComparingTo("0.00");
+    }
+
+    private void agreeRate(DeliveryRate rate) {
+        RestaurantPartnership partnership = new RestaurantPartnership();
+        partnership.setRestaurant(restaurant);
+        partnership.setOrganization(organization);
+        partnership.setStatus(PartnershipStatus.ACTIVE);
+        partnership.setAgreedRate(rate);
+        when(partnershipRepository.findActive(1L, 3L)).thenReturn(Optional.of(partnership));
+        when(partnershipRepository.findActiveByRestaurant(1L)).thenReturn(List.of(partnership));
     }
 
     @Test

@@ -169,7 +169,11 @@ public class CashReportService {
                 associations, lines);
     }
 
+    /** Associação do entregador no momento da entrega (pedidos antigos, sem o registro, usam a atual) */
     private static Organization organizationOf(Order order) {
+        if (order.getCourierOrganization() != null) {
+            return order.getCourierOrganization();
+        }
         return order.getDeliveryPerson() != null ? order.getDeliveryPerson().getOrganization() : null;
     }
 

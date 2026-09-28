@@ -116,6 +116,68 @@ Depois da retirada, o cliente vê o entregador no mapa, mas só quando é a vez 
 
 ---
 
+## Painel da cooperativa
+
+A loja ou a associação pede a parceria, e o outro lado aceita. Com cada loja parceira, as duas podem combinar uma tabela especial, que só vale com o aceite dos dois lados. O entregador sempre recebe 100% do valor.
+
+| Lojas parceiras | Propor tabela especial |
+|---|---|
+| ![Lojas parceiras](cooperativa/01-lojas-parceiras.png) | ![Propor tabela](cooperativa/02-propor-tabela.png) |
+
+| Proposta da associação no painel da loja | Visão geral |
+|---|---|
+| ![Parceiras na loja](cooperativa/06-loja-parceiras.png) | ![Visão geral](cooperativa/05-visao-geral.png) |
+
+Os relatórios contam cada entrega para a associação em que o cooperado estava no dia. O cooperado vê o resumo da associação e a parte dele, nunca os ganhos dos colegas.
+
+| Relatórios do gestor | Por cooperado e por loja |
+|---|---|
+| ![Relatórios](cooperativa/03-relatorios.png) | ![Por cooperado e por loja](cooperativa/04-relatorios-por-cooperado.png) |
+
+| Minha associação, na aba Ganhos do entregador | No celular |
+|---|---|
+| ![Minha associação](cooperativa/07-entregador-minha-associacao.png) | <img src="cooperativa/08-lojas-celular.png" alt="Lojas parceiras no celular" width="260"> |
+
+---
+
+## Gestão da associação
+
+Financeiro, convênios e assembleia no painel da cooperativa, e a área do cooperado no painel do entregador. Cada tela foi desenhada também para o celular: formulários em tela cheia, totais numa faixa só, ações no botão flutuante e sub-abas em pílulas roláveis.
+
+| Financeiro (desktop) | No celular |
+|---|---|
+| ![Financeiro](gestao-associacao/01-financeiro-resumo.png) | <img src="gestao-associacao/02-financeiro-resumo-celular.png" alt="Financeiro no celular" width="260"> |
+
+| Faturas do mês | Fatura no celular | Baixa manual |
+|---|---|---|
+| ![Faturas](gestao-associacao/03-faturas.png) | <img src="gestao-associacao/04-faturas-celular.png" alt="Faturas no celular" width="220"> | <img src="gestao-associacao/05-fatura-detalhe-celular.png" alt="Detalhe da fatura" width="220"> |
+
+| Lançamentos | Caixinha | Cobrança e adicionais |
+|---|---|---|
+| <img src="gestao-associacao/07-lancamentos-celular.png" alt="Lançamentos" width="220"> | <img src="gestao-associacao/09-caixinha-celular.png" alt="Caixinha" width="220"> | <img src="gestao-associacao/11-cobranca-celular.png" alt="Cobrança" width="220"> |
+
+| Convênios | Enquetes | Atas e documentos |
+|---|---|---|
+| <img src="gestao-associacao/13-convenios-celular.png" alt="Convênios" width="220"> | <img src="gestao-associacao/15-enquetes-celular.png" alt="Enquetes" width="220"> | <img src="gestao-associacao/17-documentos-celular.png" alt="Documentos" width="220"> |
+
+| Associados com mensalidade e exportação | Ficha com veículos |
+|---|---|
+| <img src="gestao-associacao/19-associados-celular.png" alt="Associados" width="220"> | <img src="gestao-associacao/20-associado-ficha-celular.png" alt="Ficha do associado" width="220"> |
+
+Área do cooperado (painel do entregador):
+
+| Resumo | Faturas | Convênios | Enquetes |
+|---|---|---|---|
+| <img src="gestao-associacao/22-cooperado-resumo-celular.png" alt="Resumo" width="190"> | <img src="gestao-associacao/23-cooperado-faturas-celular.png" alt="Faturas" width="190"> | <img src="gestao-associacao/24-cooperado-convenios-celular.png" alt="Convênios" width="190"> | <img src="gestao-associacao/25-cooperado-enquetes-celular.png" alt="Enquetes" width="190"> |
+
+Taxa repassada ao cliente: a vitrine mostra "a partir de" e a loja vê quanto o cliente paga em cada distância.
+
+| Vitrine | Configuração da loja |
+|---|---|
+| ![Vitrine a partir de](gestao-associacao/27-vitrine-a-partir-de.png) | <img src="gestao-associacao/30-loja-taxa-repassada-celular.png" alt="Taxa repassada" width="260"> |
+
+---
+
 ## Painel do super admin
 
 Somente leitura: números da plataforma e listas de restaurantes, associações, entregadores, usuários e pedidos. A conta demo (`demo@openbag.local`) tem todos os perfis.
@@ -153,7 +215,6 @@ Somente leitura: números da plataforma e listas de restaurantes, associações,
 ## Em desenvolvimento
 
 - **Painel do entregador:** as telas estão sendo concluídas na versão 0.3.0.
-- **Painel da associação ou cooperativa:** parcerias com lojas e relatórios estão a caminho na versão 0.3.0.
 
 ## Marca
 

@@ -3,6 +3,7 @@ import '../models/association/association_summary.dart';
 import '../models/delivery/courier_link.dart';
 import '../models/delivery/courier_options.dart';
 import '../models/delivery/staff_courier.dart';
+import '../models/delivery/delivery_rate.dart';
 import '../models/delivery/restaurant_delivery_settings.dart';
 import 'api_client.dart';
 import 'association_directory.dart' as association_directory;
@@ -68,12 +69,14 @@ class RestaurantDeliveryService extends ChangeNotifier {
     required CourierPolicy policy,
     required bool fallbackToOpen,
     required bool coversDeliveryDifference,
+    bool? passesDeliveryFee,
     int? courierNoShowMinutes,
   }) async {
     _settings = RestaurantDeliverySettings.fromJson(await _api.put('$_base/settings', data: {
       'courierPolicy': policy.name,
       'fallbackToOpen': fallbackToOpen,
       'coversDeliveryDifference': coversDeliveryDifference,
+      if (passesDeliveryFee != null) 'deliveryFeeMode': passesDeliveryFee ? 'PASS_THROUGH' : 'ASSUME',
       if (courierNoShowMinutes != null) 'courierNoShowMinutes': courierNoShowMinutes,
     }));
     notifyListeners();
@@ -89,6 +92,19 @@ class RestaurantDeliveryService extends ChangeNotifier {
 
   Future<void> removePartner(int organizationId) async {
     _settings = RestaurantDeliverySettings.fromJson(await _api.delete('$_base/partners/$organizationId'));
+    notifyListeners();
+  }
+
+  /// accept, decline, end, rate-accept, rate-decline ou rate-cancel ([PartnershipAction])
+  Future<void> partnershipAction(int partnershipId, String action) async {
+    _settings = RestaurantDeliverySettings.fromJson(await _api.post('$_base/partners/$partnershipId/$action'));
+    notifyListeners();
+  }
+
+  /// Propõe uma tabela especial à associação; [rate] nulo = voltar à tabela padrão
+  Future<void> proposeRate(int partnershipId, DeliveryRate? rate) async {
+    _settings = RestaurantDeliverySettings.fromJson(await _api.post('$_base/partners/$partnershipId/rate-proposal',
+        data: {'rate': rate?.toJson(), 'toDefault': rate == null}));
     notifyListeners();
   }
 

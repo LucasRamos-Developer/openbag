@@ -20,6 +20,10 @@ public class AssociationStatsDTO {
     private long totalDeliveries;
     private long activeInvites;
 
+    // Lojas parceiras e o que espera a resposta da associação (pedidos de lojas e propostas de tabela)
+    private long activePartners;
+    private long pendingPartnerships;
+
     // Quantidade de vínculos por status (inclui histórico: recusados, desligados...)
     private Map<String, Long> membersByStatus;
 

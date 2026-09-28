@@ -166,6 +166,10 @@ class IntegerFormatter extends TextInputFormatter {
 String _twoDigits(int value) => value.toString().padLeft(2, '0');
 
 /// Data no formato dd/MM/aaaa ('-' se nula)
+/// Data no formato da API (yyyy-MM-dd), no dia local
+String apiDate(DateTime date) =>
+    '${date.year.toString().padLeft(4, '0')}-${_twoDigits(date.month)}-${_twoDigits(date.day)}';
+
 String formatDate(DateTime? date) {
   if (date == null) return '-';
   return '${_twoDigits(date.day)}/${_twoDigits(date.month)}/${date.year}';
@@ -201,3 +205,34 @@ double? parseMoney(String text) {
 
 /// Valor para preencher um campo com [MoneyFormatter] ("12,90")
 String moneyInput(num value) => value.toStringAsFixed(2).replaceAll('.', ',');
+
+/// Taxa de entrega para o cliente: "Grátis", "R\$ 8,00" ou, se depende da distância, "a partir de R\$ 10,00"
+String formatDeliveryFee(double fee, {bool byDistance = false}) {
+  if (byDistance) return 'a partir de ${formatMoney(fee)}';
+  return fee > 0 ? formatMoney(fee) : 'Grátis';
+}
+
+/// Distância com uma casa decimal: "8,0 km"
+String formatDistance(double km) => '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
+
+/// Percentual sem zeros à toa: "5%", "2,5%"
+String formatPercent(num value) {
+  // Só tira os zeros depois da vírgula ("10.00" vira "10", "2.50" vira "2,5")
+  final text = value.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
+  return '${text.replaceAll('.', ',')}%';
+}
+
+const _monthNames = [
+  'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
+];
+
+/// "setembro de 2026"
+String formatMonth(DateTime month) => '${_monthNames[month.month - 1]} de ${month.year}';
+
+/// "set/26" (rótulos curtos de gráfico)
+String formatMonthShort(DateTime month) =>
+    '${_monthNames[month.month - 1].substring(0, 3)}/${(month.year % 100).toString().padLeft(2, '0')}';
+
+/// "2026-09" (parâmetro de mês da API)
+String apiMonth(DateTime month) => '${month.year}-${month.month.toString().padLeft(2, '0')}';

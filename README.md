@@ -87,9 +87,25 @@ O painel do entregador **está sendo construído**. Hoje ele já permite ficar o
   <img src="layout/caixa-e-rotas/05-entregador-rota.png" alt="Entregador em rota" width="260">
 </p>
 
-### Associação e cooperativa (em desenvolvimento)
+### Associação e cooperativa (em testes)
 
-O painel da associação **está sendo construído**. Hoje ele já tem cadastro com aprovação, gestão de membros, convites e tabela de entrega. Parcerias com lojas e relatórios para os cooperados estão a caminho.
+O painel da associação tem cadastro com aprovação, gestão de membros, convites e tabela de entrega. Também tem:
+
+- **Lojas parceiras.** A loja ou a associação pede a parceria, e ela só começa quando o outro lado aceita. Os dois lados podem encerrar.
+- **Tabela especial por loja.** Com cada parceira, a associação e a loja podem combinar uma tabela própria, que só vale com o aceite dos dois. O entregador sempre recebe 100% do valor.
+- **Relatórios.** O gestor vê as entregas e os ganhos por dia, por cooperado e por loja. Cada cooperado vê o resumo da associação e a parte dele, sem os ganhos dos colegas.
+- **Financeiro.** A mensalidade pode ser um valor fixo ou um percentual dos ganhos até um teto. A associação também pode oferecer adicionais, como o seguro de vida (+10% na mensalidade), que cada cooperado aceita ou recusa. As faturas saem todo mês, o gestor registra o pagamento e o painel mostra o arrecadado, o gasto e o que falta receber.
+- **Caixinha solidária.** Os cooperados contribuem com o valor que quiserem para ajudar um colega que passar por um problema. Todos veem o saldo, sem o nome de quem recebeu ajuda.
+- **Convênios, enquetes e atas.** Descontos com oficinas, escolas e outros parceiros, enquetes com voto secreto e as atas das reuniões, tudo disponível para os cooperados no painel deles.
+- **Taxa por distância.** A loja pode repassar a taxa ao cliente: ele paga pela distância, a vitrine mostra "a partir de" e o entregador recebe o valor inteiro.
+
+<p align="center">
+  <img src="layout/gestao-associacao/01-financeiro-resumo.png" alt="Financeiro da associação" width="720">
+</p>
+
+<p align="center">
+  <img src="layout/cooperativa/01-lojas-parceiras.png" alt="Lojas parceiras da cooperativa" width="720">
+</p>
 
 ---
 
@@ -117,8 +133,10 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 | 1.0.0 | Primeira versão estável, com piloto real | Planejada |
 
 **0.3.0: Entregador, cooperativa e cliente**
-- [ ] Concluir as telas do entregador
-- [ ] Painel da cooperativa: parcerias com lojas, acordos e relatórios
+- [x] Concluir as telas do entregador
+- [x] Painel da cooperativa: parcerias com lojas, acordos e relatórios
+- [x] Gestão da associação: mensalidade, adicionais, caixinha, financeiro, convênios, enquetes e atas
+- [x] Taxa de entrega repassada ao cliente ("a partir de") e contraproposta de tabela
 - [ ] Fluxo do cliente fora da fase de testes, com avaliações
 - [ ] Página da loja otimizada para buscadores e vitrine por avaliações e proximidade
 

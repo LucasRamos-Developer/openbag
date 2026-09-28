@@ -80,8 +80,9 @@ Todas as rotas ficam sob o prefixo `/api`. A lista completa está no Swagger: `h
 | `product` | `/products`, `/customizations`, `/public/categories`, `/global-products` | Produtos, grupos de complementos, categorias |
 | `combo` | `/combos` | Combos da loja |
 | `order` | `/orders`, `/restaurants/{id}/orders` | Checkout do cliente e ciclo do pedido na loja (aceitar, preparar, pronto, despachar, entregar) |
-| `delivery` | `/me/courier`, `/me/courier/work`, `/public/couriers`, `/restaurants/{id}/delivery`, `/routes`, `/cash` | Perfil e veículos do entregador, turno e ofertas, configurações de entrega da loja, rotas e caixa |
-| `organization` | `/associations`, `/me/association`, `/public/associations`, `/admin/associations` | Associações: cadastro, aprovação, membros, convites e tabela de entrega |
+| `delivery` | `/me/courier`, `/me/courier/work`, `/public/couriers`, `/restaurants/{id}/delivery`, `/associations/{id}/partnerships`, `/associations/{id}/reports`, `/routes`, `/cash` | Perfil e veículos do entregador, turno e ofertas, configurações de entrega da loja, parcerias entre loja e associação (com tabela especial), relatórios da associação, rotas e caixa |
+| `cooperative` | `/associations/{id}/fee-policy`, `/addon-plans`, `/invoices`, `/ledger`, `/finance/summary`, `/benefits`, `/polls`, `/documents`; `/me/association/invoices`, `/addons`, `/solidarity-fund`, `/benefits`, `/polls`, `/documents` | Gestão da associação: cobrança da mensalidade (fixa ou percentual com teto), adicionais, faturas com baixa manual, livro-caixa e caixinha solidária, convênios, enquetes e atas; e a área do cooperado |
+| `organization` | `/associations`, `/me/association`, `/public/associations`, `/admin/associations` | Associações: cadastro, aprovação, membros, convites, tabela de entrega e o resumo da associação para o cooperado (`/me/association/report`) |
 | `shared` | `/files`, `/health` | Upload e download de arquivos, health check |
 
 ### Papéis
@@ -239,7 +240,7 @@ frontend/lib/
 | `/restaurante/cozinha` | Tela da cozinha | Pronto |
 | `/entregador/*` | Painel do entregador | Em desenvolvimento |
 | `/e/:slug` | Perfil público do entregador (placa QR) | Pronto |
-| `/associacao/*` | Painel da associação ou cooperativa | Em desenvolvimento |
+| `/associacao/*` | Painel da associação ou cooperativa (membros, convites, lojas parceiras, tabela, relatórios) | Em testes |
 | `/admin/associacoes` | Moderação de associações | Pronto |
 
 ### Padrões

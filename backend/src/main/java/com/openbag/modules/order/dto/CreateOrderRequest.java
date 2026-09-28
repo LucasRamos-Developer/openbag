@@ -1,5 +1,6 @@
 package com.openbag.modules.order.dto;
 
+import com.openbag.modules.shared.service.GeocodingService;
 import com.openbag.modules.order.entity.Order;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -103,6 +104,10 @@ public class CreateOrderRequest {
 
         private Double latitude;
         private Double longitude;
+
+        public GeocodingService.AddressQuery toQuery() {
+            return new GeocodingService.AddressQuery(street, number, neighborhood, city, state, zipCode);
+        }
 
         public String format() {
             StringBuilder text = new StringBuilder(street.trim()).append(", ").append(number.trim());

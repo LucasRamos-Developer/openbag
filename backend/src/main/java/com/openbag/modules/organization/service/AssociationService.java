@@ -2,9 +2,13 @@ package com.openbag.modules.organization.service;
 
 import com.openbag.enums.MembershipStatus;
 import com.openbag.enums.OrganizationStatus;
+import com.openbag.enums.PartnershipSide;
 import com.openbag.enums.UserType;
 import com.openbag.exception.BadRequestException;
 import com.openbag.exception.ResourceNotFoundException;
+import com.openbag.modules.delivery.entity.RestaurantPartnership;
+import com.openbag.modules.delivery.repository.RestaurantPartnershipRepository;
+import com.openbag.modules.delivery.service.PartnershipService;
 import com.openbag.modules.organization.dto.*;
 import com.openbag.modules.organization.entity.Organization;
 import com.openbag.modules.organization.repository.AssociationInviteRepository;
@@ -39,6 +43,9 @@ import java.util.Map;
 public class AssociationService {
 
     private static final String LOGO_FOLDER = "associations";
+
+    @Autowired
+    private RestaurantPartnershipRepository partnershipRepository;
 
     @Autowired
     private OrganizationRepository organizationRepository;
@@ -168,6 +175,8 @@ public class AssociationService {
             byVehicle.put(row[0] != null ? row[0].toString() : "UNKNOWN", (Long) row[1]);
         }
 
+        List<RestaurantPartnership> partnerships = partnershipRepository.findByOrganization(organizationId);
+
         long activeInvites = inviteRepository.findByOrganizationIdOrderByCreatedAtDesc(organizationId).stream()
                 .filter(invite -> invite.isUsable())
                 .count();
@@ -179,6 +188,8 @@ public class AssociationService {
                 .availableNow(membershipRepository.countAvailableNow(organizationId))
                 .totalDeliveries(membershipRepository.sumActiveDeliveries(organizationId))
                 .activeInvites(activeInvites)
+                .activePartners(partnerships.stream().filter(RestaurantPartnership::isActive).count())
+                .pendingPartnerships(PartnershipService.pendingFor(partnerships, PartnershipSide.ASSOCIATION))
                 .membersByStatus(byStatus)
                 .activeMembersByVehicleType(byVehicle)
                 .build();
@@ -246,7 +257,7 @@ public class AssociationService {
 
     // ============= Helpers =============
 
-    Organization findById(Long organizationId) {
+    public Organization findById(Long organizationId) {
         return organizationRepository.findById(organizationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Associação não encontrada"));
     }
@@ -254,7 +265,7 @@ public class AssociationService {
     /**
      * Garante que a associação foi aprovada e está ativa (pode aceitar associados)
      */
-    Organization findOperational(Long organizationId) {
+    public Organization findOperational(Long organizationId) {
         Organization organization = findById(organizationId);
         if (!organization.isOperational()) {
             throw new BadRequestException("A associação ainda não está ativa na plataforma");

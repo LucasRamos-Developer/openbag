@@ -142,6 +142,7 @@ class _RestaurantPageScreenState extends State<RestaurantPageScreen> {
         name: _restaurant!.name,
         logoUrl: _restaurant!.logoUrl,
         deliveryFee: _restaurant!.deliveryFee,
+        deliveryFeeByDistance: _restaurant!.deliveryFeeByDistance,
         minimumOrder: _restaurant!.minimumOrder,
       );
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/ui/ui.dart';
 import '../../../models/cash/cash_report.dart';
+import '../../../models/report_period.dart';
 import '../../../services/api_client.dart';
 import '../../../services/restaurant_cash_service.dart';
 import '../../../services/restaurant_panel_service.dart';
@@ -9,31 +10,6 @@ import '../../../utils/feedback.dart';
 import '../../../utils/formatters.dart';
 import '../../../widgets/courier/courier_avatar.dart';
 import '../../../widgets/cash/subsidy_report_card.dart';
-
-/// Períodos do caixa
-enum CashPeriod {
-  today('Hoje'),
-  yesterday('Ontem'),
-  week('7 dias'),
-  month('Este mês'),
-  lastMonth('Mês passado');
-
-  final String label;
-
-  const CashPeriod(this.label);
-
-  /// Datas locais, [início, fim] inclusivo
-  (DateTime, DateTime) range(DateTime now) {
-    final today = DateTime(now.year, now.month, now.day);
-    return switch (this) {
-      CashPeriod.today => (today, today),
-      CashPeriod.yesterday => (today.subtract(const Duration(days: 1)), today.subtract(const Duration(days: 1))),
-      CashPeriod.week => (today.subtract(const Duration(days: 6)), today),
-      CashPeriod.month => (DateTime(now.year, now.month, 1), today),
-      CashPeriod.lastMonth => (DateTime(now.year, now.month - 1, 1), DateTime(now.year, now.month, 0)),
-    };
-  }
-}
 
 /// Caixa: vendas pelo OpenBag no período e acerto com cada entregador.
 /// Pagamento na entrega: o dinheiro fica com o entregador até o acerto; cartão e Pix caem na maquininha/Pix da loja.
@@ -45,7 +21,7 @@ class CashTab extends StatefulWidget {
 }
 
 class CashTabState extends State<CashTab> {
-  CashPeriod _period = CashPeriod.today;
+  ReportPeriod _period = ReportPeriod.today;
   CashReport? _report;
   String? _error;
   bool _loading = false;
@@ -111,8 +87,8 @@ class CashTabState extends State<CashTab> {
       child: AppPageListView(
         children: [
           const AppSectionHeader(title: 'Caixa', subtitle: 'Vendas pelo OpenBag e acerto com os entregadores'),
-          AppFilterChips<CashPeriod>(
-            items: [for (final p in CashPeriod.values) SelectItem(value: p, label: p.label)],
+          AppFilterChips<ReportPeriod>(
+            items: [for (final p in ReportPeriod.values) SelectItem(value: p, label: p.label)],
             value: _period,
             padding: const EdgeInsets.only(bottom: 8),
             onSelected: (p) {

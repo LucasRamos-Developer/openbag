@@ -6,6 +6,7 @@ import com.openbag.modules.delivery.entity.DeliveryPerson;
 import com.openbag.modules.delivery.entity.CourierSettlement;
 import com.openbag.modules.delivery.entity.DeliveryRoute;
 import com.openbag.modules.delivery.entity.StaffCourier;
+import com.openbag.modules.organization.entity.Organization;
 import com.openbag.enums.CancelledBy;
 import com.openbag.enums.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -195,6 +196,12 @@ public class Order {
     // Valor do entregador pela tabela da associação dele (fixado no aceite da oferta)
     @Column(name = "courier_fee", precision = 10, scale = 2)
     private BigDecimal courierFee;
+
+    // Associação do entregador no momento da entrega (base dos relatórios; não muda se ele trocar de associação)
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "courier_organization_id")
+    private Organization courierOrganization;
 
     // Distância em linha reta do restaurante até o cliente
     @Column(name = "delivery_distance_km")

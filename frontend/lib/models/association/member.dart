@@ -1,4 +1,5 @@
 import 'association.dart';
+import '../courier/vehicle.dart';
 import '../courier/vehicle_type.dart';
 
 export '../courier/vehicle_type.dart';
@@ -28,6 +29,13 @@ class Member {
   final double rating;
   final int totalDeliveries;
 
+  /// Faturas da mensalidade em aberto (quantidade e total)
+  final int openInvoices;
+  final double openAmount;
+
+  /// Veículos cadastrados: só vêm na ficha do associado (vazio na listagem)
+  final List<Vehicle> vehicles;
+
   Member({
     required this.membershipId,
     required this.status,
@@ -51,6 +59,9 @@ class Member {
     required this.available,
     required this.rating,
     required this.totalDeliveries,
+    this.vehicles = const [],
+    this.openInvoices = 0,
+    this.openAmount = 0,
   });
 
   factory Member.fromJson(Map<String, dynamic> json) {
@@ -77,6 +88,9 @@ class Member {
       available: json['available'] ?? false,
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       totalDeliveries: json['totalDeliveries'] ?? 0,
+      vehicles: (json['vehicles'] as List? ?? const []).map((v) => Vehicle.fromJson(v)).toList(),
+      openInvoices: json['openInvoices'] ?? 0,
+      openAmount: (json['openAmount'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -140,4 +154,13 @@ class MemberPage {
       totalElements: json['totalElements'] ?? 0,
     );
   }
+}
+
+/// Filtro da lista de associados pela mensalidade
+enum MemberBillingFilter {
+  OPEN('Em aberto'),
+  UP_TO_DATE('Em dia');
+
+  final String label;
+  const MemberBillingFilter(this.label);
 }

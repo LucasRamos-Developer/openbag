@@ -10,6 +10,9 @@ abstract final class AppLayout {
 
   static double gutter(double width) => width < compactWidth ? 16 : 24;
 
+  /// Tela de celular: formulários em tela cheia, ações em menu de baixo para cima, listas em cards
+  static bool isCompact(BuildContext context) => MediaQuery.sizeOf(context).width < compactWidth;
+
   /// Padding que centraliza o conteúdo em [maxWidth] mantendo o gutter nas laterais.
   /// Use em `ListView`/`SliverPadding` para a barra de rolagem ficar na borda da tela.
   static EdgeInsets contentPadding(

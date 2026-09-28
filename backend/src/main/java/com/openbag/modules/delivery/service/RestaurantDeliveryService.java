@@ -2,17 +2,19 @@ package com.openbag.modules.delivery.service;
 
 import com.openbag.enums.CourierLinkStatus;
 import com.openbag.enums.CourierPolicy;
+import com.openbag.enums.DeliveryFeeMode;
+import com.openbag.enums.PartnershipSide;
+import com.openbag.enums.PartnershipStatus;
 import com.openbag.exception.BadRequestException;
 import com.openbag.exception.ConflictException;
 import com.openbag.exception.ResourceNotFoundException;
 import com.openbag.modules.delivery.dto.PartnerDTO;
+import com.openbag.modules.delivery.dto.RateProposalRequest;
 import com.openbag.modules.delivery.dto.RestaurantDeliverySettingsDTO;
 import com.openbag.modules.delivery.dto.RestaurantDeliverySettingsRequest;
 import com.openbag.modules.delivery.entity.RestaurantPartnership;
 import com.openbag.modules.delivery.repository.RestaurantCourierLinkRepository;
 import com.openbag.modules.delivery.repository.RestaurantPartnershipRepository;
-import com.openbag.modules.organization.entity.Organization;
-import com.openbag.modules.organization.repository.OrganizationRepository;
 import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.restaurant.repository.RestaurantRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +30,9 @@ import java.util.List;
 /**
  * Regras de entrega do restaurante: política de entregadores, associações parceiras e cobertura da diferença.
  *
- * Regra da taxa: o entregador recebe o valor da tabela da associação dele; o cliente paga a taxa do restaurante.
- * Um parceiro cujo valor base passa da taxa só é aceito se o restaurante assumir a diferença.
+ * Regra da taxa: o entregador recebe o valor da tabela que vale na loja (a especial combinada na parceria ou a da
+ * associação); o cliente paga a taxa do restaurante. Um parceiro cujo valor base passa da taxa só é aceito se o
+ * restaurante assumir a diferença. As parcerias em si ficam no {@link PartnershipService}.
  */
 @Service
 @Transactional
@@ -40,13 +43,22 @@ public class RestaurantDeliveryService {
     private RestaurantRepository restaurantRepository;
 
     @Autowired
-    private OrganizationRepository organizationRepository;
-
-    @Autowired
     private RestaurantPartnershipRepository partnershipRepository;
 
     @Autowired
     private RestaurantCourierLinkRepository linkRepository;
+
+    @Autowired
+    private PartnershipService partnershipService;
+
+    // Parcerias recusadas ou encerradas mostradas no painel da loja
+    private static final int HISTORY_SIZE = 10;
+
+    // Distâncias da simulação da taxa repassada ao cliente
+    private static final List<Double> SIMULATED_KM = List.of(2.0, 5.0, 8.0, 12.0);
+
+    @Autowired
+    private DeliveryFeeQuoteService deliveryFeeQuoteService;
 
     @Transactional(readOnly = true)
     public RestaurantDeliverySettingsDTO getSettings(Long restaurantId) {
@@ -60,11 +72,16 @@ public class RestaurantDeliveryService {
         if (request.getCourierPolicy() == CourierPolicy.PARTNERS_ONLY && partners.isEmpty()) {
             throw new BadRequestException("Adicione ao menos uma associação parceira antes de restringir a elas");
         }
-        if (!request.isCoversDeliveryDifference()) {
+        DeliveryFeeMode feeMode = request.getDeliveryFeeMode() != null
+                ? request.getDeliveryFeeMode()
+                : restaurant.getDeliveryFeeMode();
+        if (feeMode == DeliveryFeeMode.ASSUME && !request.isCoversDeliveryDifference()) {
             assertPartnersFitFee(partners, restaurant.getDeliveryFee());
         }
 
+        restaurant.setDeliveryFeeMode(feeMode);
         restaurant.setCourierPolicy(request.getCourierPolicy());
+        restaurant.setPartnersEndedNoticeAt(null);
         restaurant.setFallbackToOpen(request.isFallbackToOpen());
         if (request.isCoversDeliveryDifference() && !restaurant.isCoversDeliveryDifference()) {
             restaurant.setCoversDeliveryDifferenceAcceptedAt(LocalDateTime.now());
@@ -76,48 +93,41 @@ public class RestaurantDeliveryService {
         if (request.getCourierNoShowMinutes() != null) {
             restaurant.setCourierNoShowMinutes(request.getCourierNoShowMinutes());
         }
-        log.info("Restaurante {} atualizou as regras de entrega: {} (fallback={}, cobre diferença={})", restaurantId,
-                request.getCourierPolicy(), request.isFallbackToOpen(), request.isCoversDeliveryDifference());
+        log.info("Restaurante {} atualizou as regras de entrega: {} (fallback={}, cobre diferença={}, taxa={})",
+                restaurantId, request.getCourierPolicy(), request.isFallbackToOpen(),
+                request.isCoversDeliveryDifference(), feeMode);
         return toDTO(restaurantRepository.save(restaurant));
     }
 
     public RestaurantDeliverySettingsDTO addPartner(Long restaurantId, Long organizationId) {
-        Restaurant restaurant = findRestaurant(restaurantId);
-        Organization organization = organizationRepository.findById(organizationId)
-                .filter(Organization::isOperational)
-                .orElseThrow(() -> new ResourceNotFoundException("Associação não encontrada"));
-
-        if (partnershipRepository.findActive(restaurantId, organizationId).isPresent()) {
-            throw new BadRequestException("Esta associação já é parceira do restaurante");
-        }
-        if (!organization.isDeliveryRateConfigured()) {
-            throw new BadRequestException("Esta associação ainda não definiu a tabela de valores de entrega");
-        }
-        if (!restaurant.isCoversDeliveryDifference()) {
-            assertPartnersFitFee(List.of(organization), restaurant.getDeliveryFee(), true);
-        }
-
-        RestaurantPartnership partnership = new RestaurantPartnership();
-        partnership.setRestaurant(restaurant);
-        partnership.setOrganization(organization);
-        partnershipRepository.save(partnership);
-        log.info("Restaurante {} adicionou a associação {} como parceira", restaurantId, organizationId);
-        return toDTO(restaurant);
+        partnershipService.requestByRestaurant(restaurantId, organizationId);
+        return toDTO(findRestaurant(restaurantId));
     }
 
     public RestaurantDeliverySettingsDTO removePartner(Long restaurantId, Long organizationId) {
-        Restaurant restaurant = findRestaurant(restaurantId);
-        RestaurantPartnership partnership = partnershipRepository.findActive(restaurantId, organizationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Parceria não encontrada"));
+        partnershipService.endByRestaurant(restaurantId, organizationId);
+        return toDTO(findRestaurant(restaurantId));
+    }
 
-        if (restaurant.getCourierPolicy() == CourierPolicy.PARTNERS_ONLY
-                && partnershipRepository.findActiveByRestaurant(restaurantId).size() == 1) {
-            throw new BadRequestException(
-                    "Esta é a única parceira. Mude quem recebe os pedidos antes de encerrar a parceria.");
+    /** Aceitar, recusar ou encerrar uma parceria, ou responder a uma proposta de tabela (lado da loja) */
+    public RestaurantDeliverySettingsDTO partnershipAction(Long restaurantId, Long partnershipId, String action) {
+        PartnershipSide side = PartnershipSide.RESTAURANT;
+        switch (action) {
+            case "accept" -> partnershipService.accept(partnershipId, side, restaurantId);
+            case "decline" -> partnershipService.decline(partnershipId, side, restaurantId);
+            case "end" -> partnershipService.end(partnershipId, side, restaurantId);
+            case "rate-accept" -> partnershipService.acceptRate(partnershipId, side, restaurantId);
+            case "rate-decline" -> partnershipService.declineRate(partnershipId, side, restaurantId);
+            case "rate-cancel" -> partnershipService.cancelRate(partnershipId, side, restaurantId);
+            default -> throw new BadRequestException("Ação inválida");
         }
-        partnership.setEndedAt(LocalDateTime.now());
-        partnershipRepository.save(partnership);
-        return toDTO(restaurant);
+        return toDTO(findRestaurant(restaurantId));
+    }
+
+    public RestaurantDeliverySettingsDTO proposeRate(Long restaurantId, Long partnershipId,
+                                                     RateProposalRequest request) {
+        partnershipService.proposeRate(partnershipId, PartnershipSide.RESTAURANT, restaurantId, request);
+        return toDTO(findRestaurant(restaurantId));
     }
 
     /**
@@ -126,7 +136,7 @@ public class RestaurantDeliveryService {
      */
     @Transactional(readOnly = true)
     public void assertDeliveryFeeCovered(Restaurant restaurant, BigDecimal newDeliveryFee) {
-        if (restaurant.isCoversDeliveryDifference()) {
+        if (restaurant.isCoversDeliveryDifference() || restaurant.passesDeliveryFee()) {
             return;
         }
         assertPartnersFitFee(partnershipRepository.findActiveByRestaurant(restaurant.getId()), newDeliveryFee);
@@ -134,37 +144,50 @@ public class RestaurantDeliveryService {
 
     // ============= Auxiliares =============
 
+    /** Vale a tabela de cada parceria na loja: a especial, se houver, ou a da associação */
     private void assertPartnersFitFee(List<RestaurantPartnership> partners, BigDecimal deliveryFee) {
-        assertPartnersFitFee(partners.stream().map(RestaurantPartnership::getOrganization).toList(), deliveryFee, false);
-    }
-
-    private void assertPartnersFitFee(List<Organization> organizations, BigDecimal deliveryFee, boolean adding) {
-        List<String> exceeding = organizations.stream()
-                .filter(org -> PartnerDTO.exceedsFee(org, deliveryFee))
-                .map(Organization::getTradingName)
+        List<String> exceeding = partners.stream()
+                .filter(p -> PartnerDTO.exceedsFee(p.getEffectiveRate(), deliveryFee))
+                .map(p -> p.getOrganization().getTradingName())
                 .toList();
         if (exceeding.isEmpty()) {
             return;
         }
-        String names = String.join(", ", exceeding);
-        throw new ConflictException(adding
-                ? String.format("O valor base de %s é maior que a sua taxa de entrega. Para ter esta parceria, "
-                + "marque que o restaurante assume a diferença.", names)
-                : String.format("O valor base de %s (parceira) é maior que a sua taxa de entrega. "
-                + "Mantenha a opção de assumir a diferença ou encerre a parceria.", names));
+        throw new ConflictException(String.format("O valor base de %s (parceira) é maior que a sua taxa de entrega. "
+                + "Mantenha a opção de assumir a diferença ou encerre a parceria.", String.join(", ", exceeding)));
     }
 
     private RestaurantDeliverySettingsDTO toDTO(Restaurant restaurant) {
         BigDecimal fee = restaurant.getDeliveryFee();
+        List<RestaurantPartnership> partnerships = partnershipRepository.findByRestaurant(restaurant.getId());
         return RestaurantDeliverySettingsDTO.builder()
                 .courierPolicy(restaurant.getCourierPolicy())
                 .fallbackToOpen(restaurant.isFallbackToOpen())
                 .coversDeliveryDifference(restaurant.isCoversDeliveryDifference())
                 .coversDeliveryDifferenceAcceptedAt(restaurant.getCoversDeliveryDifferenceAcceptedAt())
                 .deliveryFee(fee)
-                .partners(partnershipRepository.findActiveByRestaurant(restaurant.getId()).stream()
+                .deliveryFeeMode(restaurant.getDeliveryFeeMode())
+                .deliveryFeeFrom(deliveryFeeQuoteService.passThroughFee(restaurant, null))
+                .deliveryFeeSimulation(SIMULATED_KM.stream()
+                        .map(km -> new RestaurantDeliverySettingsDTO.FeeSample(km,
+                                deliveryFeeQuoteService.passThroughFee(restaurant, km)))
+                        .toList())
+                .partners(partnerships.stream()
+                        .filter(p -> p.getStatus() == PartnershipStatus.ACTIVE)
                         .map(p -> PartnerDTO.from(p, fee))
                         .toList())
+                .partnershipRequests(partnerships.stream()
+                        .filter(p -> p.getStatus() == PartnershipStatus.PENDING)
+                        .map(p -> PartnerDTO.from(p, fee))
+                        .toList())
+                .partnershipHistory(partnerships.stream()
+                        .filter(p -> p.getStatus() == PartnershipStatus.DECLINED
+                                || p.getStatus() == PartnershipStatus.ENDED)
+                        .limit(HISTORY_SIZE)
+                        .map(p -> PartnerDTO.from(p, fee))
+                        .toList())
+                .pendingPartnershipActions(PartnershipService.pendingFor(partnerships, PartnershipSide.RESTAURANT))
+                .partnersEndedNoticeAt(restaurant.getPartnersEndedNoticeAt())
                 .activeFixedCouriers(linkRepository.findByRestaurant(restaurant.getId(),
                         EnumSet.of(CourierLinkStatus.ACTIVE)).size())
                 .pendingFixedCouriers(linkRepository.findByRestaurant(restaurant.getId(),

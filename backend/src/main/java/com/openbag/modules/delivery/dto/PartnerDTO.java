@@ -1,7 +1,10 @@
 package com.openbag.modules.delivery.dto;
 
+import com.openbag.enums.PartnershipSide;
+import com.openbag.enums.PartnershipStatus;
 import com.openbag.modules.delivery.entity.RestaurantPartnership;
 import com.openbag.modules.organization.dto.DeliveryRateDTO;
+import com.openbag.modules.organization.entity.DeliveryRate;
 import com.openbag.modules.organization.entity.Organization;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +15,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * Associação parceira do restaurante, com a tabela de valores para comparar com a taxa cobrada
+ * Parceria vista pelo restaurante: a associação, a situação e a tabela que vale na loja
  */
 @Data
 @Builder
@@ -20,36 +23,61 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PartnerDTO {
 
+    private Long id;
     private Long organizationId;
     private String name;
     private String logoUrl;
     private String city;
     private String state;
+    private PartnershipStatus status;
+    private PartnershipSide requestedBy;
+    private PartnershipSide endedBy;
+    // Quem precisa responder (pedido, contraproposta ou proposta de tabela); nulo = ninguém
+    private PartnershipSide awaitingSide;
+    // Tabela padrão da associação
     private DeliveryRateDTO deliveryRate;
+    // Tabela especial combinada com esta loja (nula = vale a padrão)
+    private DeliveryRateDTO agreedRate;
+    private DeliveryRateDTO effectiveRate;
+    private RateProposalDTO rateProposal;
     private LocalDateTime since;
-    // O valor base da associação passa da taxa de entrega do restaurante
+    private LocalDateTime decidedAt;
+    private LocalDateTime endedAt;
+    // O valor base que vale na loja passa da taxa de entrega do restaurante
     private boolean exceedsDeliveryFee;
 
     public static PartnerDTO from(RestaurantPartnership partnership, BigDecimal deliveryFee) {
         Organization organization = partnership.getOrganization();
         var address = organization.getAddress();
         return PartnerDTO.builder()
+                .id(partnership.getId())
                 .organizationId(organization.getId())
                 .name(organization.getTradingName())
                 .logoUrl(organization.getLogoUrl())
                 .city(address != null ? address.getCity() : null)
                 .state(address != null ? address.getState() : null)
+                .status(partnership.getStatus())
+                .requestedBy(partnership.getRequestedBy())
+                .endedBy(partnership.getEndedBy())
+                .awaitingSide(partnership.getAwaitingSide())
                 .deliveryRate(DeliveryRateDTO.from(organization.getDeliveryRate()))
+                .agreedRate(partnership.hasAgreedRate() ? DeliveryRateDTO.from(partnership.getAgreedRate()) : null)
+                .effectiveRate(DeliveryRateDTO.from(partnership.getEffectiveRate()))
+                .rateProposal(RateProposalDTO.from(partnership))
                 .since(partnership.getCreatedAt())
-                .exceedsDeliveryFee(exceedsFee(organization, deliveryFee))
+                .decidedAt(partnership.getDecidedAt())
+                .endedAt(partnership.getEndedAt())
+                // Quem repassa a taxa cobra do cliente pela tabela: nunca fica abaixo dela
+                .exceedsDeliveryFee(!partnership.getRestaurant().passesDeliveryFee()
+                        && exceedsFee(partnership.getEffectiveRate(), deliveryFee))
                 .build();
     }
 
-    public static boolean exceedsFee(Organization organization, BigDecimal deliveryFee) {
-        if (!organization.isDeliveryRateConfigured()) {
+    public static boolean exceedsFee(DeliveryRate rate, BigDecimal deliveryFee) {
+        if (rate == null || !rate.isConfigured()) {
             return false;
         }
         BigDecimal fee = deliveryFee != null ? deliveryFee : BigDecimal.ZERO;
-        return organization.getDeliveryRate().getBaseFee().compareTo(fee) > 0;
+        return rate.getBaseFee().compareTo(fee) > 0;
     }
 }

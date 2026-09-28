@@ -19,6 +19,9 @@ class Association {
   final AssociationManager? manager;
   final DeliveryRate deliveryRate;
 
+  /// A cobrança da mensalidade dos cooperados já foi definida
+  final bool feePolicyConfigured;
+
   Association({
     required this.id,
     required this.type,
@@ -36,6 +39,7 @@ class Association {
     this.address,
     this.manager,
     this.deliveryRate = const DeliveryRate(),
+    this.feePolicyConfigured = false,
   });
 
   bool get isActive => status == AssociationStatus.ACTIVE;
@@ -65,6 +69,7 @@ class Association {
       address: json['address'] != null ? AssociationAddress.fromJson(json['address']) : null,
       manager: json['manager'] != null ? AssociationManager.fromJson(json['manager']) : null,
       deliveryRate: DeliveryRate.fromJson(json['deliveryRate']),
+      feePolicyConfigured: json['feePolicyConfigured'] ?? false,
     );
   }
 }

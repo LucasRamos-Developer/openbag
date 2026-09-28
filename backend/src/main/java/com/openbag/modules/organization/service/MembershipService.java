@@ -1,5 +1,6 @@
 package com.openbag.modules.organization.service;
 
+import com.openbag.enums.MemberBillingFilter;
 import com.openbag.enums.MembershipOrigin;
 import com.openbag.enums.MembershipStatus;
 import com.openbag.enums.UserType;
@@ -9,6 +10,7 @@ import com.openbag.exception.ConflictException;
 import com.openbag.exception.ResourceNotFoundException;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
 import com.openbag.modules.delivery.repository.DeliveryPersonRepository;
+import com.openbag.modules.delivery.repository.VehicleRepository;
 import com.openbag.modules.delivery.service.CourierProfileService;
 import com.openbag.modules.organization.dto.*;
 import com.openbag.modules.organization.entity.AssociationInvite;
@@ -27,10 +29,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Vínculos entre entregadores e associações.
@@ -56,6 +61,9 @@ public class MembershipService {
     private UserRepository userRepository;
 
     @Autowired
+    private VehicleRepository vehicleRepository;
+
+    @Autowired
     private AccountService accountService;
 
     @Autowired
@@ -70,16 +78,39 @@ public class MembershipService {
     // ============= Gestor: consulta =============
 
     @Transactional(readOnly = true)
-    public Page<MemberDTO> listMembers(Long organizationId, MembershipStatus status, String query, Pageable pageable) {
+    public Page<MemberDTO> listMembers(Long organizationId, MembershipStatus status, VehicleType vehicleType,
+                                       MemberBillingFilter billing, String query, Pageable pageable) {
         associationService.findById(organizationId);
         Set<MembershipStatus> statuses = status != null ? EnumSet.of(status) : EnumSet.allOf(MembershipStatus.class);
         String q = query != null ? query.trim() : "";
-        return membershipRepository.search(organizationId, statuses, q, pageable).map(MemberDTO::from);
+        Map<Long, Object[]> open = openInvoices(organizationId);
+        return membershipRepository.search(organizationId, statuses, vehicleType == null,
+                        vehicleType != null ? vehicleType : VehicleType.MOTORCYCLE,
+                        (billing != null ? billing : MemberBillingFilter.ALL).name(), q, pageable)
+                .map(membership -> withOpenInvoices(MemberDTO.from(membership), open.get(membership.getId())));
+    }
+
+    /** Faturas em aberto por associado: [membershipId, quantidade, total] */
+    Map<Long, Object[]> openInvoices(Long organizationId) {
+        return membershipRepository.openInvoicesByMembership(organizationId).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> row));
+    }
+
+    private static MemberDTO withOpenInvoices(MemberDTO dto, Object[] open) {
+        if (open != null) {
+            dto.setOpenInvoices(((Number) open[1]).intValue());
+            dto.setOpenAmount((BigDecimal) open[2]);
+        }
+        return dto;
     }
 
     @Transactional(readOnly = true)
     public MemberDTO getMember(Long organizationId, Long membershipId) {
-        return MemberDTO.from(findMembership(organizationId, membershipId));
+        AssociationMembership membership = findMembership(organizationId, membershipId);
+        return withOpenInvoices(MemberDTO.from(membership,
+                        vehicleRepository.findByDeliveryPersonIdAndArchivedFalseOrderByCreatedAtAsc(
+                                membership.getDeliveryPerson().getId())),
+                openInvoices(organizationId).get(membershipId));
     }
 
     // ============= Gestor: cadastro direto =============

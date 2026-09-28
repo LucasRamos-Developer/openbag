@@ -3,7 +3,9 @@ package com.openbag.modules.organization.dto;
 import com.openbag.enums.MembershipOrigin;
 import com.openbag.enums.MembershipStatus;
 import com.openbag.enums.VehicleType;
+import com.openbag.modules.delivery.dto.VehicleDTO;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
+import com.openbag.modules.delivery.entity.Vehicle;
 import com.openbag.modules.organization.entity.AssociationMembership;
 import com.openbag.modules.user.entity.User;
 import lombok.AllArgsConstructor;
@@ -13,6 +15,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Associado: vínculo + dados do entregador e da conta
@@ -51,6 +54,13 @@ public class MemberDTO {
     private BigDecimal rating;
     private Integer totalDeliveries;
 
+    /** Faturas da mensalidade em aberto (quantidade e total) */
+    private int openInvoices;
+    private BigDecimal openAmount;
+
+    /** Veículos cadastrados (só na ficha do associado e na exportação; nulo na listagem) */
+    private List<VehicleDTO> vehicles;
+
     public static MemberDTO from(AssociationMembership membership) {
         DeliveryPerson deliveryPerson = membership.getDeliveryPerson();
         User user = deliveryPerson.getUser();
@@ -81,5 +91,16 @@ public class MemberDTO {
                 .rating(deliveryPerson.getRating())
                 .totalDeliveries(deliveryPerson.getTotalDeliveries())
                 .build();
+    }
+
+    /** Ficha completa: inclui os veículos, com o que está em uso marcado */
+    public static MemberDTO from(AssociationMembership membership, List<Vehicle> vehicles) {
+        MemberDTO dto = from(membership);
+        Vehicle active = membership.getDeliveryPerson().getActiveVehicle();
+        Long activeId = active != null ? active.getId() : null;
+        dto.setVehicles(vehicles.stream()
+                .map(vehicle -> VehicleDTO.from(vehicle, vehicle.getId().equals(activeId)))
+                .toList());
+        return dto;
     }
 }

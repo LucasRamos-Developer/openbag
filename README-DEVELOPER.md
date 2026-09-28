@@ -197,7 +197,7 @@ frontend/
 │   │   ├── restaurant_panel/       # Painel do restaurante (/restaurante)
 │   │   ├── kitchen/                # Tela da cozinha
 │   │   ├── courier/                # Painel do entregador (/entregador, em desenvolvimento)
-│   │   ├── association/            # Painel da associação (/associacao, em desenvolvimento)
+│   │   ├── association/            # Painel da associação (/associacao)
 │   │   ├── admin/                  # Painel do super admin (/admin, somente leitura)
 │   │   ├── auth/, onboarding/, profile/
 │   ├── services/                   # Chamadas à API e ao WebSocket
@@ -290,6 +290,17 @@ O caminho das rotas no mapa vem de um servidor [OSRM](https://project-osrm.org).
 | `OPENBAG_ROUTING_ENABLED` | `true` | `false` desliga o roteamento (só linhas retas) |
 
 O servidor padrão é a demonstração pública do OSRM: aceita no máximo 1 consulta por segundo e não é para produção. Em produção, suba um OSRM próprio com o recorte do OSM da região (ex: sul do Brasil, do [Geofabrik](https://download.geofabrik.de/south-america/brazil.html)) e aponte `OPENBAG_OSRM_URL` para ele.
+
+### Localização dos endereços de entrega
+
+Quando a loja repassa a taxa ao cliente, o valor depende da distância até o endereço. O backend localiza o endereço digitado com a busca estruturada do [Nominatim](https://nominatim.org) (OpenStreetMap), guarda as respostas em memória e respeita o limite de 1 consulta por segundo do servidor público. Sem resposta, vale o valor "a partir de" (e o entregador recebe esse valor inteiro).
+
+| Variável | Padrão | Uso |
+|---|---|---|
+| `OPENBAG_GEOCODING_URL` | `https://nominatim.openstreetmap.org` | Servidor Nominatim |
+| `OPENBAG_GEOCODING_ENABLED` | `true` | `false` desliga a localização (a taxa por distância fica no "a partir de") |
+
+Em produção, use um Nominatim próprio ou um serviço contratado.
 
 ### Profiles disponíveis
 

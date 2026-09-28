@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import '../constants/app_constants.dart';
 
@@ -58,6 +60,24 @@ class ApiClient {
   Future<dynamic> patch(String path, {Object? data}) => _send(() => dio.patch(path, data: data));
 
   Future<dynamic> delete(String path) => _send(() => dio.delete(path));
+
+  /// Baixa um arquivo gerado pelo backend (ex: CSV da lista de associados)
+  Future<Uint8List> getBytes(String path, {Map<String, dynamic>? query}) async {
+    try {
+      final response = await dio.get<List<int>>(path,
+          queryParameters: _clean(query), options: Options(responseType: ResponseType.bytes));
+      return Uint8List.fromList(response.data ?? const []);
+    } on DioException catch (e) {
+      // O erro também chega em bytes: converte para JSON para aproveitar a mensagem do backend
+      final data = e.response?.data;
+      if (data is List<int>) {
+        try {
+          e.response!.data = jsonDecode(utf8.decode(data));
+        } catch (_) {}
+      }
+      throw toApiException(e);
+    }
+  }
 
   Future<dynamic> _send(Future<Response> Function() request) async {
     try {

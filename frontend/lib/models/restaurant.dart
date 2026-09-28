@@ -1,3 +1,4 @@
+import '../utils/formatters.dart';
 import 'order/order.dart';
 import 'store/store.dart';
 export 'category.dart';
@@ -18,7 +19,11 @@ class Restaurant {
   final String? slogan;
   final double rating;
   final int totalReviews;
+  /// Taxa fixa ou, com [deliveryFeeByDistance], o valor "a partir de"
   final double deliveryFee;
+
+  /// A loja repassa a taxa ao cliente: o valor depende da distância ("a partir de")
+  final bool deliveryFeeByDistance;
   final double minimumOrder;
   final int deliveryTimeMin;
   final int deliveryTimeMax;
@@ -52,6 +57,7 @@ class Restaurant {
     required this.rating,
     required this.totalReviews,
     required this.deliveryFee,
+    this.deliveryFeeByDistance = false,
     required this.minimumOrder,
     required this.deliveryTimeMin,
     required this.deliveryTimeMax,
@@ -67,6 +73,9 @@ class Restaurant {
   });
 
   bool get isOpen => openNow;
+
+  /// "Grátis", "R$ 8,00" ou "a partir de R$ 10,00"
+  String get deliveryFeeText => formatDeliveryFee(deliveryFee, byDistance: deliveryFeeByDistance);
   bool get paused => pausedUntil != null;
 
   factory Restaurant.fromJson(Map<String, dynamic> json) {
@@ -86,6 +95,7 @@ class Restaurant {
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       totalReviews: json['totalReviews'] ?? 0,
       deliveryFee: (json['deliveryFee'] as num?)?.toDouble() ?? 0,
+      deliveryFeeByDistance: json['deliveryFeeMode'] == 'PASS_THROUGH',
       minimumOrder: (json['minimumOrder'] as num?)?.toDouble() ?? 0,
       deliveryTimeMin: json['deliveryTimeMin'] ?? 0,
       deliveryTimeMax: json['deliveryTimeMax'] ?? 0,

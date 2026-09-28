@@ -56,11 +56,33 @@ public class RestaurantDeliveryController {
 
     @PostMapping("/partners")
     @IsRestaurantOwner
-    @Operation(summary = "Adicionar associação parceira",
-            description = "Recusa (409) se o valor base da associação passar da taxa e o restaurante não assumir a diferença")
+    @Operation(summary = "Pedir parceria a uma associação",
+            description = "A parceria vale depois do aceite da associação (ou na hora, se ela já tinha convidado). "
+                    + "Recusa (409) se o valor base passar da taxa e o restaurante não assumir a diferença")
     public ResponseEntity<RestaurantDeliverySettingsDTO> addPartner(@PathVariable Long restaurantId,
                                                                     @Valid @RequestBody AddPartnerRequest request) {
         return ResponseEntity.ok(deliveryService.addPartner(restaurantId, request.getOrganizationId()));
+    }
+
+    @PostMapping("/partners/{partnershipId}/{action:accept|decline|end|rate-accept|rate-decline|rate-cancel}")
+    @IsRestaurantOwner
+    @Operation(summary = "Responder ou encerrar uma parceria",
+            description = "accept/decline: convite de uma associação; end: encerrar ou cancelar o pedido; "
+                    + "rate-accept/rate-decline: proposta de tabela da associação; rate-cancel: desistir da própria")
+    public ResponseEntity<RestaurantDeliverySettingsDTO> partnershipAction(@PathVariable Long restaurantId,
+                                                                           @PathVariable Long partnershipId,
+                                                                           @PathVariable String action) {
+        return ResponseEntity.ok(deliveryService.partnershipAction(restaurantId, partnershipId, action));
+    }
+
+    @PostMapping("/partners/{partnershipId}/rate-proposal")
+    @IsRestaurantOwner
+    @Operation(summary = "Propor tabela especial à associação",
+            description = "Vale só depois do aceite da associação. Sem tabela (ou toDefault) = voltar à tabela padrão")
+    public ResponseEntity<RestaurantDeliverySettingsDTO> proposeRate(@PathVariable Long restaurantId,
+                                                                     @PathVariable Long partnershipId,
+                                                                     @Valid @RequestBody RateProposalRequest request) {
+        return ResponseEntity.ok(deliveryService.proposeRate(restaurantId, partnershipId, request));
     }
 
     @DeleteMapping("/partners/{organizationId}")

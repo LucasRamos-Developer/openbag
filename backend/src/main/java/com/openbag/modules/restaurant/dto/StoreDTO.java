@@ -1,5 +1,6 @@
 package com.openbag.modules.restaurant.dto;
 
+import com.openbag.enums.DeliveryFeeMode;
 import com.openbag.enums.AcceptanceMode;
 import com.openbag.enums.RestaurantThemePreset;
 import com.openbag.modules.user.dto.AddressDTO;
@@ -53,6 +54,8 @@ public class StoreDTO {
     private Integer acceptanceTimeoutMinutes;
     private Integer defaultPreparationMinutes;
     private BigDecimal deliveryFee;
+    /** Com PASS_THROUGH a taxa fixa não é cobrada: o cliente paga pela distância */
+    private DeliveryFeeMode deliveryFeeMode;
     private BigDecimal minimumOrder;
     private Integer deliveryTimeMin;
     private Integer deliveryTimeMax;

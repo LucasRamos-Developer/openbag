@@ -98,6 +98,9 @@ class Store {
   final int acceptanceTimeoutMinutes;
   final int defaultPreparationMinutes;
   final double deliveryFee;
+
+  /// A loja repassa a taxa ao cliente: a taxa fixa não é cobrada (vale a distância)
+  final bool passesDeliveryFee;
   final double minimumOrder;
   final int deliveryTimeMin;
   final int deliveryTimeMax;
@@ -130,6 +133,7 @@ class Store {
     required this.acceptanceTimeoutMinutes,
     required this.defaultPreparationMinutes,
     required this.deliveryFee,
+    this.passesDeliveryFee = false,
     required this.minimumOrder,
     required this.deliveryTimeMin,
     required this.deliveryTimeMax,
@@ -165,6 +169,7 @@ class Store {
         acceptanceTimeoutMinutes: json['acceptanceTimeoutMinutes'] ?? 8,
         defaultPreparationMinutes: json['defaultPreparationMinutes'] ?? 20,
         deliveryFee: (json['deliveryFee'] as num?)?.toDouble() ?? 0,
+        passesDeliveryFee: json['deliveryFeeMode'] == 'PASS_THROUGH',
         minimumOrder: (json['minimumOrder'] as num?)?.toDouble() ?? 0,
         deliveryTimeMin: json['deliveryTimeMin'] ?? 30,
         deliveryTimeMax: json['deliveryTimeMax'] ?? 45,

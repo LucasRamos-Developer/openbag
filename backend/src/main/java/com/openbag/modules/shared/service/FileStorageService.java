@@ -31,6 +31,11 @@ public class FileStorageService {
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+    /** Pasta de arquivos restritos (ex: atas da associação): nunca servida pela rota pública /files */
+    public static final String PRIVATE_FOLDER = "private";
+
+    private static final long MAX_DOCUMENT_SIZE = 10 * 1024 * 1024; // 10MB
+
     public FileStorageService(@Value("${app.upload.dir:uploads}") String uploadDir) {
         this.fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
         
@@ -73,6 +78,58 @@ public class FileStorageService {
             log.error("Erro ao salvar arquivo: {}", originalFilename, ex);
             throw new RuntimeException("Erro ao armazenar arquivo: " + originalFilename, ex);
         }
+    }
+
+    /**
+     * Armazena um documento PDF numa pasta restrita (ex: atas das reuniões). Ele só é entregue pelas rotas que
+     * conferem quem pode ver; a rota pública /files não serve a pasta {@link #PRIVATE_FOLDER}.
+     *
+     * @return caminho relativo, começando por "private/"
+     */
+    public String storeDocument(MultipartFile file, String folder) {
+        if (file == null || file.isEmpty()) {
+            throw new BadRequestException("Arquivo não pode ser vazio");
+        }
+        if (file.getSize() > MAX_DOCUMENT_SIZE) {
+            throw new BadRequestException("Arquivo muito grande. Tamanho máximo: 10MB");
+        }
+        try {
+            return storeDocument(file.getBytes(), folder);
+        } catch (IOException ex) {
+            throw new RuntimeException("Erro ao ler o documento", ex);
+        }
+    }
+
+    /** Mesmo que {@link #storeDocument(MultipartFile, String)}, a partir do conteúdo do PDF */
+    public String storeDocument(byte[] bytes, String folder) {
+        // Confere o conteúdo, não só o tipo informado pelo navegador
+        if (bytes.length < 5 || !new String(bytes, 0, 5, java.nio.charset.StandardCharsets.US_ASCII).equals("%PDF-")) {
+            throw new BadRequestException("Envie o documento em PDF");
+        }
+        try {
+            String relativeFolder = PRIVATE_FOLDER + "/" + folder;
+            Path folderPath = this.fileStorageLocation.resolve(relativeFolder);
+            Files.createDirectories(folderPath);
+            String fileName = UUID.randomUUID() + ".pdf";
+            Files.write(folderPath.resolve(fileName), bytes);
+            log.info("Documento salvo: {}/{}", relativeFolder, fileName);
+            return relativeFolder + "/" + fileName;
+        } catch (IOException ex) {
+            throw new RuntimeException("Erro ao armazenar o documento", ex);
+        }
+    }
+
+    /** Conteúdo de um arquivo guardado (para as rotas que conferem a permissão antes de entregar) */
+    public byte[] read(String relativePath) {
+        try {
+            return Files.readAllBytes(getFilePath(relativePath));
+        } catch (IOException ex) {
+            throw new com.openbag.exception.ResourceNotFoundException("Arquivo não encontrado");
+        }
+    }
+
+    public static boolean isPrivate(String relativePath) {
+        return relativePath != null && Paths.get(relativePath).normalize().startsWith(PRIVATE_FOLDER);
     }
 
     /**

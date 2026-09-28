@@ -1,6 +1,8 @@
 package com.openbag.modules.restaurant.controller;
 
 import com.openbag.exception.ResourceNotFoundException;
+import com.openbag.modules.delivery.dto.DeliveryQuoteDTO;
+import com.openbag.modules.delivery.service.DeliveryFeeQuoteService;
 import com.openbag.modules.menu.dto.MenuDTO;
 import com.openbag.modules.menu.service.MenuService;
 import com.openbag.modules.restaurant.dto.RestaurantCardDTO;
@@ -20,9 +22,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Consultas públicas de restaurantes e cardápio (sem login)
@@ -45,18 +49,34 @@ public class PublicRestaurantController {
     @Autowired
     private Clock clock;
 
+    @Autowired
+    private DeliveryFeeQuoteService deliveryFeeQuoteService;
+
     @GetMapping
     @Operation(summary = "Listar restaurantes ativos")
     public ResponseEntity<Page<RestaurantCardDTO>> list(
             @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
         LocalDateTime now = LocalDateTime.now(clock);
-        return ResponseEntity.ok(restaurantService.getAllRestaurants(pageable).map(r -> RestaurantCardDTO.from(r, now)));
+        Page<Restaurant> page = restaurantService.getAllRestaurants(pageable);
+        Map<Long, BigDecimal> fees = deliveryFeeQuoteService.shownFees(page.getContent());
+        return ResponseEntity.ok(page.map(r -> withFee(RestaurantCardDTO.from(r, now), fees.get(r.getId()))));
     }
 
     @GetMapping("/{idOrSlug}")
     @Operation(summary = "Página do restaurante", description = "Aceita slug ou id numérico")
     public ResponseEntity<RestaurantPublicDTO> getRestaurant(@PathVariable String idOrSlug) {
-        return ResponseEntity.ok(RestaurantPublicDTO.from(findActive(idOrSlug), LocalDateTime.now(clock)));
+        Restaurant restaurant = findActive(idOrSlug);
+        RestaurantPublicDTO dto = RestaurantPublicDTO.from(restaurant, LocalDateTime.now(clock));
+        dto.setDeliveryFee(deliveryFeeQuoteService.shownFee(restaurant));
+        return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/{idOrSlug}/delivery-quote")
+    @Operation(summary = "Taxa de entrega para um endereço",
+            description = "Taxa fixa da loja ou, se ela repassa a taxa, o valor pela distância até o endereço")
+    public ResponseEntity<DeliveryQuoteDTO> deliveryQuote(@PathVariable String idOrSlug,
+                                                          @RequestParam Double lat, @RequestParam Double lng) {
+        return ResponseEntity.ok(DeliveryQuoteDTO.from(deliveryFeeQuoteService.quote(findActive(idOrSlug), lat, lng)));
     }
 
     @GetMapping("/{idOrSlug}/menu")
@@ -96,6 +116,12 @@ public class PublicRestaurantController {
 
     private List<RestaurantCardDTO> toCards(List<Restaurant> restaurants) {
         LocalDateTime now = LocalDateTime.now(clock);
-        return restaurants.stream().map(r -> RestaurantCardDTO.from(r, now)).toList();
+        Map<Long, BigDecimal> fees = deliveryFeeQuoteService.shownFees(restaurants);
+        return restaurants.stream().map(r -> withFee(RestaurantCardDTO.from(r, now), fees.get(r.getId()))).toList();
+    }
+
+    private static RestaurantCardDTO withFee(RestaurantCardDTO card, BigDecimal fee) {
+        if (fee != null) card.setDeliveryFee(fee);
+        return card;
     }
 }

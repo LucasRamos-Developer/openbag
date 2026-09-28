@@ -1,6 +1,7 @@
 package com.openbag.modules.delivery.service;
 
 import com.openbag.enums.CourierPolicy;
+import com.openbag.enums.DeliveryFeeMode;
 import com.openbag.enums.OrganizationStatus;
 import com.openbag.exception.BadRequestException;
 import com.openbag.exception.ConflictException;
@@ -10,7 +11,6 @@ import com.openbag.modules.delivery.repository.RestaurantCourierLinkRepository;
 import com.openbag.modules.delivery.repository.RestaurantPartnershipRepository;
 import com.openbag.modules.organization.entity.DeliveryRate;
 import com.openbag.modules.organization.entity.Organization;
-import com.openbag.modules.organization.repository.OrganizationRepository;
 import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.restaurant.repository.RestaurantRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,13 +36,13 @@ class RestaurantDeliveryServiceTest {
     private RestaurantRepository restaurantRepository;
 
     @Mock
-    private OrganizationRepository organizationRepository;
-
-    @Mock
     private RestaurantPartnershipRepository partnershipRepository;
 
     @Mock
     private RestaurantCourierLinkRepository linkRepository;
+
+    @Mock
+    private DeliveryFeeQuoteService deliveryFeeQuoteService;
 
     @InjectMocks
     private RestaurantDeliveryService service;
@@ -64,23 +64,24 @@ class RestaurantDeliveryServiceTest {
 
         lenient().when(restaurantRepository.findById(1L)).thenReturn(Optional.of(restaurant));
         lenient().when(restaurantRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        lenient().when(organizationRepository.findById(10L)).thenReturn(Optional.of(expensive));
-        lenient().when(partnershipRepository.findActive(1L, 10L)).thenReturn(Optional.empty());
     }
 
     @Test
-    void partnerWithBaseAboveFeeNeedsCoverage() {
-        assertThatThrownBy(() -> service.addPartner(1L, 10L))
-                .isInstanceOf(ConflictException.class)
-                .hasMessageContaining("assume a diferença");
-        verify(partnershipRepository, never()).save(any());
-    }
-
-    @Test
-    void partnerAcceptedWhenRestaurantCoversDifference() {
+    void agreedRateCountsWhenCheckingPartnersAgainstTheFee() {
+        // A tabela padrão (R$ 8,00) passa da taxa, mas a combinada com a loja (R$ 6,00) cabe
+        RestaurantPartnership partnership = new RestaurantPartnership();
+        partnership.setOrganization(expensive);
+        partnership.setAgreedRate(new DeliveryRate(new BigDecimal("6.00"), new BigDecimal("3"), BigDecimal.ONE));
         restaurant.setCoversDeliveryDifference(true);
-        service.addPartner(1L, 10L);
-        verify(partnershipRepository).save(any(RestaurantPartnership.class));
+        when(partnershipRepository.findActiveByRestaurant(1L)).thenReturn(List.of(partnership));
+
+        RestaurantDeliverySettingsRequest request = new RestaurantDeliverySettingsRequest();
+        request.setCourierPolicy(CourierPolicy.PARTNERS_ONLY);
+        request.setCoversDeliveryDifference(false);
+        service.updateSettings(1L, request);
+
+        assertThat(restaurant.isCoversDeliveryDifference()).isFalse();
+        assertThat(restaurant.getCourierPolicy()).isEqualTo(CourierPolicy.PARTNERS_ONLY);
     }
 
     @Test
@@ -119,5 +120,22 @@ class RestaurantDeliveryServiceTest {
         service.assertDeliveryFeeCovered(restaurant, new BigDecimal("5.00"));
         assertThatThrownBy(() -> service.assertDeliveryFeeCovered(restaurant, new BigDecimal("4.99")))
                 .isInstanceOf(ConflictException.class);
+    }
+
+    @Test
+    void passingTheFeeToTheCustomerNeedsNoCoverForExpensivePartners() {
+        RestaurantPartnership partnership = new RestaurantPartnership();
+        partnership.setOrganization(expensive);
+        partnership.setRestaurant(restaurant);
+        when(partnershipRepository.findActiveByRestaurant(1L)).thenReturn(List.of(partnership));
+
+        RestaurantDeliverySettingsRequest request = new RestaurantDeliverySettingsRequest();
+        request.setCourierPolicy(CourierPolicy.PARTNERS_ONLY);
+        request.setDeliveryFeeMode(DeliveryFeeMode.PASS_THROUGH);
+        service.updateSettings(1L, request);
+
+        assertThat(restaurant.passesDeliveryFee()).isTrue();
+        // E a taxa fixa pode baixar à vontade: ela não é cobrada
+        service.assertDeliveryFeeCovered(restaurant, BigDecimal.ZERO);
     }
 }

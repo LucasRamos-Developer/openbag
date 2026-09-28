@@ -1,6 +1,8 @@
 package com.openbag.modules.order.controller;
 
+import com.openbag.modules.delivery.dto.DeliveryQuoteDTO;
 import com.openbag.modules.order.dto.CreateOrderRequest;
+import com.openbag.modules.order.dto.DeliveryQuoteRequest;
 import com.openbag.modules.order.dto.OrderDTO;
 import com.openbag.modules.order.service.OrderService;
 import com.openbag.modules.user.service.UserService;
@@ -40,6 +42,15 @@ public class OrderController {
     public ResponseEntity<OrderDTO> createOrder(@Valid @RequestBody CreateOrderRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(orderService.createOrder(request, userService.getCurrentUser()));
+    }
+
+    @PostMapping("/delivery-quote")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Taxa de entrega para o endereço",
+            description = "Taxa fixa da loja ou, se ela repassa a taxa ao cliente, o valor pela distância até o endereço. "
+                    + "O pedido recalcula o mesmo valor no servidor.")
+    public ResponseEntity<DeliveryQuoteDTO> quoteDelivery(@Valid @RequestBody DeliveryQuoteRequest request) {
+        return ResponseEntity.ok(orderService.quoteDelivery(request));
     }
 
     @GetMapping("/mine")

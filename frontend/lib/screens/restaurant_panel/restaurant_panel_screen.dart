@@ -37,9 +37,15 @@ class RestaurantPanelScreen extends StatefulWidget {
 }
 
 class _RestaurantPanelScreenState extends State<RestaurantPanelScreen> {
-  List<AppPanelDestination> _destinations(int newOrders) => [
+  List<AppPanelDestination> _destinations(int newOrders, int partnershipActions) => [
         for (final section in RestaurantSection.values)
-          section.destination(badge: section == RestaurantSection.orders ? newOrders : 0),
+          section.destination(
+            badge: switch (section) {
+              RestaurantSection.orders => newOrders,
+              RestaurantSection.couriers => partnershipActions,
+              _ => 0,
+            },
+          ),
       ];
 
   @override
@@ -96,7 +102,10 @@ class _RestaurantPanelScreenState extends State<RestaurantPanelScreen> {
     return AppPanelScaffold(
       header: _buildHeader(service),
       status: StoreStatusMenuTile(store: store),
-      destinations: _destinations(context.watch<RestaurantOrdersService>().pending.length),
+      destinations: _destinations(
+        context.watch<RestaurantOrdersService>().pending.length,
+        context.watch<RestaurantDeliveryService>().settings?.pendingPartnershipActions ?? 0,
+      ),
       selectedIndex: widget.section.index,
       onDestinationSelected: (index) => context.go(RestaurantSection.values[index].path),
       onLogout: _logout,

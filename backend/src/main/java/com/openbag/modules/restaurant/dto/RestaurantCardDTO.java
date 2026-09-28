@@ -1,5 +1,6 @@
 package com.openbag.modules.restaurant.dto;
 
+import com.openbag.enums.DeliveryFeeMode;
 import com.openbag.modules.product.entity.Category;
 import com.openbag.enums.RestaurantThemePreset;
 import com.openbag.modules.restaurant.entity.LayoutConfig;
@@ -34,7 +35,9 @@ public class RestaurantCardDTO {
     private String primaryColor;
     private BigDecimal rating;
     private Integer totalReviews;
+    /** Taxa fixa ou, se a loja repassa a taxa ao cliente, o valor "a partir de" (ver {@link #deliveryFeeMode}) */
     private BigDecimal deliveryFee;
+    private DeliveryFeeMode deliveryFeeMode;
     private BigDecimal minimumOrder;
     private Integer deliveryTimeMin;
     private Integer deliveryTimeMax;
@@ -61,6 +64,7 @@ public class RestaurantCardDTO {
                 .rating(restaurant.getRating())
                 .totalReviews(restaurant.getTotalReviews())
                 .deliveryFee(restaurant.getDeliveryFee())
+                .deliveryFeeMode(restaurant.getDeliveryFeeMode())
                 .minimumOrder(restaurant.getMinimumOrder())
                 .deliveryTimeMin(restaurant.getDeliveryTimeMin())
                 .deliveryTimeMax(restaurant.getDeliveryTimeMax())

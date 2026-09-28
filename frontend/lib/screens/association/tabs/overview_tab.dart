@@ -8,8 +8,14 @@ import '../../../services/association_service.dart';
 class OverviewTab extends StatelessWidget {
   final void Function(MembershipStatus? filter) onOpenMembers;
   final VoidCallback onOpenInvites;
+  final VoidCallback onOpenPartners;
 
-  const OverviewTab({super.key, required this.onOpenMembers, required this.onOpenInvites});
+  const OverviewTab({
+    super.key,
+    required this.onOpenMembers,
+    required this.onOpenInvites,
+    required this.onOpenPartners,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,29 +32,25 @@ class OverviewTab extends StatelessWidget {
       onRefresh: service.refreshStats,
       child: AppPageListView(
         children: [
-          const AppSectionHeader(title: 'Visão geral', subtitle: 'Acompanhe os associados da sua organização'),
+          const AppSectionHeader(title: 'Visão geral', subtitle: 'Acompanhe os associados e as lojas parceiras'),
 
           if (stats.pendingRequests > 0) ...[
-            AppCard(
-              backgroundColor: AppColors.warningLighter.withValues(alpha: 0.5),
+            _PendingCard(
+              icon: Icons.person_add_alt_1_outlined,
+              message: stats.pendingRequests == 1
+                  ? '1 entregador aguarda sua aprovação'
+                  : '${stats.pendingRequests} entregadores aguardam sua aprovação',
               onTap: () => onOpenMembers(MembershipStatus.PENDING),
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  const Icon(Icons.person_add_alt_1_outlined, color: AppColors.warningDarker),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      stats.pendingRequests == 1
-                          ? '1 entregador aguarda sua aprovação'
-                          : '${stats.pendingRequests} entregadores aguardam sua aprovação',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                  const Text('Revisar', style: TextStyle(color: AppColors.warningDarker, fontWeight: FontWeight.w600)),
-                  const Icon(Icons.chevron_right, color: AppColors.warningDarker),
-                ],
-              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          if (stats.pendingPartnerships > 0) ...[
+            _PendingCard(
+              icon: Icons.storefront_outlined,
+              message: stats.pendingPartnerships == 1
+                  ? '1 pedido de loja parceira aguarda sua resposta'
+                  : '${stats.pendingPartnerships} pedidos de lojas parceiras aguardam sua resposta',
+              onTap: onOpenPartners,
             ),
             const SizedBox(height: 16),
           ],
@@ -91,6 +93,12 @@ class OverviewTab extends StatelessWidget {
                   icon: Icons.confirmation_number_outlined,
                   onTap: onOpenInvites,
                 ),
+                _StatTile(
+                  label: 'Lojas parceiras',
+                  value: stats.activePartners,
+                  icon: Icons.storefront_outlined,
+                  onTap: onOpenPartners,
+                ),
               ];
               return Wrap(
                 spacing: 16,
@@ -128,6 +136,33 @@ class OverviewTab extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Aviso de algo esperando o gestor, com atalho para revisar
+class _PendingCard extends StatelessWidget {
+  final IconData icon;
+  final String message;
+  final VoidCallback onTap;
+
+  const _PendingCard({required this.icon, required this.message, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      backgroundColor: AppColors.warningLighter.withValues(alpha: 0.5),
+      onTap: onTap,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.warningDarker),
+          const SizedBox(width: 12),
+          Expanded(child: Text(message, style: const TextStyle(fontWeight: FontWeight.w600))),
+          const Text('Revisar', style: TextStyle(color: AppColors.warningDarker, fontWeight: FontWeight.w600)),
+          const Icon(Icons.chevron_right, color: AppColors.warningDarker),
         ],
       ),
     );

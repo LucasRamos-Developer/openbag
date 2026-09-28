@@ -1,6 +1,7 @@
 package com.openbag.modules.delivery.dto;
 
 import com.openbag.enums.CourierPolicy;
+import com.openbag.enums.DeliveryFeeMode;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +16,9 @@ public class RestaurantDeliverySettingsRequest {
     private boolean fallbackToOpen;
 
     private boolean coversDeliveryDifference;
+
+    // Taxa fixa da loja ou repassada ao cliente pela distância (nulo = mantém)
+    private DeliveryFeeMode deliveryFeeMode;
 
     // Entregador livre que não aparece: minutos até a loja poder trocá-lo (nulo = mantém)
     @Min(value = 3, message = "Mínimo de 3 minutos")

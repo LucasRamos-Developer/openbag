@@ -11,6 +11,7 @@ import '../../widgets/navigation/panel_profiles.dart';
 import '../../widgets/navigation/panel_routes.dart';
 import '../../models/delivery/courier_link.dart';
 import 'courier_section.dart';
+import 'tabs/association/member_area_section.dart';
 import 'tabs/badge_tab.dart';
 import 'tabs/earnings_tab.dart';
 import 'tabs/profile_tab.dart';
@@ -23,7 +24,10 @@ import 'tabs/work_tab.dart';
 class CourierPanelScreen extends StatefulWidget {
   final CourierSection section;
 
-  const CourierPanelScreen({super.key, this.section = CourierSection.work});
+  /// Sub-aba da área da associação
+  final String? tab;
+
+  const CourierPanelScreen({super.key, this.section = CourierSection.work, this.tab});
 
   @override
   State<CourierPanelScreen> createState() => _CourierPanelScreenState();
@@ -98,12 +102,16 @@ class _CourierPanelScreenState extends State<CourierPanelScreen> {
       body: IndexedStack(
         index: widget.section.index,
         children: [
-          WorkTab(onOpenVehicles: () => context.go(CourierSection.vehicles.path)),
-          EarningsTab(key: _earningsKey),
-          CourierRestaurantsTab(key: _storesKey),
-          const VehiclesTab(),
-          const CourierProfileTab(),
-          const BadgeTab(),
+          for (final section in CourierSection.values)
+            switch (section) {
+              CourierSection.work => WorkTab(onOpenVehicles: () => context.go(CourierSection.vehicles.path)),
+              CourierSection.earnings => EarningsTab(key: _earningsKey),
+              CourierSection.association => MemberAreaSection(tab: MemberAreaTab.fromSlug(widget.tab)),
+              CourierSection.stores => CourierRestaurantsTab(key: _storesKey),
+              CourierSection.vehicles => const VehiclesTab(),
+              CourierSection.profile => const CourierProfileTab(),
+              CourierSection.badge => const BadgeTab(),
+            },
         ],
       ),
     );

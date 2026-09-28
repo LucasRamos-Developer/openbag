@@ -5,7 +5,9 @@ import '../../../core/ui/ui.dart';
 import '../../../models/association/member.dart';
 import '../../../services/api_client.dart';
 import '../../../services/association_service.dart';
+import '../../../utils/file_download.dart';
 import '../../../utils/formatters.dart';
+import '../../../widgets/courier/vehicle_tile.dart';
 import '../../../widgets/association/membership_status_chip.dart';
 import '../member_form_screen.dart';
 
@@ -33,7 +35,15 @@ class _MembersTabState extends State<MembersTab> {
   final _searchController = TextEditingController();
   Timer? _debounce;
 
+  static final _vehicleFilters = <SelectItem<VehicleType?>>[
+    const SelectItem(value: null, label: 'Todos'),
+    for (final type in VehicleType.values) SelectItem(value: type, label: type.label, icon: type.icon),
+  ];
+
   MembershipStatus? _filter;
+  VehicleType? _vehicleFilter;
+  MemberBillingFilter? _billingFilter;
+  bool _exporting = false;
   final List<Member> _members = [];
   int _page = 0;
   bool _hasMore = false;
@@ -65,6 +75,8 @@ class _MembersTabState extends State<MembersTab> {
     try {
       final page = await context.read<AssociationService>().fetchMembers(
             status: _filter,
+            vehicleType: _vehicleFilter,
+            billing: _billingFilter,
             query: _searchController.text.trim(),
             page: reset ? 0 : _page + 1,
           );
@@ -93,6 +105,36 @@ class _MembersTabState extends State<MembersTab> {
     _load(reset: true);
   }
 
+  void _selectVehicle(VehicleType? type) {
+    setState(() => _vehicleFilter = type);
+    _load(reset: true);
+  }
+
+  Future<void> _export() async {
+    if (!canDownloadFiles) {
+      AppToast.show(context, message: 'A exportação está disponível na versão web', type: ToastType.info);
+      return;
+    }
+    setState(() => _exporting = true);
+    try {
+      final bytes = await context.read<AssociationService>().exportMembers(
+            status: _filter,
+            vehicleType: _vehicleFilter,
+            billing: _billingFilter,
+            query: _searchController.text.trim(),
+          );
+      final today = DateTime.now();
+      downloadBytes(bytes,
+          fileName: 'associados-${today.year}-${_two(today.month)}-${_two(today.day)}.csv', mimeType: 'text/csv');
+    } on ApiException catch (e) {
+      if (mounted) AppToast.show(context, message: e.message, type: ToastType.error);
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  static String _two(int value) => value.toString().padLeft(2, '0');
+
   Future<void> _openCreateForm() async {
     final created = await Navigator.of(context).push<Member>(
       MaterialPageRoute(builder: (_) => const MemberFormScreen()),
@@ -104,11 +146,8 @@ class _MembersTabState extends State<MembersTab> {
   }
 
   Future<void> _openDetails(Member member) async {
-    final changed = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      constraints: const BoxConstraints(maxWidth: 640),
+    final changed = await showAppAdaptive<bool>(
+      context,
       builder: (_) => ChangeNotifierProvider.value(
         value: context.read<AssociationService>(),
         child: _MemberDetailsSheet(member: member),
@@ -130,43 +169,102 @@ class _MembersTabState extends State<MembersTab> {
   }
 
   Widget _buildContent() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-          child: AppSectionHeader(
-            title: 'Associados',
-            subtitle: _isLoading && _members.isEmpty ? null : '$_total encontrado(s)',
-            action: AppButton(
-              text: 'Cadastrar',
-              icon: Icons.person_add_alt_1_outlined,
+    final compact = AppLayout.isCompact(context);
+    final gutter = compact ? 16.0 : 24.0;
+    final exportButton = compact
+        ? IconButton(
+            tooltip: 'Exportar planilha',
+            onPressed: _exporting ? null : _export,
+            icon: _exporting
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.file_download_outlined),
+          )
+        : AppButton(
+            text: 'Exportar',
+            icon: Icons.file_download_outlined,
+            variant: ButtonVariant.outlined,
+            isLoading: _exporting,
+            onPressed: _export,
+          );
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      // No celular o cadastro fica no botão flutuante, ao alcance do polegar
+      floatingActionButton: compact
+          ? FloatingActionButton.extended(
               onPressed: _openCreateForm,
+              icon: const Icon(Icons.person_add_alt_1_outlined),
+              label: const Text('Cadastrar'),
+            )
+          : null,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(gutter, compact ? 16 : 24, gutter, 0),
+            child: AppSectionHeader(
+              title: 'Associados',
+              subtitle: _isLoading && _members.isEmpty ? null : '$_total encontrado(s)',
+              action: compact
+                  ? exportButton
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        exportButton,
+                        const SizedBox(width: 12),
+                        AppButton(
+                          text: 'Cadastrar',
+                          icon: Icons.person_add_alt_1_outlined,
+                          onPressed: _openCreateForm,
+                        ),
+                      ],
+                    ),
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: AppTextField(
-            controller: _searchController,
-            hintText: 'Buscar por nome, email ou CPF',
-            prefixIcon: const Icon(Icons.search),
-            variant: TextFieldVariant.filled,
-            size: TextFieldSize.small,
-            onChanged: _onSearchChanged,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: gutter),
+            child: AppTextField(
+              controller: _searchController,
+              hintText: 'Buscar por nome, email ou CPF',
+              prefixIcon: const Icon(Icons.search),
+              variant: TextFieldVariant.filled,
+              size: TextFieldSize.small,
+              onChanged: _onSearchChanged,
+            ),
           ),
-        ),
-        AppFilterChips<MembershipStatus?>(
-          items: _filters,
-          value: _filter,
-          onSelected: _selectFilter,
-        ),
-        Expanded(child: _buildList()),
-      ],
+          AppFilterChips<MembershipStatus?>(
+            items: _filters,
+            value: _filter,
+            onSelected: _selectFilter,
+            padding: EdgeInsets.symmetric(horizontal: gutter, vertical: 10),
+            leading: [
+              AppDropdownChip<MemberBillingFilter?>(
+                label: 'Mensalidade',
+                items: [
+                  const SelectItem(value: null, label: 'Todas'),
+                  for (final f in MemberBillingFilter.values) SelectItem(value: f, label: f.label),
+                ],
+                value: _billingFilter,
+                onSelected: (f) {
+                  setState(() => _billingFilter = f);
+                  _load(reset: true);
+                },
+              ),
+              AppDropdownChip<VehicleType?>(
+                label: 'Veículo',
+                items: _vehicleFilters,
+                value: _vehicleFilter,
+                onSelected: _selectVehicle,
+              ),
+            ],
+          ),
+          Expanded(child: _buildList(gutter, compact)),
+        ],
+      ),
     );
   }
 
-  Widget _buildList() {
+  Widget _buildList(double gutter, bool compact) {
     if (_error != null && _members.isEmpty) {
       return AppEmptyState(
         icon: Icons.cloud_off_outlined,
@@ -189,7 +287,8 @@ class _MembersTabState extends State<MembersTab> {
     return RefreshIndicator(
       onRefresh: () => _load(reset: true),
       child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        // No celular sobra espaço no fim para o botão flutuante não cobrir o último item
+        padding: EdgeInsets.fromLTRB(gutter, 0, gutter, compact ? 96 : 24),
         itemCount: _members.length + (_hasMore ? 1 : 0),
         separatorBuilder: (_, __) => const SizedBox(height: 8),
         itemBuilder: (context, index) {
@@ -220,43 +319,20 @@ class _MemberTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return AppCard(
+    return AppListTileCard(
       onTap: onTap,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      borderColor: colorScheme.outline.withValues(alpha: 0.15),
-      borderWidth: 1,
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: colorScheme.primary.withValues(alpha: 0.12),
-            child: Text(
-              member.fullName.isNotEmpty ? member.fullName[0].toUpperCase() : '?',
-              style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  member.memberNumber != null ? '${member.fullName} · nº ${member.memberNumber}' : member.fullName,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  member.vehicleSummary,
-                  style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          MembershipStatusChip(status: member.status),
-        ],
+      leading: CircleAvatar(
+        backgroundColor: colorScheme.primary.withValues(alpha: 0.12),
+        child: Text(
+          member.fullName.isNotEmpty ? member.fullName[0].toUpperCase() : '?',
+          style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
+        ),
       ),
+      title: member.memberNumber != null ? '${member.fullName} · nº ${member.memberNumber}' : member.fullName,
+      subtitle: member.openInvoices > 0
+          ? '${formatMoney(member.openAmount)} em aberto · ${member.vehicleSummary}'
+          : member.vehicleSummary,
+      trailing: MembershipStatusChip(status: member.status),
     );
   }
 }
@@ -276,10 +352,25 @@ class _MemberDetailsSheetState extends State<_MemberDetailsSheet> {
   MemberAction? _running;
   bool _changed = false;
 
+  bool _loadingDetails = true;
+
   @override
   void initState() {
     super.initState();
     _member = widget.member;
+    _loadDetails();
+  }
+
+  /// A listagem não traz os veículos: busca a ficha completa
+  Future<void> _loadDetails() async {
+    try {
+      final member = await context.read<AssociationService>().fetchMember(_member.membershipId);
+      if (mounted) setState(() => _member = member);
+    } on ApiException catch (_) {
+      // Sem a ficha completa, mostra o que veio da listagem
+    } finally {
+      if (mounted) setState(() => _loadingDetails = false);
+    }
   }
 
   Future<void> _run(MemberAction action) async {
@@ -291,7 +382,8 @@ class _MemberDetailsSheetState extends State<_MemberDetailsSheet> {
         confirmLabel: action.label,
         message: switch (action) {
           MemberAction.suspend => 'O entregador fica impedido de receber entregas até ser reativado.',
-          MemberAction.remove => 'O vínculo é encerrado. Para voltar, o entregador precisará de uma nova solicitação ou convite.',
+          MemberAction.remove =>
+            'O vínculo é encerrado. Para voltar, o entregador precisará de uma nova solicitação ou convite.',
           _ => null,
         },
       );
@@ -339,58 +431,57 @@ class _MemberDetailsSheetState extends State<_MemberDetailsSheet> {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) Navigator.of(context).pop(_changed);
       },
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(_member.fullName, style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
-                  ),
-                  MembershipStatusChip(status: _member.status),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _info('Matrícula', _member.memberNumber != null ? 'nº ${_member.memberNumber}' : '-'),
-              _info('Email', _member.email),
-              _info('Telefone', _member.phoneNumber),
-              _info('CPF', _member.formattedDocument),
-              _info('CNH', _member.driverLicense ?? '-'),
-              _info('Veículo', _member.vehicleSummary),
-              _info('Entregas', '${_member.totalDeliveries}'),
-              _info('Origem', _member.origin.label),
-              _info('Solicitado em', formatDateTime(_member.requestedAt)),
-              if (_member.decidedAt != null) _info('Última decisão', formatDateTime(_member.decidedAt)),
-              if (_member.endedAt != null) _info('Encerrado em', formatDateTime(_member.endedAt)),
-              if (_member.reason != null) _info('Motivo', _member.reason!),
-              if (actions.isNotEmpty) ...[
-                const SizedBox(height: 20),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  alignment: WrapAlignment.end,
-                  children: [
-                    for (final action in actions)
-                      AppButton(
-                        text: action.label,
-                        isLoading: _running == action,
-                        onPressed: _running != null ? null : () => _run(action),
-                        variant: action == MemberAction.approve || action == MemberAction.reactivate
-                            ? ButtonVariant.contained
-                            : ButtonVariant.outlined,
-                        backgroundColor: action == MemberAction.remove || action == MemberAction.reject
-                            ? AppColors.errorDark
-                            : null,
-                      ),
-                  ],
-                ),
-              ],
-            ],
-          ),
+      child: AppAdaptiveSheet(
+        title: _member.fullName,
+        subtitle: _member.memberNumber != null ? 'Associado nº ${_member.memberNumber}' : null,
+        onClose: () => Navigator.of(context).pop(_changed),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Align(alignment: Alignment.centerLeft, child: MembershipStatusChip(status: _member.status)),
+            const SizedBox(height: 12),
+            _info('Email', _member.email),
+            _info('Telefone', _member.phoneNumber),
+            _info('CPF', _member.formattedDocument),
+            _info('CNH', _member.driverLicense ?? '-'),
+            _info('Entregas', '${_member.totalDeliveries}'),
+            _info(
+              'Mensalidade',
+              _member.openInvoices == 0
+                  ? 'Em dia'
+                  : '${_member.openInvoices} ${_member.openInvoices == 1 ? 'fatura' : 'faturas'} em aberto · '
+                      '${formatMoney(_member.openAmount)}',
+            ),
+            _info('Origem', _member.origin.label),
+            _info('Solicitado em', formatDateTime(_member.requestedAt)),
+            if (_member.decidedAt != null) _info('Última decisão', formatDateTime(_member.decidedAt)),
+            if (_member.endedAt != null) _info('Encerrado em', formatDateTime(_member.endedAt)),
+            if (_member.reason != null) _info('Motivo', _member.reason!),
+            const SizedBox(height: 20),
+            Text('Veículos', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            if (_loadingDetails)
+              const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator()))
+            else if (_member.vehicles.isEmpty)
+              Text(_member.vehicleSummary, style: textTheme.bodyMedium)
+            else
+              for (final vehicle in _member.vehicles)
+                Padding(padding: const EdgeInsets.only(bottom: 8), child: VehicleTile(vehicle: vehicle)),
+          ],
         ),
+        actions: [
+          for (final action in actions)
+            AppButton(
+              text: action.label,
+              isLoading: _running == action,
+              onPressed: _running != null ? null : () => _run(action),
+              variant: action == MemberAction.approve || action == MemberAction.reactivate
+                  ? ButtonVariant.contained
+                  : ButtonVariant.outlined,
+              backgroundColor:
+                  action == MemberAction.remove || action == MemberAction.reject ? AppColors.errorDark : null,
+            ),
+        ],
       ),
     );
   }
@@ -403,7 +494,7 @@ class _MemberDetailsSheetState extends State<_MemberDetailsSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 130,
+            width: 120,
             child: Text(label, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))),
           ),
           Expanded(child: Text(value)),

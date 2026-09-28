@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -35,15 +36,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _needsChange = false;
   bool _isSubmitting = false;
 
+  // Taxa pelo endereço, quando a loja cobra pela distância
+  DeliveryQuote? _quote;
+  bool _quoting = false;
+  Timer? _quoteDebounce;
+  String? _quotedAddress;
+
   @override
   void initState() {
     super.initState();
     _phone.text = context.read<AuthService>().currentUser?.phoneNumber ?? '';
+    for (final field in [_address.street, _address.number, _address.city, _address.state]) {
+      field.addListener(_scheduleQuote);
+    }
     _restoreAddress();
   }
 
   @override
   void dispose() {
+    _quoteDebounce?.cancel();
     _address.dispose();
     _phone.dispose();
     _notes.dispose();
@@ -59,6 +70,35 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   }
 
+  /// Recalcula a taxa quando o endereço muda (só se a loja cobra pela distância)
+  void _scheduleQuote() {
+    final cart = context.read<CartService>();
+    if (!cart.deliveryFeeByDistance || cart.restaurant == null) return;
+    final address = _address.toJson();
+    if ([address['street'], address['number'], address['city'], address['state']].any((v) => v == null)) return;
+    final key = json.encode(address);
+    if (key == _quotedAddress) return;
+
+    _quoteDebounce?.cancel();
+    _quoteDebounce = Timer(const Duration(milliseconds: 700), () => _fetchQuote(cart.restaurant!.id, address, key));
+  }
+
+  Future<void> _fetchQuote(int restaurantId, Map<String, dynamic> address, String key) async {
+    setState(() => _quoting = true);
+    try {
+      final quote = await context.read<OrderService>().quoteDelivery(restaurantId, address);
+      if (!mounted) return;
+      setState(() {
+        _quote = quote;
+        _quotedAddress = key;
+      });
+    } on ApiException catch (_) {
+      // Sem a cotação fica o "a partir de"; o pedido recalcula no servidor
+    } finally {
+      if (mounted) setState(() => _quoting = false);
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) {
       AppToast.show(context, message: 'Confira o endereço de entrega', type: ToastType.warning);
@@ -66,7 +106,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
     final cart = context.read<CartService>();
     final changeFor = _payment == PaymentMethod.CASH && _needsChange ? parseMoney(_changeFor.text) : null;
-    if (changeFor != null && changeFor < cart.total) {
+    if (changeFor != null && changeFor < _total(cart)) {
       AppToast.show(context, message: 'O troco deve ser para um valor maior que o total', type: ToastType.warning);
       return;
     }
@@ -97,6 +137,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (mounted) setState(() => _isSubmitting = false);
     }
   }
+
+  double _deliveryFee(CartService cart) => _quote?.fee ?? cart.deliveryFee;
+
+  double _total(CartService cart) => cart.subtotal + _deliveryFee(cart);
+
+  /// Taxa ainda sem o endereço localizado: mostra "a partir de"
+  bool _feeFrom(CartService cart) => cart.deliveryFeeByDistance && _quote?.distanceKm == null;
 
   @override
   Widget build(BuildContext context) {
@@ -204,7 +251,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                   ),
                 const SizedBox(height: 12),
-                PriceSummary(subtotal: cart.subtotal, deliveryFee: cart.deliveryFee, total: cart.total),
+                PriceSummary(
+                  subtotal: cart.subtotal,
+                  deliveryFee: _deliveryFee(cart),
+                  total: _total(cart),
+                  deliveryFeeFrom: _feeFrom(cart),
+                  deliveryDistanceKm: cart.deliveryFeeByDistance ? _quote?.distanceKm : null,
+                  calculating: _quoting,
+                ),
+                if (_feeFrom(cart) && !_quoting)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      _quote == null
+                          ? 'A taxa depende da distância: preencha o endereço para ver o valor.'
+                          : 'Não achamos o endereço no mapa: vale o valor mínimo da entrega.',
+                      style: TextStyle(color: muted, fontSize: 12),
+                    ),
+                  ),
                 const SizedBox(height: 24),
               ],
             ),
@@ -216,7 +280,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: AppButton(
-            text: 'Fazer pedido  ·  ${formatMoney(cart.total)}',
+            text: 'Fazer pedido  ·  ${formatMoney(_total(cart))}',
             size: ButtonSize.large,
             fullWidth: true,
             isLoading: _isSubmitting,

@@ -28,6 +28,8 @@ import 'services/association_service.dart';
 import 'services/restaurant_panel_service.dart';
 import 'services/restaurant_service.dart';
 import 'services/cart_service.dart';
+import 'services/cooperative_service.dart';
+import 'services/member_area_service.dart';
 import 'services/order_service.dart';
 import 'services/review_service.dart';
 import 'services/realtime_service.dart';
@@ -83,6 +85,8 @@ class _OpenBagAppState extends State<OpenBagApp> {
         Provider(create: (_) => RestaurantRoutesService(_authService.apiClient)),
         ChangeNotifierProvider(create: (_) => RestaurantService(_authService.apiClient)),
         Provider(create: (_) => OrderService(_authService.apiClient)),
+        Provider(create: (_) => CooperativeService(_authService.apiClient)),
+        Provider(create: (_) => MemberAreaService(_authService.apiClient)),
         Provider(create: (_) => ReviewService(_authService.apiClient)),
         ChangeNotifierProvider.value(value: _realtime),
         ChangeNotifierProvider(create: (_) => RestaurantOrdersService(_authService.apiClient, _realtime)),
@@ -166,12 +170,12 @@ GoRouter buildRouter(AuthService authService) => GoRouter(
     ...panelRoutes(
       base: '/associacao',
       sections: AssociationSection.values,
-      builder: (section, _) => AssociationPanelScreen(section: section),
+      builder: (section, tab) => AssociationPanelScreen(section: section, tab: tab),
     ),
     ...panelRoutes(
       base: '/entregador',
       sections: CourierSection.values,
-      builder: (section, _) => CourierPanelScreen(section: section),
+      builder: (section, tab) => CourierPanelScreen(section: section, tab: tab),
     ),
     GoRoute(
       path: '/e/:slug',

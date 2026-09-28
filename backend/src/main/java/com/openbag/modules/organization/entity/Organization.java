@@ -125,6 +125,14 @@ public class Organization {
         return deliveryRate != null && deliveryRate.isConfigured();
     }
 
+    /** Cobrança da mensalidade dos cooperados (fixa ou percentual com teto) */
+    @Embedded
+    private MembershipFeePolicy feePolicy;
+
+    public boolean isFeePolicyConfigured() {
+        return feePolicy != null && feePolicy.isConfigured();
+    }
+
     public boolean isOperational() {
         return status == OrganizationStatus.ACTIVE;
     }

@@ -7,7 +7,10 @@ import com.openbag.exception.BadRequestException;
 import com.openbag.exception.ResourceNotFoundException;
 import com.openbag.modules.combo.entity.Combo;
 import com.openbag.modules.combo.repository.ComboRepository;
+import com.openbag.modules.delivery.dto.DeliveryQuoteDTO;
+import com.openbag.modules.delivery.service.DeliveryFeeQuoteService;
 import com.openbag.modules.order.dto.CreateOrderRequest;
+import com.openbag.modules.order.dto.DeliveryQuoteRequest;
 import com.openbag.modules.order.dto.OrderDTO;
 import com.openbag.modules.order.entity.Order;
 import com.openbag.modules.order.entity.OrderItem;
@@ -19,6 +22,7 @@ import com.openbag.modules.product.entity.Product;
 import com.openbag.modules.product.repository.ProductRepository;
 import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.restaurant.repository.RestaurantRepository;
+import com.openbag.modules.shared.service.GeocodingService;
 import com.openbag.modules.user.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +69,9 @@ public class OrderService {
     private OrderCalculator calculator;
 
     @Autowired
+    private DeliveryFeeQuoteService deliveryFeeQuoteService;
+
+    @Autowired
     private Clock clock;
 
     @Autowired
@@ -73,8 +80,21 @@ public class OrderService {
     @Autowired
     private CustomerOrderMapper customerOrderMapper;
 
+    @Transactional(readOnly = true)
+    public DeliveryQuoteDTO quoteDelivery(DeliveryQuoteRequest request) {
+        Restaurant restaurant = restaurantRepository.findByIdAndIsActiveTrue(request.restaurantId())
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurante não encontrado"));
+        return DeliveryQuoteDTO.from(deliveryFeeQuoteService.quote(restaurant, request.toQuery(),
+                request.latitude(), request.longitude()));
+    }
+
     public OrderDTO createOrder(CreateOrderRequest request, User customer) {
         LocalDateTime now = LocalDateTime.now(clock);
+
+        // Localiza o endereço antes de travar a loja: a consulta ao mapa pode levar alguns segundos
+        CreateOrderRequest.AddressRequest deliveryAddress = request.getAddress();
+        GeocodingService.Coordinates point = deliveryFeeQuoteService.locate(deliveryAddress.toQuery(),
+                deliveryAddress.getLatitude(), deliveryAddress.getLongitude());
 
         // Lock no restaurante: serializa a numeração do dia e a checagem de "aberto"
         Restaurant restaurant = restaurantRepository.findByIdForUpdate(request.getRestaurantId())
@@ -90,7 +110,11 @@ public class OrderService {
         if (subtotal.compareTo(restaurant.getMinimumOrder()) < 0) {
             throw new BadRequestException("O pedido mínimo deste restaurante é " + BRL.format(restaurant.getMinimumOrder()));
         }
-        BigDecimal deliveryFee = restaurant.getDeliveryFee();
+        // Taxa fixa da loja ou, se ela repassa, pela distância até o endereço (calculada aqui, nunca pelo app)
+        DeliveryFeeQuoteService.Quote quote = point != null
+                ? deliveryFeeQuoteService.quote(restaurant, point.latitude(), point.longitude())
+                : deliveryFeeQuoteService.quote(restaurant, null, null);
+        BigDecimal deliveryFee = quote.fee();
         BigDecimal total = subtotal.add(deliveryFee);
 
         BigDecimal changeFor = null;
@@ -119,9 +143,10 @@ public class OrderService {
         order.setChangeFor(changeFor);
         order.setOrderNotes(request.getNotes() != null && !request.getNotes().isBlank() ? request.getNotes().trim() : null);
         order.setDeliveryAddress(address.format());
-        order.setDeliveryLatitude(address.getLatitude());
+        order.setDeliveryLatitude(quote.latitude());
         order.setDeliveryNeighborhood(address.getNeighborhood().trim());
-        order.setDeliveryLongitude(address.getLongitude());
+        order.setDeliveryLongitude(quote.longitude());
+        order.setDeliveryDistanceKm(quote.distanceKm());
         order.setCustomerName(customer.getFullName());
         order.setCustomerPhone(request.getCustomerPhone() != null && !request.getCustomerPhone().isBlank()
                 ? request.getCustomerPhone().trim()

@@ -153,6 +153,9 @@ class _DeliveryTabState extends State<DeliveryTab> {
                         AppTextField(
                           controller: _fee,
                           labelText: 'Taxa de entrega',
+                          helperText: widget.store.passesDeliveryFee
+                              ? 'Você repassa a taxa: o cliente paga pela distância (Entregadores)'
+                              : null,
                           prefixText: 'R\$ ',
                           variant: TextFieldVariant.filled,
                           keyboardType: TextInputType.number,

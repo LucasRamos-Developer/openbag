@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/ui/ui.dart';
+import '../../../models/association/association_report.dart';
 import '../../../models/courier/courier_earnings.dart';
 import '../../../services/api_client.dart';
 import '../../../services/courier_service.dart';
 import '../../../utils/formatters.dart';
+import '../../../widgets/association/association_report_widgets.dart';
 import '../../../widgets/courier/earnings_chart.dart';
 import '../../../widgets/courier/earnings_summary.dart';
 
@@ -29,6 +31,8 @@ class EarningsTab extends StatefulWidget {
 class EarningsTabState extends State<EarningsTab> {
   _Period _period = _Period.week;
   CourierEarnings? _earnings;
+  // Resumo da associação no mesmo período (nulo se ele não for cooperado ativo)
+  AssociationReport? _association;
   String? _error;
   bool _loading = false;
 
@@ -44,16 +48,29 @@ class EarningsTabState extends State<EarningsTab> {
       _error = null;
     });
     final today = DateTime.now();
+    final from = DateTime(today.year, today.month, today.day).subtract(Duration(days: _period.days - 1));
+    final service = context.read<CourierService>();
     try {
-      final data = await context.read<CourierService>().fetchEarnings(
-            from: DateTime(today.year, today.month, today.day).subtract(Duration(days: _period.days - 1)),
-            to: today,
-          );
-      if (mounted) setState(() => _earnings = data);
+      final data = await service.fetchEarnings(from: from, to: today);
+      final association = await _fetchAssociation(service, from, today);
+      if (mounted) {
+        setState(() {
+          _earnings = data;
+          _association = association;
+        });
+      }
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  static Future<AssociationReport?> _fetchAssociation(CourierService service, DateTime from, DateTime to) async {
+    try {
+      return await service.fetchAssociationReport(from: from, to: to);
+    } on ApiException {
+      return null;
     }
   }
 
@@ -81,7 +98,8 @@ class EarningsTabState extends State<EarningsTab> {
                 children: [
                   const AppSectionHeader(
                     title: 'Meus ganhos',
-                    subtitle: 'Valor da tabela da sua associação por entrega concluída. Você fica com 100%.',
+                    subtitle: 'Valor da tabela que vale em cada loja (a da sua associação ou a especial combinada '
+                        'com a loja) por entrega concluída. Você fica com 100%.',
                   ),
                   EarningsSummary(earnings: earnings),
                   const SizedBox(height: 24),
@@ -113,6 +131,10 @@ class EarningsTabState extends State<EarningsTab> {
                     padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
                     child: EarningsChart(days: earnings.daily),
                   ),
+                  if (_association != null) ...[
+                    const SizedBox(height: 24),
+                    _AssociationShare(report: _association!, days: _period.days),
+                  ],
                   const SizedBox(height: 24),
                   Text('Entregas do período', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
@@ -134,6 +156,57 @@ class EarningsTabState extends State<EarningsTab> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Minha associação no período: o total dos cooperados, a minha parte e as lojas atendidas.
+/// Os ganhos de cada colega não aparecem.
+class _AssociationShare extends StatelessWidget {
+  final AssociationReport report;
+  final int days;
+
+  const _AssociationShare({required this.report, required this.days});
+
+  @override
+  Widget build(BuildContext context) {
+    final mine = report.mine;
+    return AppPanelCard(
+      title: 'Minha associação',
+      subtitle: '${report.associationName} nos últimos $days dias',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AppResponsiveGrid(
+            maxColumns: 3,
+            minItemWidth: 170,
+            children: [
+              AppStatTile(
+                label: 'Pago aos cooperados',
+                value: formatMoney(report.summary.earnings),
+                icon: Icons.groups_outlined,
+              ),
+              AppStatTile(
+                label: 'Entregas da associação',
+                value: formatCount(report.summary.deliveries),
+                icon: Icons.local_shipping_outlined,
+              ),
+              if (mine != null)
+                AppStatTile(
+                  label: 'Minha parte',
+                  value: formatMoney(mine.earnings),
+                  caption: '${mine.deliveries} ${mine.deliveries == 1 ? 'entrega' : 'entregas'}',
+                  icon: Icons.person_outline,
+                  highlighted: true,
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text('Por loja', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          AssociationRestaurantList(lines: report.byRestaurant),
         ],
       ),
     );

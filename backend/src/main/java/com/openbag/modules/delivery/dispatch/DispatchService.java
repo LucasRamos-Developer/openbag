@@ -25,6 +25,7 @@ import com.openbag.modules.delivery.repository.CourierShiftRepository;
 import com.openbag.modules.delivery.repository.DeliveryOfferRepository;
 import com.openbag.modules.delivery.repository.DeliveryPersonRepository;
 import com.openbag.modules.delivery.repository.DeliveryRouteRepository;
+import com.openbag.modules.delivery.entity.RestaurantPartnership;
 import com.openbag.modules.delivery.repository.RestaurantPartnershipRepository;
 import com.openbag.modules.delivery.repository.StaffCourierRepository;
 import com.openbag.modules.delivery.service.DeliveryRateCalculator;
@@ -32,6 +33,7 @@ import com.openbag.modules.order.entity.Order;
 import com.openbag.modules.order.realtime.OrderChangedEvent;
 import com.openbag.modules.order.repository.OrderRepository;
 import com.openbag.modules.order.service.OrderService;
+import com.openbag.modules.organization.entity.DeliveryRate;
 import com.openbag.modules.organization.entity.Organization;
 import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.shared.util.GeoUtils;
@@ -324,6 +326,7 @@ public class DispatchService {
             closePendingOffers(order, "A loja escolheu outro entregador");
             releaseCurrent(order, "A loja passou o pedido para outro entregador");
             order.setStaffCourier(staff);
+            order.setCourierOrganization(null);
             order.setCourierFee(staffFee(staff, order));
             order.setRestaurantDeliverySubsidy(BigDecimal.ZERO);
             orderService.addTracking(order, order.getStatus(), "Entregador definido: " + staff.getName(), now);
@@ -340,6 +343,7 @@ public class DispatchService {
             releaseCurrent(order, "A loja passou o pedido para outro entregador");
 
             order.setDeliveryPerson(courier);
+            order.setCourierOrganization(courier.getOrganization());
             order.setCourierFee(fee);
             order.setRestaurantDeliverySubsidy(DeliveryRateCalculator.subsidy(fee, order.getDeliveryFee()));
             courier.setWorkStatus(CourierWorkStatus.BUSY);
@@ -426,7 +430,7 @@ public class DispatchService {
 
     /**
      * Entregador aceitou a oferta: ele fica com o pedido (ou com todos os pedidos da rota que ainda esperam),
-     * cada um com o valor da tabela da associação dele
+     * cada um com o valor da tabela que vale na loja (a especial da parceria ou a da associação dele)
      */
     public List<Order> assignOfferedOrders(DeliveryOffer offer, DeliveryPerson courier, LocalDateTime now) {
         DeliveryRoute route = offer.getRoute();
@@ -460,12 +464,14 @@ public class DispatchService {
         if (staff != null) {
             order.setStaffCourier(staff);
             order.setDeliveryPerson(null);
+            order.setCourierOrganization(null);
             order.setCourierFee(staffFee(staff, order));
             order.setRestaurantDeliverySubsidy(BigDecimal.ZERO);
             orderService.addTracking(order, order.getStatus(), "Entregador definido: " + staff.getName(), now);
         } else {
             BigDecimal fee = courierFee(courier, order);
             order.setDeliveryPerson(courier);
+            order.setCourierOrganization(courier.getOrganization());
             order.setStaffCourier(null);
             order.setCourierFee(fee);
             order.setRestaurantDeliverySubsidy(DeliveryRateCalculator.subsidy(fee, order.getDeliveryFee()));
@@ -532,6 +538,7 @@ public class DispatchService {
                     CourierOrderDTO.from(order), reason));
         }
         order.setCourierFee(null);
+        order.setCourierOrganization(null);
         order.setRestaurantDeliverySubsidy(null);
         order.setAssignedAt(null);
     }
@@ -575,23 +582,53 @@ public class DispatchService {
         if (organization == null || !organization.isOperational() || !organization.isDeliveryRateConfigured()) {
             return "A associação dele ainda não definiu a tabela de valores";
         }
-        BigDecimal fee = DeliveryRateCalculator.courierFee(organization.getDeliveryRate(), order.getDeliveryDistanceKm());
+        BigDecimal fee = courierFee(courier, order);
         if (!CourierSelector.feeAllowed(fee, order.getDeliveryFee(), order.getRestaurant().isCoversDeliveryDifference())) {
             return "A tabela dele (" + money(fee) + ") passa da sua taxa de entrega";
         }
         return null;
     }
 
-    private static BigDecimal courierFeeOrNull(DeliveryPerson courier, Order order) {
+    private BigDecimal courierFeeOrNull(DeliveryPerson courier, Order order) {
         Organization organization = courier.getOrganization();
         if (organization == null || !organization.isDeliveryRateConfigured()) {
             return null;
         }
-        return DeliveryRateCalculator.courierFee(organization.getDeliveryRate(), order.getDeliveryDistanceKm());
+        return courierFee(courier, order);
     }
 
-    private static BigDecimal courierFee(DeliveryPerson courier, Order order) {
-        return DeliveryRateCalculator.courierFee(courier.getOrganization().getDeliveryRate(), order.getDeliveryDistanceKm());
+    /** Valor do entregador pela tabela que vale na loja: a especial da parceria, se houver, ou a da associação */
+    private BigDecimal courierFee(DeliveryPerson courier, Order order) {
+        return payout(DeliveryRateCalculator.courierFee(rateFor(courier.getOrganization(), order.getRestaurant()),
+                order.getDeliveryDistanceKm()), order);
+    }
+
+    /**
+     * O que o entregador recebe: o valor da tabela dele ou, se a loja repassa a taxa ao cliente, o valor inteiro
+     * que o cliente pagou (que já é o da maior tabela, então nunca fica abaixo da dele)
+     */
+    static BigDecimal payout(BigDecimal tableFee, Order order) {
+        if (order.getRestaurant().passesDeliveryFee() && order.getDeliveryFee() != null) {
+            return tableFee.max(order.getDeliveryFee());
+        }
+        return tableFee;
+    }
+
+    private DeliveryRate rateFor(Organization organization, Restaurant restaurant) {
+        return partnershipRepository.findActive(restaurant.getId(), organization.getId())
+                .filter(RestaurantPartnership::hasAgreedRate)
+                .map(RestaurantPartnership::getAgreedRate)
+                .orElse(organization.getDeliveryRate());
+    }
+
+    private static Map<Long, DeliveryRate> agreedRates(List<RestaurantPartnership> partnerships) {
+        Map<Long, DeliveryRate> rates = new HashMap<>();
+        for (RestaurantPartnership partnership : partnerships) {
+            if (partnership.hasAgreedRate()) {
+                rates.put(partnership.getOrganization().getId(), partnership.getAgreedRate());
+            }
+        }
+        return rates;
     }
 
     /** Equipe própria recebe o valor combinado por entrega ou, sem ele, a taxa cobrada do cliente */
@@ -696,6 +733,8 @@ public class DispatchService {
     private Optional<Choice> chooseCourier(Order order, List<Order> orders) {
         Restaurant restaurant = order.getRestaurant();
         LocalDateTime now = LocalDateTime.now(clock);
+        List<RestaurantPartnership> partnerships = partnershipRepository.findActiveByRestaurant(restaurant.getId());
+        Map<Long, DeliveryRate> agreedRates = agreedRates(partnerships);
         Set<Long> excluded = new HashSet<>(offerRepository.findOfferedCourierIds(order.getId()));
         excluded.addAll(offerRepository.findCourierIdsWithPendingOffer());
 
@@ -706,7 +745,7 @@ public class DispatchService {
             if (courier.getWorkStatus() != CourierWorkStatus.ONLINE || excluded.contains(courier.getId())) {
                 continue;
             }
-            candidateFee(courier, orders).ifPresent(fee -> fixed.add(new Candidate(courier, null, fee, null,
+            candidateFee(courier, orders, agreedRates).ifPresent(fee -> fixed.add(new Candidate(courier, null, fee, null,
                     shift.getDeliveriesCount(), shift.getLastDeliveryAt(), shift.getStartedAt())));
         }
         Optional<Choice> fixedChoice = CourierSelector.pickFixed(fixed);
@@ -721,8 +760,7 @@ public class DispatchService {
 
         // 2) Modo livre: perto do restaurante e, entre os próximos, quem ganhou menos hoje
         Set<Long> partnerIds = policy == CourierPolicy.PARTNERS_ONLY
-                ? new HashSet<>(partnershipRepository.findActiveByRestaurant(restaurant.getId()).stream()
-                .map(p -> p.getOrganization().getId()).toList())
+                ? new HashSet<>(partnerships.stream().map(p -> p.getOrganization().getId()).toList())
                 : null;
         LocalDateTime seenSince = now.minusSeconds(properties.getLocationStaleSeconds());
         List<Candidate> free = new ArrayList<>();
@@ -737,7 +775,7 @@ public class DispatchService {
             if (pickupKm != null && pickupKm > properties.getSearchRadiusKm()) {
                 continue;
             }
-            candidateFee(courier, orders).ifPresent(fee -> free.add(
+            candidateFee(courier, orders, agreedRates).ifPresent(fee -> free.add(
                     new Candidate(courier, pickupKm, fee, BigDecimal.ZERO, 0, null, null)));
         }
         if (free.isEmpty()) {
@@ -757,7 +795,8 @@ public class DispatchService {
      * Valor do entregador para este pedido, se ele puder recebê-lo (associação operante, tabela definida e
      * valor dentro da taxa ou coberto pelo restaurante)
      */
-    private Optional<BigDecimal> candidateFee(DeliveryPerson courier, List<Order> orders) {
+    private Optional<BigDecimal> candidateFee(DeliveryPerson courier, List<Order> orders,
+                                              Map<Long, DeliveryRate> agreedRates) {
         Organization organization = courier.getOrganization();
         if (!courier.isActive() || organization == null || !organization.isOperational()
                 || !organization.isDeliveryRateConfigured()) {
@@ -768,7 +807,8 @@ public class DispatchService {
         // Cada pedido também precisa caber na regra da taxa.
         BigDecimal total = BigDecimal.ZERO;
         for (Order order : orders) {
-            BigDecimal fee = DeliveryRateCalculator.courierFee(organization.getDeliveryRate(), order.getDeliveryDistanceKm());
+            DeliveryRate rate = agreedRates.getOrDefault(organization.getId(), organization.getDeliveryRate());
+            BigDecimal fee = payout(DeliveryRateCalculator.courierFee(rate, order.getDeliveryDistanceKm()), order);
             if (!CourierSelector.feeAllowed(fee, order.getDeliveryFee(), order.getRestaurant().isCoversDeliveryDifference())) {
                 return Optional.empty();
             }

@@ -13,6 +13,8 @@ import '../../../widgets/association/association_logo.dart';
 import '../../../widgets/courier/courier_avatar.dart';
 import '../../../widgets/delivery/courier_link_status_chip.dart';
 import '../../../widgets/delivery/delivery_rate_summary.dart';
+import '../../../widgets/partnership/partnership_card.dart';
+import '../../../widgets/partnership/rate_proposal_dialog.dart';
 import 'couriers/staff_section.dart';
 
 /// Entregadores do restaurante: quem recebe os pedidos, associações parceiras, fixos e equipe própria
@@ -34,7 +36,7 @@ class _CouriersTabState extends State<CouriersTab> {
     if (id != null) WidgetsBinding.instance.addPostFrameCallback((_) => service.load(id));
   }
 
-  Future<void> _update({CourierPolicy? policy, bool? fallback, bool? covers, int? noShowMinutes}) async {
+  Future<void> _update({CourierPolicy? policy, bool? fallback, bool? covers, bool? passes, int? noShowMinutes}) async {
     final service = context.read<RestaurantDeliveryService>();
     final current = service.settings!;
     setState(() => _saving = true);
@@ -44,6 +46,7 @@ class _CouriersTabState extends State<CouriersTab> {
         policy: policy ?? current.courierPolicy,
         fallbackToOpen: fallback ?? current.fallbackToOpen,
         coversDeliveryDifference: covers ?? current.coversDeliveryDifference,
+        passesDeliveryFee: passes,
         courierNoShowMinutes: noShowMinutes,
       ),
       success: 'Regras de entrega atualizadas',
@@ -63,6 +66,23 @@ class _CouriersTabState extends State<CouriersTab> {
       if (!confirmed) return;
     }
     await _update(covers: value);
+  }
+
+  Future<void> _setPassesFee(RestaurantDeliverySettings settings, bool passes) async {
+    if (passes == settings.passesDeliveryFee) return;
+    if (passes) {
+      final from = settings.deliveryFeeFrom;
+      final confirmed = await AppDialog.confirm(
+        context,
+        title: 'Repassar a taxa ao cliente?',
+        message: 'O cliente passa a pagar a entrega pela distância, pela maior tabela das associações que atendem '
+            'a loja${from != null ? ' (a partir de ${formatMoney(from)})' : ''}. O entregador recebe o valor inteiro '
+            'e a sua taxa fixa deixa de ser cobrada.',
+        confirmLabel: 'Repassar ao cliente',
+      );
+      if (!confirmed) return;
+    }
+    await _update(passes: passes);
   }
 
   @override
@@ -115,8 +135,7 @@ class _CouriersTabState extends State<CouriersTab> {
       children: [
         AppSectionHeader(
           title: 'Quem recebe seus pedidos',
-          subtitle: 'Os fixos em check-in na loja sempre recebem primeiro. '
-              'Sua taxa de entrega: ${formatMoney(settings.deliveryFee)}.',
+          subtitle: 'Os fixos em check-in na loja sempre recebem primeiro.',
         ),
         for (final policy in CourierPolicy.values) ...[
           AppChoiceTile(
@@ -135,19 +154,54 @@ class _CouriersTabState extends State<CouriersTab> {
             onChanged: _saving ? null : (value) => _update(fallback: value),
             title: const Text('Se nenhum fixo estiver disponível, liberar para qualquer entregador'),
           ),
-        const Divider(height: 32),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          value: settings.coversDeliveryDifference,
-          onChanged: _saving ? null : _toggleCovers,
-          title: const Text('Assumo a diferença da tabela das associações'),
-          subtitle: Text(
-            settings.coversDeliveryDifference
-                ? 'Quando a tabela da associação passar da sua taxa, o restaurante paga a diferença ao entregador.'
-                : 'Pedidos em que a tabela da associação passa da sua taxa não são oferecidos a esses entregadores.',
-            style: textTheme.bodySmall,
-          ),
+        const SizedBox(height: 24),
+        const AppSectionHeader(
+          title: 'Taxa de entrega para o cliente',
+          subtitle: 'Todo o valor da entrega vai para o entregador.',
         ),
+        AppChoiceTile(
+          leading: const Icon(Icons.storefront_outlined),
+          title: 'Taxa fixa da loja',
+          subtitle: 'O cliente paga ${formatDeliveryFee(settings.deliveryFee)} em qualquer distância '
+              '(valor em Loja › Entrega). Se a tabela do entregador passar dela, você pode assumir a diferença.',
+          selected: !settings.passesDeliveryFee,
+          enabled: !_saving,
+          onTap: () => _setPassesFee(settings, false),
+        ),
+        const SizedBox(height: 8),
+        AppChoiceTile(
+          leading: const Icon(Icons.route_outlined),
+          title: 'Repassar ao cliente',
+          subtitle: 'O cliente paga pela distância, pela maior tabela das associações. Na vitrine aparece '
+              '"a partir de${settings.deliveryFeeFrom != null ? ' ${formatMoney(settings.deliveryFeeFrom!)}' : ''}".',
+          selected: settings.passesDeliveryFee,
+          enabled: !_saving,
+          onTap: () => _setPassesFee(settings, true),
+        ),
+        if (settings.passesDeliveryFee && settings.deliveryFeeSimulation.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Text('Quanto o cliente paga', style: textTheme.labelLarge),
+          const SizedBox(height: 8),
+          AppKeyValueList(rows: [
+            for (final sample in settings.deliveryFeeSimulation)
+              ('Entrega a ${formatDistance(sample.distanceKm)}', formatMoney(sample.fee)),
+          ]),
+        ],
+        if (!settings.passesDeliveryFee) ...[
+          const Divider(height: 32),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: settings.coversDeliveryDifference,
+            onChanged: _saving ? null : _toggleCovers,
+            title: const Text('Assumo a diferença da tabela das associações'),
+            subtitle: Text(
+              settings.coversDeliveryDifference
+                  ? 'Quando a tabela da associação passar da sua taxa, o restaurante paga a diferença ao entregador.'
+                  : 'Pedidos em que a tabela da associação passa da sua taxa não são oferecidos a esses entregadores.',
+              style: textTheme.bodySmall,
+            ),
+          ),
+        ],
         const Divider(height: 32),
         Text(
           'Entregador livre que não aparece na loja pode ser trocado depois do tempo abaixo. '
@@ -176,74 +230,132 @@ class _CouriersTabState extends State<CouriersTab> {
 // ============= Parceiras =============
 
 class _PartnersSection extends StatelessWidget {
+  static const _viewer = PartnershipSide.RESTAURANT;
+
   final RestaurantDeliverySettings settings;
 
   const _PartnersSection({required this.settings});
 
-  Future<void> _add(BuildContext context) async {
+  Future<void> _request(BuildContext context) async {
     final service = context.read<RestaurantDeliveryService>();
     final chosen = await showDialog<AssociationSummary>(
       context: context,
       builder: (_) => _PartnerPickerDialog(
         service: service,
-        excluded: settings.partners.map((p) => p.organizationId).toSet(),
-        deliveryFee: settings.deliveryFee,
+        excluded: {
+          for (final p in [...settings.partners, ...settings.partnershipRequests]) p.organizationId,
+        },
+        deliveryFee: settings.customerFeeToCompare,
       ),
     );
     if (chosen == null || !context.mounted) return;
-    await runWithFeedback(context, () => service.addPartner(chosen.id), success: '${chosen.tradingName} agora é parceira');
+    await runWithFeedback(context, () => service.addPartner(chosen.id));
+    if (!context.mounted) return;
+    // Se a associação já tinha convidado, a parceria começa na hora
+    final active = service.settings?.partners.any((p) => p.organizationId == chosen.id) ?? false;
+    AppToast.show(
+      context,
+      message: active ? '${chosen.tradingName} agora é parceira' : 'Pedido enviado a ${chosen.tradingName}',
+      type: ToastType.success,
+    );
   }
 
-  Future<void> _remove(BuildContext context, Partner partner) async {
+  Future<void> _action(BuildContext context, Partner partner, String action) async {
     final service = context.read<RestaurantDeliveryService>();
-    final confirmed = await AppDialog.confirm(
-      context,
-      title: 'Encerrar parceria?',
-      message: 'Com a política "só parceiras", os entregadores de ${partner.name} deixam de receber seus pedidos.',
-      confirmLabel: 'Encerrar',
-    );
-    if (!confirmed || !context.mounted) return;
-    await runWithFeedback(context, () => service.removePartner(partner.organizationId), success: 'Parceria encerrada');
+    if (action == PartnershipAction.end) {
+      final confirmed = await AppDialog.confirm(
+        context,
+        title: partner.isPending ? 'Cancelar pedido?' : 'Encerrar parceria?',
+        message: partner.isPending
+            ? 'O pedido de parceria para ${partner.name} será cancelado.'
+            : 'Com a política "só parceiras", os entregadores de ${partner.name} deixam de receber seus pedidos. '
+                'A tabela especial combinada deixa de valer.',
+        confirmLabel: partner.isPending ? 'Cancelar pedido' : 'Encerrar',
+      );
+      if (!confirmed || !context.mounted) return;
+    }
+    await runWithFeedback(context, () => service.partnershipAction(partner.id, action), success: switch (action) {
+      PartnershipAction.accept => '${partner.name} agora é parceira',
+      PartnershipAction.end => partner.isPending ? 'Pedido cancelado' : 'Parceria encerrada',
+      PartnershipAction.rateAccept => 'Tabela especial combinada',
+      _ => null,
+    });
   }
+
+  Future<void> _proposeRate(BuildContext context, Partner partner) async {
+    final service = context.read<RestaurantDeliveryService>();
+    final choice = await showRateProposalDialog(
+      context,
+      counterpart: 'a associação',
+      current: partner.proposalStart(_viewer),
+      defaultRate: partner.deliveryRate,
+      hasAgreedRate: partner.canProposeDefault,
+      customerFee: settings.customerFeeToCompare,
+      title: partner.awaits(_viewer) ? 'Contraproposta' : 'Propor tabela especial',
+    );
+    if (choice == null || !context.mounted) return;
+    await runWithFeedback(context, () => service.proposeRate(partner.id, choice.rate),
+        success: 'Proposta enviada a ${partner.name}');
+  }
+
+  Widget _card(BuildContext context, Partner partner) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: PartnershipCard(
+          partnership: partner,
+          viewer: _viewer,
+          leading: AssociationLogo(logoUrl: partner.logoUrl, name: partner.name, size: 44),
+          title: partner.name,
+          subtitle: partner.location,
+          defaultRate: partner.deliveryRate,
+          customerFee: settings.customerFeeToCompare,
+          onAction: (action) => _action(context, partner, action),
+          onProposeRate: () => _proposeRate(context, partner),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final requests = [...settings.partnershipRequests]
+      ..sort((a, b) => (a.requestedBy == _viewer ? 1 : 0) - (b.requestedBy == _viewer ? 1 : 0));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         AppSectionHeader(
           title: 'Associações parceiras',
-          subtitle: 'Usadas com a política "só associações parceiras".',
-          action: AppButton(text: 'Adicionar', icon: Icons.add, variant: ButtonVariant.outlined, onPressed: () => _add(context)),
+          subtitle: 'Usadas com a política "só associações parceiras". A parceria começa quando a associação aceita, '
+              'e vocês podem combinar uma tabela especial para a sua loja.',
+          action: AppButton(
+            text: 'Pedir parceria',
+            icon: Icons.add,
+            variant: ButtonVariant.outlined,
+            onPressed: () => _request(context),
+          ),
         ),
-        if (settings.partners.isEmpty)
-          Text('Nenhuma parceira ainda.', style: textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary))
-        else
-          for (final partner in settings.partners) ...[
-            AppCard(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AssociationLogo(logoUrl: partner.logoUrl, name: partner.name, size: 44),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(partner.name, style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 6),
-                        DeliveryRateSummary(rate: partner.deliveryRate, customerFee: settings.deliveryFee),
-                      ],
-                    ),
-                  ),
-                  IconButton(tooltip: 'Encerrar parceria', icon: const Icon(Icons.link_off), onPressed: () => _remove(context, partner)),
-                ],
-              ),
+        if (settings.partnersEndedNoticeAt != null) ...[
+          AppCard(
+            padding: const EdgeInsets.all(16),
+            backgroundColor: AppColors.warningLighter.withValues(alpha: 0.4),
+            child: Text(
+              'Em ${formatDateTime(settings.partnersEndedNoticeAt)} a última associação parceira encerrou a parceria. '
+              'Para a loja não ficar sem entregador, seus pedidos passaram a ir para qualquer entregador. '
+              'Escolha acima quem recebe os pedidos para confirmar.',
+              style: textTheme.bodyMedium,
             ),
-            const SizedBox(height: 8),
-          ],
+          ),
+          const SizedBox(height: 12),
+        ],
+        if (settings.partners.isEmpty && requests.isEmpty)
+          Text('Nenhuma parceira ainda.', style: textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary)),
+        for (final partner in requests) _card(context, partner),
+        for (final partner in settings.partners) _card(context, partner),
+        if (settings.partnershipHistory.isNotEmpty)
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            title: Text('Histórico (${settings.partnershipHistory.length})', style: textTheme.titleSmall),
+            children: [for (final partner in settings.partnershipHistory) _card(context, partner)],
+          ),
       ],
     );
   }
@@ -252,7 +364,8 @@ class _PartnersSection extends StatelessWidget {
 class _PartnerPickerDialog extends StatefulWidget {
   final RestaurantDeliveryService service;
   final Set<int> excluded;
-  final double deliveryFee;
+  /// Taxa do cliente para comparar com a tabela (nula = a loja repassa a taxa e nada passa dela)
+  final double? deliveryFee;
 
   const _PartnerPickerDialog({required this.service, required this.excluded, required this.deliveryFee});
 
@@ -268,7 +381,7 @@ class _PartnerPickerDialogState extends State<_PartnerPickerDialog> {
     final covers = widget.service.settings?.coversDeliveryDifference ?? false;
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text('Adicionar associação parceira'),
+      title: const Text('Pedir parceria a uma associação'),
       content: SizedBox(
         width: 560,
         child: FutureBuilder<List<AssociationSummary>>(
@@ -287,7 +400,8 @@ class _PartnerPickerDialogState extends State<_PartnerPickerDialog> {
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
                 final a = list[index];
-                final exceeds = a.deliveryRate.configured && (a.deliveryRate.baseFee ?? 0) > widget.deliveryFee;
+                final fee = widget.deliveryFee;
+                final exceeds = fee != null && a.deliveryRate.configured && (a.deliveryRate.baseFee ?? 0) > fee;
                 final blocked = !a.deliveryRate.configured || (exceeds && !covers);
                 return AppCard(
                   padding: const EdgeInsets.all(12),

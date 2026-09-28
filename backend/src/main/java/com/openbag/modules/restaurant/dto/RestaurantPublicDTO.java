@@ -1,5 +1,6 @@
 package com.openbag.modules.restaurant.dto;
 
+import com.openbag.enums.DeliveryFeeMode;
 import com.openbag.enums.RestaurantThemePreset;
 import com.openbag.modules.order.entity.Order;
 import com.openbag.modules.product.entity.Category;
@@ -46,7 +47,9 @@ public class RestaurantPublicDTO {
     private String slogan;
     private BigDecimal rating;
     private Integer totalReviews;
+    /** Taxa fixa ou, se a loja repassa a taxa ao cliente, o valor "a partir de" (ver {@link #deliveryFeeMode}) */
     private BigDecimal deliveryFee;
+    private DeliveryFeeMode deliveryFeeMode;
     private BigDecimal minimumOrder;
     private Integer deliveryTimeMin;
     private Integer deliveryTimeMax;
@@ -111,6 +114,7 @@ public class RestaurantPublicDTO {
                 .rating(restaurant.getRating())
                 .totalReviews(restaurant.getTotalReviews())
                 .deliveryFee(restaurant.getDeliveryFee())
+                .deliveryFeeMode(restaurant.getDeliveryFeeMode())
                 .minimumOrder(restaurant.getMinimumOrder())
                 .deliveryTimeMin(restaurant.getDeliveryTimeMin())
                 .deliveryTimeMax(restaurant.getDeliveryTimeMax())

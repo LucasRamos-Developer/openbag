@@ -20,11 +20,15 @@ class AppFilterChips<T> extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final double height;
 
+  /// Widgets antes dos chips, na mesma faixa rolável (ex: um [AppDropdownChip] de outro filtro)
+  final List<Widget> leading;
+
   const AppFilterChips({
     super.key,
     required this.items,
     required this.value,
     required this.onSelected,
+    this.leading = const [],
     this.padding = const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
     this.height = 56,
   });
@@ -36,10 +40,11 @@ class AppFilterChips<T> extends StatelessWidget {
       child: ListView.separated(
         padding: padding,
         scrollDirection: Axis.horizontal,
-        itemCount: items.length,
+        itemCount: leading.length + items.length,
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
-          final item = items[index];
+          if (index < leading.length) return Center(child: leading[index]);
+          final item = items[index - leading.length];
           // Com ícone, o chip ativo troca o ícone por ✓ (padrão visual do cardápio)
           final selected = item.value == value;
           final colors = context.appColors;

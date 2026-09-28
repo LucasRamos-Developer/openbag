@@ -73,7 +73,17 @@ class CartScreen extends StatelessWidget {
                     const Divider(),
                     for (final line in cart.lines) _CartLineTile(line: line),
                     const SizedBox(height: 16),
-                    PriceSummary(subtotal: cart.subtotal, deliveryFee: cart.deliveryFee, total: cart.total),
+                    PriceSummary(
+                      subtotal: cart.subtotal,
+                      deliveryFee: cart.deliveryFee,
+                      total: cart.total,
+                      deliveryFeeFrom: cart.deliveryFeeByDistance,
+                    ),
+                    if (cart.deliveryFeeByDistance) ...[
+                      const SizedBox(height: 4),
+                      Text('A taxa depende da distância e aparece certinha no endereço de entrega.',
+                          style: TextStyle(color: muted, fontSize: 12)),
+                    ],
                     if (cart.missingForMinimum > 0) ...[
                       const SizedBox(height: 12),
                       AppCard(

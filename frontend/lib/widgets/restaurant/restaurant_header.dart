@@ -77,7 +77,9 @@ class RestaurantInfoCard extends StatelessWidget {
       AppMetaItem(icon: Icons.schedule, label: restaurant.deliveryTimeRange),
       AppMetaItem(
         icon: Icons.pedal_bike_outlined,
-        label: restaurant.deliveryFee > 0 ? 'Entrega ${formatMoney(restaurant.deliveryFee)}' : 'Entrega grátis',
+        label: restaurant.deliveryFeeByDistance || restaurant.deliveryFee > 0
+            ? 'Entrega ${restaurant.deliveryFeeText}'
+            : 'Entrega grátis',
       ),
       if (restaurant.minimumOrder > 0)
         AppMetaItem(icon: Icons.shopping_bag_outlined, label: 'Mínimo ${formatMoney(restaurant.minimumOrder)}'),

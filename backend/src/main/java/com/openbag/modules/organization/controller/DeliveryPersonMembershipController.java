@@ -1,5 +1,7 @@
 package com.openbag.modules.organization.controller;
 
+import com.openbag.modules.delivery.dto.AssociationReportDTO;
+import com.openbag.modules.delivery.service.AssociationReportService;
 import com.openbag.modules.organization.dto.JoinAssociationRequest;
 import com.openbag.modules.organization.dto.MemberDTO;
 import com.openbag.modules.organization.dto.ReasonRequest;
@@ -10,10 +12,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/me/association")
@@ -27,6 +32,9 @@ public class DeliveryPersonMembershipController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AssociationReportService reportService;
 
     @GetMapping
     @Operation(summary = "Meu vínculo atual", description = "Retorna 204 se o entregador não tiver vínculo ativo ou pendente")
@@ -42,6 +50,16 @@ public class DeliveryPersonMembershipController {
     public ResponseEntity<MemberDTO> requestToJoin(@RequestBody JoinAssociationRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(membershipService.requestToJoin(userService.getCurrentUser(), request));
+    }
+
+    @GetMapping("/report")
+    @Operation(summary = "Resumo da minha associação",
+            description = "Entregas e ganhos da associação no período, por loja, e a minha parte. "
+                    + "Não mostra os ganhos dos outros cooperados")
+    public ResponseEntity<AssociationReportDTO> report(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return ResponseEntity.ok(reportService.forMember(userService.getCurrentUser(), from, to));
     }
 
     @PostMapping("/leave")

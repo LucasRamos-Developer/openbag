@@ -217,6 +217,7 @@ public class StoreService {
                 .acceptanceTimeoutMinutes(restaurant.getAcceptanceTimeoutMinutes())
                 .defaultPreparationMinutes(restaurant.getDefaultPreparationMinutes())
                 .deliveryFee(restaurant.getDeliveryFee())
+                .deliveryFeeMode(restaurant.getDeliveryFeeMode())
                 .minimumOrder(restaurant.getMinimumOrder())
                 .deliveryTimeMin(restaurant.getDeliveryTimeMin())
                 .deliveryTimeMax(restaurant.getDeliveryTimeMax())

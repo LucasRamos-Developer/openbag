@@ -48,6 +48,39 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ### Adicionado
 
+- **Gestão da associação** no painel da cooperativa:
+  - **Financeiro**, com cinco abas:
+    - Resumo: saldo da caixinha, arrecadado, gasto, a receber e gráfico de entradas e saídas por mês.
+    - Faturas do mês: prévia do mês em andamento, geração das que faltam, baixa manual por Pix ou dinheiro, dispensa e desfazer.
+    - Livro-caixa com lançamentos manuais.
+    - Caixinha solidária.
+    - Cobrança.
+  - **Cobrança do cooperado**: valor fixo ou percentual dos ganhos do mês até um teto (depois do teto, só os adicionais). As faturas do mês anterior são geradas sozinhas no dia 1.
+  - **Adicionais**, como o seguro de vida de +10% na mensalidade. A associação propõe, e o cooperado aceita ou recusa no painel dele.
+  - **Caixinha solidária**:
+    - contribuição mensal escolhida pelo cooperado (entra na fatura);
+    - contribuições avulsas;
+    - auxílios, que nunca deixam o saldo negativo.
+    - O cooperado vê o saldo e os auxílios sem o nome de quem recebeu.
+  - **Convênios** com oficinas, escolas de idiomas e outros parceiros, com botões de ligar, mapa e site.
+  - **Assembleia**:
+    - enquetes com voto secreto, um voto por cooperado ativo e encerramento automático;
+    - atas e documentos em PDF, que só os cooperados e o gestor baixam.
+  - **Associados**: veículos na ficha, filtros por veículo e por mensalidade (em aberto ou em dia), valor em aberto na lista e exportação em CSV que abre direto no Excel.
+- **Área do cooperado** em `/entregador/associacao`: resumo com o que pede ação (adicional proposto, fatura em aberto, enquete para votar), faturas, convênios, enquetes e documentos. O cartão "Minha associação" saiu do Perfil e veio para cá.
+- **Taxa de entrega repassada ao cliente**:
+  - A loja escolhe entre a taxa fixa (como antes) e repassar ao cliente.
+  - Repassando, o cliente paga pela distância, sempre pela maior tabela entre as associações que podem levar o pedido, e o entregador recebe o valor inteiro.
+  - A vitrine, a página da loja e o carrinho mostram "a partir de"; no checkout aparece o valor exato para o endereço.
+  - O endereço digitado é localizado no mapa (Nominatim do OpenStreetMap, `OPENBAG_GEOCODING_URL`).
+- **Contraproposta** na negociação da tabela entre loja e associação. O convite da associação pode já trazer uma tabela proposta; o outro lado aceita, recusa ou manda outra proposta, e a vez passa.
+- **Celular com telas próprias**:
+  - formulários em tela cheia, com a ação principal fixa no rodapé;
+  - ações e filtros num menu de baixo para cima;
+  - totais numa faixa só;
+  - botão flutuante para a ação principal;
+  - sub-abas em pílulas roláveis.
+  - Componentes novos em `core/ui`: `showAppAdaptive`, `showAppActionSheet`, `AppListTileCard`, `AppDropdownChip`, `AppMonthSelector`, `AppDateField`, `AppLoadView`, `AppStatStrip` e `AppKeyValueList`.
 - **Painel do super admin** em `/admin`. É somente leitura e tem Visão geral, Restaurantes, Associações, Entregadores, Usuários e Pedidos. A busca e a paginação usam as rotas `GET /admin/overview|restaurants|couriers|users|orders`. A moderação de associações continua na aba Associações.
 - **Conta de demonstração** com todos os perfis, inclusive ADMIN: `demo@openbag.local` / `demo1234`. Ela vem com a loja Cantina Demo (com cardápio), a Cooperativa Demo aprovada (com tabela de entrega) e o perfil de entregador vinculado. Só é criada com `OPENBAG_DEMO_ENABLED=true`, nunca em produção.
 - **Rodapé da área do cliente**, com a proposta do projeto, os links para clientes e parceiros, o contato e a versão. O carrinho flutua sobre a página e o rodapé reserva o espaço dele, então nada fica escondido. A barra do topo ficou sem o logo, que agora aparece só no rodapé.
@@ -72,14 +105,30 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - Rotas: `POST /orders/{id}/review`, `GET /restaurants/{id}/reviews`, `GET /restaurants/{id}/reviews/summary` e `POST /restaurants/{id}/reviews/{reviewId}/reply`.
 - **Entregador no mapa**: depois da retirada, o cliente acompanha o entregador em `/pedidos/:id`, em tempo real (mensagem `COURIER_LOCATION` no tópico do pedido). Numa rota, o mapa só aparece quando é a vez do pedido, então o cliente nunca vê o entregador indo para outra entrega. A equipe própria da loja não usa o app e não aparece no mapa.
 - **Diferença assumida no Caixa**: um card mostra quanto a loja pagou da diferença entre a taxa cobrada do cliente e a tabela da associação, com o total, os valores por associação e o detalhe de cada pedido (km, taxa cobrada, valor da tabela e diferença). O entregador sempre recebe o valor cheio da tabela.
+- **Painel da cooperativa: lojas parceiras** em `/associacao/lojas`.
+  - A loja ou a associação pede a parceria, e o outro lado aceita ou recusa. Se um lado pede quando o outro já tinha convidado, a parceria começa na hora. Os dois lados podem encerrar.
+  - A associação convida lojas pela busca pelo nome e vê os pedidos das lojas, as parceiras, os convites enviados e o histórico.
+  - Se a associação encerra a última parceria de uma loja que recebe pedidos só de parceiras, a loja passa a receber de qualquer entregador e vê um aviso.
+  - Rotas: `GET|POST /associations/{id}/partnerships`, `POST /associations/{id}/partnerships/{pid}/accept|decline|end` e, na loja, `POST /restaurants/{id}/delivery/partners/{pid}/accept|decline|end`.
+- **Tabela especial por loja (acordo)**: numa parceria ativa, a loja ou a associação propõe uma tabela própria (base até X km + R$/km), e ela só vale depois do aceite do outro lado. Voltar à tabela padrão também precisa do aceite.
+  - O despacho usa a tabela que vale na loja em qualquer política (qualquer entregador, só parceiras ou fixos). A regra de assumir a diferença continua valendo, e o entregador sempre recebe 100%.
+  - Rotas: `POST .../rate-proposal` e `POST .../rate-accept|rate-decline|rate-cancel`, nos dois lados.
+- **Relatórios da cooperativa** em `/associacao/relatorios`: entregas, total pago aos cooperados, km, lojas atendidas e diferença assumida pelas lojas, com o gráfico por dia e as listas por cooperado e por loja (`GET /associations/{id}/reports`, até 92 dias).
+- **Minha associação**, na aba Ganhos do entregador: o total da associação no período, a parte dele e as lojas atendidas, sem os ganhos dos colegas (`GET /me/association/report`).
+- A Visão geral da associação mostra as lojas parceiras e avisa sobre os pedidos de parceria. Os menus da associação (Lojas parceiras) e da loja (Entregadores) ganham um selo com o que espera resposta.
+- O pedido guarda a associação do entregador no momento da entrega (`courierOrganization`). Na subida, os pedidos antigos recebem a associação atual do entregador, e as parcerias antigas passam a ativas.
 
 ### Alterado
 
 - **Mapa com estilo próprio**, claro e próximo das cores do Google Maps, sem relevo e com a vegetação discreta. O estilo fica em `frontend/assets/map/openbag_style.json`, no formato do MapLibre. O mapa é desenhado pelo MapLibre (`maplibre_gl`) com os dados do OpenFreeMap, sem chave e sem limite de uso. O componente `AppMap` (`core/ui`) substitui o `flutter_map` nos mapas de rotas e da página da loja. Uma base raster pode entrar no lugar com `--dart-define=MAP_TILE_URL=...`.
+- **A parceria com uma associação agora precisa do aceite dela.** `POST /restaurants/{id}/delivery/partners` passou a enviar um pedido, não mais a criar a parceria direto. As parcerias que já existiam continuam ativas.
+- No painel da associação, a seção Entregas passou a se chamar **Tabela de entrega**.
+- Os campos da tabela de entrega viraram o componente `DeliveryRateFields`, usado na tabela da associação e na proposta de tabela especial. Os períodos do Caixa viraram o `ReportPeriod`, também usado nos relatórios da associação.
 - **Botões maiores e padronizados**: `small` 36px, `medium` 44px (padrão) e `large` 52px. O tema também aplica 44px aos botões do Material. As ações do painel do restaurante (cabeçalho de pedidos, cardápio, loja, rotas e caixa) passaram para o tamanho padrão.
 
 ### Corrigido
 
+- A diferença assumida no Caixa agrupava as entregas pela associação atual do entregador. Agora usa a associação dele no dia da entrega.
 - No perfil público do entregador, a nota aparecia com ponto ("4.0") e "1 avaliações" no plural.
 - O botão `large` tinha fonte menor que a do `medium`.
 - A versão exibida no app era `1.0.0`; agora é `0.2.0`.
@@ -171,7 +220,9 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 
 ### 0.3.0: Entregador, cooperativa e cliente
 - ~~Concluir as telas do entregador~~: avaliações, rastreio no mapa e diferença assumida no Caixa (concluído).
-- Painel da cooperativa: parcerias com lojas, acordos e relatórios para os cooperados.
+- ~~Painel da cooperativa: parcerias com lojas, acordos e relatórios para os cooperados~~: parcerias com aceite, tabela especial por loja e relatórios para o gestor e para cada cooperado (concluído).
+- ~~Gestão da associação~~: mensalidade (fixa ou percentual com teto), seguro e outros adicionais, faturas com baixa manual, caixinha solidária, painel financeiro, convênios, enquetes, atas e exportação dos associados (concluído).
+- ~~Taxa repassada ao cliente~~: "a partir de" na vitrine, valor por distância no checkout e contraproposta na tabela entre loja e associação (concluído).
 - Fluxo do cliente fora da fase de testes, com coleta de avaliações.
 - Visibilidade: página da loja otimizada para buscadores (SEO) e vitrine ordenada por avaliações e proximidade, sem posição paga.
 

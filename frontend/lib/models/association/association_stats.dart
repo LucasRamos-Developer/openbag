@@ -6,6 +6,10 @@ class AssociationStats {
   final int availableNow;
   final int totalDeliveries;
   final int activeInvites;
+
+  /// Lojas parceiras e o que espera a resposta da associação (pedidos de lojas e propostas de tabela)
+  final int activePartners;
+  final int pendingPartnerships;
   final Map<String, int> activeMembersByVehicleType;
 
   AssociationStats({
@@ -15,6 +19,8 @@ class AssociationStats {
     required this.availableNow,
     required this.totalDeliveries,
     required this.activeInvites,
+    this.activePartners = 0,
+    this.pendingPartnerships = 0,
     required this.activeMembersByVehicleType,
   });
 
@@ -26,6 +32,8 @@ class AssociationStats {
       availableNow: json['availableNow'] ?? 0,
       totalDeliveries: json['totalDeliveries'] ?? 0,
       activeInvites: json['activeInvites'] ?? 0,
+      activePartners: json['activePartners'] ?? 0,
+      pendingPartnerships: json['pendingPartnerships'] ?? 0,
       activeMembersByVehicleType: Map<String, int>.from(
         (json['activeMembersByVehicleType'] as Map? ?? {}).map((k, v) => MapEntry(k.toString(), (v as num).toInt())),
       ),

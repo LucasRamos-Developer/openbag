@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -131,10 +132,34 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * Pedidos entregues no período, com quem levou (para o caixa)
      */
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.deliveryPerson dp LEFT JOIN FETCH dp.user "
-            + "LEFT JOIN FETCH dp.organization LEFT JOIN FETCH o.staffCourier WHERE o.restaurant.id = :restaurantId "
+            + "LEFT JOIN FETCH dp.organization LEFT JOIN FETCH o.courierOrganization LEFT JOIN FETCH o.staffCourier "
+            + "WHERE o.restaurant.id = :restaurantId "
             + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end")
     List<Order> findDeliveredByRestaurantBetween(@Param("restaurantId") Long restaurantId,
                                                 @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    /** Entregas feitas pelos cooperados da associação no período (pela associação registrada no pedido) */
+    @Query("SELECT o FROM Order o JOIN FETCH o.restaurant JOIN FETCH o.deliveryPerson dp JOIN FETCH dp.user "
+            + "WHERE o.courierOrganization.id = :organizationId "
+            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end "
+            + "ORDER BY o.deliveredAt")
+    List<Order> findDeliveredByOrganizationBetween(@Param("organizationId") Long organizationId,
+                                                   @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    /** Ganhos e entregas de cada cooperado no período: [deliveryPersonId, soma do courierFee, entregas] */
+    @Query("SELECT o.deliveryPerson.id, COALESCE(SUM(o.courierFee), 0), COUNT(o) FROM Order o "
+            + "WHERE o.courierOrganization.id = :organizationId "
+            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end "
+            + "GROUP BY o.deliveryPerson.id")
+    List<Object[]> sumCourierEarningsByCourier(@Param("organizationId") Long organizationId,
+                                               @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    /** Registra a associação atual do entregador nos pedidos anteriores ao campo (uma vez, na subida) */
+    @Modifying
+    @Query(value = "UPDATE orders o SET courier_organization_id = dp.organization_id FROM delivery_persons dp "
+            + "WHERE dp.id = o.delivery_person_id AND o.courier_organization_id IS NULL "
+            + "AND dp.organization_id IS NOT NULL", nativeQuery = true)
+    int backfillCourierOrganization();
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.restaurant.id = :restaurantId "
             + "AND o.status = com.openbag.enums.OrderStatus.CANCELLED AND o.cancelledAt >= :start AND o.cancelledAt < :end")

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
+import '../models/association/association_report.dart';
 import '../models/association/association_summary.dart';
 import '../models/association/member.dart';
 import '../models/courier/courier_earnings.dart';
@@ -9,6 +10,7 @@ import '../models/delivery/courier_link.dart';
 import '../models/courier/courier_public.dart';
 import '../models/courier/social_link.dart';
 import '../models/courier/vehicle.dart';
+import '../utils/formatters.dart';
 import 'api_client.dart';
 import 'association_directory.dart' as association_directory;
 
@@ -156,9 +158,13 @@ class CourierService extends ChangeNotifier {
   // ============= Ganhos e histórico =============
 
   Future<CourierEarnings> fetchEarnings({required DateTime from, required DateTime to}) async {
-    String day(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-    return CourierEarnings.fromJson(await _api.get('$_base/earnings', query: {'from': day(from), 'to': day(to)}));
+    return CourierEarnings.fromJson(await _api.get('$_base/earnings', query: {'from': apiDate(from), 'to': apiDate(to)}));
   }
+
+  /// Resumo da associação no período (total e por loja) com a parte do entregador
+  Future<AssociationReport> fetchAssociationReport({required DateTime from, required DateTime to}) async =>
+      AssociationReport.fromJson(
+          await _api.get('/me/association/report', query: {'from': apiDate(from), 'to': apiDate(to)}));
 
   Future<WorkHistory> fetchHistory() async => WorkHistory.fromJson(await _api.get('$_base/history'));
 

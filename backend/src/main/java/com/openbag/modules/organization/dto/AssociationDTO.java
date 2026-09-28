@@ -36,6 +36,8 @@ public class AssociationDTO {
     private AddressDTO address;
     private ManagerSummary manager;
     private DeliveryRateDTO deliveryRate;
+    // A cobrança da mensalidade já foi definida (o painel avisa enquanto não estiver)
+    private boolean feePolicyConfigured;
 
     @Data
     @NoArgsConstructor
@@ -65,6 +67,7 @@ public class AssociationDTO {
                 .createdAt(organization.getCreatedAt())
                 .address(toAddressDTO(organization.getAddress()))
                 .deliveryRate(DeliveryRateDTO.from(organization.getDeliveryRate()))
+                .feePolicyConfigured(organization.isFeePolicyConfigured())
                 .manager(admin == null ? null
                         : new ManagerSummary(admin.getId(), admin.getFullName(), admin.getEmail(), admin.getPhoneNumber()))
                 .build();

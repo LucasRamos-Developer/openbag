@@ -207,4 +207,27 @@ class CashReportServiceTest {
         assertThat(subsidy.lines().get(1).courierFee()).isEqualByComparingTo("8.00");
         assertThat(subsidy.lines().get(1).distanceKm()).isEqualTo(4.2);
     }
+
+    @Test
+    void subsidyStaysWithTheAssociationOfTheDeliveryEvenAfterTheCourierMoves() {
+        Organization before = new Organization();
+        before.setId(9L);
+        before.setTradingName("Coop Centro");
+        Organization now = new Organization();
+        now.setId(11L);
+        now.setTradingName("Coop Norte");
+        courier.setOrganization(now);
+        Order order = byCourier(order("30.00", "5.00", "8.00", Order.PaymentMethod.PIX));
+        order.setCourierOrganization(before);
+        order.setRestaurantDeliverySubsidy(new BigDecimal("3.00"));
+        order.setDeliveredAt(LocalDateTime.of(2026, 9, 27, 19, 0));
+        when(orderRepository.findDeliveredByRestaurantBetween(eq(1L), any(), any())).thenReturn(List.of(order));
+        when(orderRepository.findUnsettledByRestaurant(1L)).thenReturn(List.of());
+
+        CashReportDTO.Subsidy subsidy = service.report(1L, null, null).subsidy();
+
+        assertThat(subsidy.byAssociation()).singleElement()
+                .satisfies(line -> assertThat(line.name()).isEqualTo("Coop Centro"));
+        assertThat(subsidy.lines().get(0).organizationName()).isEqualTo("Coop Centro");
+    }
 }

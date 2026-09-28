@@ -1,11 +1,15 @@
 package com.openbag.modules.organization.controller;
 
 import com.openbag.annotation.IsAssociationManager;
+import com.openbag.enums.MemberBillingFilter;
 import com.openbag.enums.MembershipStatus;
+import com.openbag.enums.VehicleType;
 import com.openbag.modules.organization.dto.*;
 import com.openbag.modules.organization.service.AssociationService;
 import com.openbag.modules.organization.service.InviteService;
+import com.openbag.modules.organization.service.MemberExportService;
 import com.openbag.modules.organization.service.MembershipService;
+import com.openbag.modules.shared.util.CsvWriter;
 import com.openbag.modules.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,6 +21,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +30,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -40,6 +47,9 @@ public class AssociationController {
 
     @Autowired
     private InviteService inviteService;
+
+    @Autowired
+    private MemberExportService memberExportService;
 
     @Autowired
     private UserService userService;
@@ -100,9 +110,28 @@ public class AssociationController {
     public ResponseEntity<Page<MemberDTO>> listMembers(
             @PathVariable Long id,
             @Parameter(description = "Status do vínculo") @RequestParam(required = false) MembershipStatus status,
+            @Parameter(description = "Tipo do veículo em uso") @RequestParam(required = false) VehicleType vehicleType,
+            @Parameter(description = "Mensalidade: OPEN (com fatura em aberto) ou UP_TO_DATE")
+            @RequestParam(required = false) MemberBillingFilter billing,
             @Parameter(description = "Busca por nome, email ou CPF") @RequestParam(required = false) String q,
             @PageableDefault(size = 20, sort = "requestedAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(membershipService.listMembers(id, status, q, pageable));
+        return ResponseEntity.ok(membershipService.listMembers(id, status, vehicleType, billing, q, pageable));
+    }
+
+    @GetMapping(value = "/{id}/members/export", produces = CsvWriter.MEDIA_TYPE)
+    @IsAssociationManager
+    @Operation(summary = "Exportar associados (CSV)", description = "Mesmos filtros da listagem; abre direto no Excel")
+    public ResponseEntity<byte[]> exportMembers(
+            @PathVariable Long id,
+            @RequestParam(required = false) MembershipStatus status,
+            @RequestParam(required = false) VehicleType vehicleType,
+            @RequestParam(required = false) MemberBillingFilter billing,
+            @RequestParam(required = false) String q) {
+        String filename = "associados-" + LocalDate.now() + ".csv";
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename(filename).build().toString())
+                .contentType(MediaType.parseMediaType(CsvWriter.MEDIA_TYPE))
+                .body(memberExportService.exportCsv(id, status, vehicleType, billing, q));
     }
 
     @GetMapping("/{id}/members/{membershipId}")

@@ -46,6 +46,9 @@ public class FileController {
             @RequestParam("file") MultipartFile file) {
         
         log.info("Recebendo upload de arquivo para pasta: {}", folder);
+        if (FileStorageService.isPrivate(folder)) {
+            throw new com.openbag.modules.shared.exception.BadRequestException("Pasta inválida");
+        }
         
         String filePath = fileStorageService.storeImage(file, folder);
         
@@ -62,6 +65,10 @@ public class FileController {
             description = "Serve um arquivo armazenado, inclusive em subpastas (ex: /files/restaurants/logos/x.png)")
     public ResponseEntity<Resource> downloadFile(HttpServletRequest request) {
         String filePath = relativePathOf(request);
+        if (FileStorageService.isPrivate(filePath)) {
+            // Documentos restritos só saem pelas rotas que conferem quem pode ver
+            throw new com.openbag.exception.ResourceNotFoundException("Arquivo não encontrado");
+        }
         Path path = fileStorageService.getFilePath(filePath);
 
         Resource resource;

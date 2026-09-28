@@ -11,20 +11,28 @@ import '../../widgets/association/association_logo.dart';
 import '../../widgets/navigation/panel_profiles.dart';
 import '../../widgets/navigation/panel_routes.dart';
 import 'association_section.dart';
+import 'tabs/benefits_tab.dart';
+import 'tabs/community_section.dart';
 import 'tabs/delivery_rate_tab.dart';
+import 'tabs/finance_section.dart';
 import 'tabs/invites_tab.dart';
 import 'tabs/members_tab.dart';
 import 'tabs/overview_tab.dart';
+import 'tabs/partners_tab.dart';
 import 'tabs/profile_tab.dart';
+import 'tabs/reports_tab.dart';
 
 /// Painel do gestor da associação/cooperativa
 ///
-/// Associação ativa: abas Visão geral, Associados, Convites e Dados.
+/// Associação ativa: Visão geral, Associados, Convites, Lojas parceiras, Tabela de entrega, Relatórios e Dados.
 /// Associação pendente/recusada/suspensa: tela de status (a recusada pode corrigir os dados e reenviar).
 class AssociationPanelScreen extends StatefulWidget {
   final AssociationSection section;
 
-  const AssociationPanelScreen({super.key, this.section = AssociationSection.overview});
+  /// Sub-aba das seções que têm (Financeiro, Assembleia)
+  final String? tab;
+
+  const AssociationPanelScreen({super.key, this.section = AssociationSection.overview, this.tab});
 
   @override
   State<AssociationPanelScreen> createState() => _AssociationPanelScreenState();
@@ -40,7 +48,9 @@ class _AssociationPanelScreenState extends State<AssociationPanelScreen> {
           section.destination(
             badge: switch (section) {
               AssociationSection.members => service.stats?.pendingRequests ?? 0,
+              AssociationSection.partners => service.stats?.pendingPartnerships ?? 0,
               AssociationSection.deliveries => service.association?.deliveryRate.configured == false ? 1 : 0,
+              AssociationSection.finance => service.association?.feePolicyConfigured == false ? 1 : 0,
               _ => 0,
             },
           ),
@@ -107,11 +117,23 @@ class _AssociationPanelScreenState extends State<AssociationPanelScreen> {
     final body = IndexedStack(
       index: widget.section.index,
       children: [
-        OverviewTab(onOpenMembers: _openMembers, onOpenInvites: () => context.go(AssociationSection.invites.path)),
-        MembersTab(key: ValueKey(_membersFilter), initialFilter: _membersFilter),
-        const InvitesTab(),
-        const DeliveryRateTab(),
-        const ProfileTab(),
+        for (final section in AssociationSection.values)
+          switch (section) {
+            AssociationSection.overview => OverviewTab(
+                onOpenMembers: _openMembers,
+                onOpenInvites: () => context.go(AssociationSection.invites.path),
+                onOpenPartners: () => context.go(AssociationSection.partners.path),
+              ),
+            AssociationSection.members => MembersTab(key: ValueKey(_membersFilter), initialFilter: _membersFilter),
+            AssociationSection.invites => const InvitesTab(),
+            AssociationSection.partners => const PartnersTab(),
+            AssociationSection.deliveries => const DeliveryRateTab(),
+            AssociationSection.finance => FinanceSectionView(tab: FinanceTab.fromSlug(widget.tab)),
+            AssociationSection.benefits => const BenefitsTab(),
+            AssociationSection.community => CommunitySectionView(tab: CommunityTab.fromSlug(widget.tab)),
+            AssociationSection.reports => const ReportsTab(),
+            AssociationSection.profile => const ProfileTab(),
+          },
       ],
     );
 

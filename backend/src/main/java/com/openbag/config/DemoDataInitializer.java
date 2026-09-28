@@ -4,17 +4,22 @@ import com.openbag.enums.MembershipOrigin;
 import com.openbag.enums.MembershipStatus;
 import com.openbag.enums.OrganizationStatus;
 import com.openbag.enums.OrganizationType;
+import com.openbag.enums.PartnershipSide;
+import com.openbag.enums.PartnershipStatus;
 import com.openbag.enums.RestaurantThemePreset;
 import com.openbag.enums.UserType;
 import com.openbag.enums.VehicleType;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
+import com.openbag.modules.delivery.entity.RestaurantPartnership;
 import com.openbag.modules.delivery.repository.DeliveryPersonRepository;
+import com.openbag.modules.delivery.repository.RestaurantPartnershipRepository;
 import com.openbag.modules.delivery.service.CourierProfileService;
 import com.openbag.modules.menu.dto.MenuItemRequest;
 import com.openbag.modules.menu.dto.MenuSectionRequest;
 import com.openbag.modules.menu.service.MenuService;
 import com.openbag.modules.organization.dto.DeliveryRateDTO;
 import com.openbag.modules.organization.entity.AssociationMembership;
+import com.openbag.modules.organization.entity.DeliveryRate;
 import com.openbag.modules.organization.entity.Organization;
 import com.openbag.modules.organization.repository.AssociationMembershipRepository;
 import com.openbag.modules.organization.repository.OrganizationRepository;
@@ -85,6 +90,7 @@ public class DemoDataInitializer implements ApplicationRunner {
     private final OrganizationRepository organizationRepository;
     private final AssociationMembershipRepository membershipRepository;
     private final DeliveryPersonRepository deliveryPersonRepository;
+    private final RestaurantPartnershipRepository partnershipRepository;
     private final RestaurantOnboardingService onboardingService;
     private final AssociationService associationService;
     private final CourierProfileService courierProfileService;
@@ -108,6 +114,7 @@ public class DemoDataInitializer implements ApplicationRunner {
             transactionTemplate.executeWithoutResult(status -> ensureRoles());
             transactionTemplate.executeWithoutResult(status -> ensureAssociation());
             transactionTemplate.executeWithoutResult(status -> ensureCourier());
+            transactionTemplate.executeWithoutResult(status -> ensurePartnership());
             log.warn("Conta de demonstração ativa: {} / {} (todos os perfis, inclusive ADMIN). "
                     + "Não use app.demo.enabled em produção.", DEMO_EMAIL, DEMO_PASSWORD);
         } catch (RuntimeException e) {
@@ -270,6 +277,39 @@ public class DemoDataInitializer implements ApplicationRunner {
         membership.setDecidedBy(user);
         membershipRepository.save(membership);
         log.info("Demo: entregador {} criado", courier.getId());
+    }
+
+    /**
+     * Parceria ativa entre a Cantina Demo e a Cooperativa Demo, com tabela especial: a taxa da loja (R$ 6,00) fica
+     * abaixo do valor base padrão da cooperativa (R$ 7,00), e o acordo cobre mais km no valor base
+     */
+    private void ensurePartnership() {
+        User user = demoUser();
+        Restaurant restaurant = restaurantRepository.findByOwnerIdOrderByNameAsc(user.getId()).stream()
+                .filter(r -> DEMO_SLUG.equals(r.getSlug()))
+                .findFirst()
+                .orElse(null);
+        List<Organization> organizations = organizationRepository.findByAdminUserId(user.getId());
+        if (restaurant == null || organizations.isEmpty()) {
+            return;
+        }
+        Organization organization = organizations.get(0);
+        boolean exists = partnershipRepository.findByRestaurant(restaurant.getId()).stream()
+                .anyMatch(p -> p.getOrganization().getId().equals(organization.getId()));
+        if (exists) {
+            return;
+        }
+        RestaurantPartnership partnership = new RestaurantPartnership();
+        partnership.setRestaurant(restaurant);
+        partnership.setOrganization(organization);
+        partnership.setStatus(PartnershipStatus.ACTIVE);
+        partnership.setRequestedBy(PartnershipSide.RESTAURANT);
+        partnership.setDecidedAt(LocalDateTime.now());
+        partnership.setAgreedRate(new DeliveryRate(new BigDecimal("6.00"), new BigDecimal("4.0"),
+                new BigDecimal("1.50")));
+        partnership.setAgreedAt(LocalDateTime.now());
+        partnershipRepository.save(partnership);
+        log.info("Demo: parceria {} criada", partnership.getId());
     }
 
     private Category category(String name) {
