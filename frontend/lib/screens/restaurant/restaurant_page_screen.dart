@@ -287,17 +287,26 @@ class _RestaurantPageScreenState extends State<RestaurantPageScreen> {
               SliverPadding(
                 padding: content.copyWith(top: 28, bottom: 14),
                 sliver: SliverToBoxAdapter(
-                  child: AppSectionHeader(
+                  child: AppSectionTitle(
                     key: _query.isEmpty ? _sectionKeys[s.section.id] : null,
                     title: s.section.name,
                     subtitle: _isCollapsed(s.section.id)
                         ? _countLabel(s.items.length + s.combos.length)
                         : s.section.description,
-                    prominent: true,
                     padding: EdgeInsets.zero,
-                    // Na busca, as seções ficam sempre abertas (o resultado não pode sumir)
-                    expanded: !_isCollapsed(s.section.id),
-                    onToggle: _query.isEmpty ? () => _toggleSection(s.section.id) : null,
+                    // Acordeão: o toque no título ou na seta recolhe; na busca as seções ficam sempre abertas
+                    onTap: _query.isEmpty ? () => _toggleSection(s.section.id) : null,
+                    expanded: _query.isEmpty ? !_isCollapsed(s.section.id) : null,
+                    trailing: _query.isEmpty
+                        ? Tooltip(
+                            message: _isCollapsed(s.section.id) ? 'Mostrar' : 'Recolher',
+                            child: AnimatedRotation(
+                              turns: _isCollapsed(s.section.id) ? -0.25 : 0,
+                              duration: const Duration(milliseconds: 200),
+                              child: Icon(Icons.keyboard_arrow_down_rounded, size: 28, color: colors.textMuted),
+                            ),
+                          )
+                        : null,
                   ),
                 ),
               ),

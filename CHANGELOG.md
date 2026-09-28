@@ -64,7 +64,7 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - O backend consulta um servidor OSRM (`OPENBAG_OSRM_URL`) com cache em memória e envia o `path` em cada cartão de `GET /restaurants/{id}/routes`.
   - Sem resposta do roteador, o mapa volta à linha reta.
   - O padrão é o servidor público de demonstração do OSRM, só para desenvolvimento.
-- **Cardápio em acordeão**: as seções da página da loja podem ser recolhidas pelo título ou pela seta. Na busca, todas ficam abertas, e o chip de uma seção recolhida abre a seção antes de rolar até ela. O ícone grande ao lado do título saiu; os chips continuam com ícone.
+- **Cardápio em acordeão**: as seções da página da loja podem ser recolhidas pelo título ou pela seta. Na busca, todas ficam abertas, e o chip de uma seção recolhida abre a seção antes de rolar até ela. O ícone grande ao lado do título saiu, e o título usa o mesmo estilo com sublinhado da vitrine, na cor da loja. Os chips continuam com ícone.
 
 ### Alterado
 
