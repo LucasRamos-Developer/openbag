@@ -149,6 +149,7 @@ Desktop.ini
 secrets/
 *.pem
 *.key
+*.user
 
 # ========================================
 # Docker (opcional - mantenha apenas se necessário)
