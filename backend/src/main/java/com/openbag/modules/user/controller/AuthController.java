@@ -12,7 +12,7 @@ import com.openbag.modules.user.repository.UserRepository;
 import com.openbag.platform.security.JwtTokenProvider;
 import com.openbag.modules.user.service.RoleService;
 import com.openbag.modules.user.service.AccountService;
-import com.openbag.modules.organization.dto.AccountRequest;
+import com.openbag.association.core.dto.AccountRequest;
 import com.openbag.enums.UserType;
 import com.openbag.restaurant.store.dto.RestaurantOnboardingRequest;
 import com.openbag.restaurant.store.dto.RestaurantOnboardingResponse;

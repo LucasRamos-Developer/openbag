@@ -2,7 +2,7 @@ package com.openbag.restaurant.store.entity;
 
 import com.openbag.modules.user.entity.User;
 import com.openbag.modules.user.entity.Address;
-import com.openbag.modules.organization.entity.Organization;
+import com.openbag.association.core.entity.Organization;
 import com.openbag.restaurant.catalog.entity.Product;
 import com.openbag.restaurant.catalog.entity.Category;
 import com.openbag.order.core.entity.Order;

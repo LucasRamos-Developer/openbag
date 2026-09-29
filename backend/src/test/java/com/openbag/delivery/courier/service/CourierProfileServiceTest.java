@@ -9,7 +9,7 @@ import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.delivery.courier.entity.Vehicle;
 import com.openbag.delivery.courier.repository.DeliveryPersonRepository;
 import com.openbag.delivery.courier.repository.VehicleRepository;
-import com.openbag.modules.organization.repository.AssociationMembershipRepository;
+import com.openbag.association.core.repository.AssociationMembershipRepository;
 import com.openbag.modules.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -12,7 +12,7 @@ import com.openbag.delivery.link.entity.StaffCourier;
 import com.openbag.restaurant.cash.repository.CourierSettlementRepository;
 import com.openbag.order.core.entity.Order;
 import com.openbag.order.core.repository.OrderRepository;
-import com.openbag.modules.organization.entity.Organization;
+import com.openbag.association.core.entity.Organization;
 import com.openbag.restaurant.store.repository.RestaurantRepository;
 import com.openbag.modules.user.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;

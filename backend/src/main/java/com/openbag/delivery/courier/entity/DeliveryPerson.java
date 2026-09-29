@@ -1,7 +1,7 @@
 package com.openbag.delivery.courier.entity;
 
 import com.openbag.modules.user.entity.User;
-import com.openbag.modules.organization.entity.Organization;
+import com.openbag.association.core.entity.Organization;
 import com.openbag.order.core.entity.Order;
 import com.openbag.enums.CourierWorkStatus;
 import com.openbag.enums.VehicleType;

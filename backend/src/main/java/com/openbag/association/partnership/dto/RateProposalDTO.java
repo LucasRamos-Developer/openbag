@@ -2,7 +2,7 @@ package com.openbag.association.partnership.dto;
 
 import com.openbag.enums.PartnershipSide;
 import com.openbag.association.partnership.entity.RestaurantPartnership;
-import com.openbag.modules.organization.dto.DeliveryRateDTO;
+import com.openbag.association.core.dto.DeliveryRateDTO;
 
 import java.time.LocalDateTime;
 

@@ -1,7 +1,7 @@
 package com.openbag.delivery.courier.dto;
 
 import com.openbag.enums.MembershipStatus;
-import com.openbag.modules.organization.entity.AssociationMembership;
+import com.openbag.association.core.entity.AssociationMembership;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -1,6 +1,6 @@
 package com.openbag.delivery.dispatch.service;
 
-import com.openbag.modules.organization.entity.DeliveryRate;
+import com.openbag.association.core.entity.DeliveryRate;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

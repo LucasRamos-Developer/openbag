@@ -6,7 +6,7 @@ import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.restaurant.cash.entity.CourierSettlement;
 import com.openbag.delivery.route.entity.DeliveryRoute;
 import com.openbag.delivery.link.entity.StaffCourier;
-import com.openbag.modules.organization.entity.Organization;
+import com.openbag.association.core.entity.Organization;
 import com.openbag.enums.CancelledBy;
 import com.openbag.enums.FulfillmentType;
 import com.openbag.enums.OrderChannel;

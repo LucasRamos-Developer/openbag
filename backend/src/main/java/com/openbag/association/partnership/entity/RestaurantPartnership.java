@@ -2,8 +2,8 @@ package com.openbag.association.partnership.entity;
 
 import com.openbag.enums.PartnershipSide;
 import com.openbag.enums.PartnershipStatus;
-import com.openbag.modules.organization.entity.DeliveryRate;
-import com.openbag.modules.organization.entity.Organization;
+import com.openbag.association.core.entity.DeliveryRate;
+import com.openbag.association.core.entity.Organization;
 import com.openbag.restaurant.store.entity.Restaurant;
 import jakarta.persistence.*;
 import lombok.Getter;

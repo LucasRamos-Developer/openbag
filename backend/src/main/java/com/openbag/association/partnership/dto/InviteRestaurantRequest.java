@@ -1,6 +1,6 @@
 package com.openbag.association.partnership.dto;
 
-import com.openbag.modules.organization.dto.DeliveryRateDTO;
+import com.openbag.association.core.dto.DeliveryRateDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 

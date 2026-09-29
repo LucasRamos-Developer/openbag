@@ -6,7 +6,7 @@ import com.openbag.order.core.dto.CreateStoreOrderRequest;
 import com.openbag.order.core.dto.OrderDTO;
 import com.openbag.order.core.service.OrderService;
 import com.openbag.order.core.service.RestaurantOrderService;
-import com.openbag.modules.organization.dto.ReasonRequest;
+import com.openbag.association.core.dto.ReasonRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

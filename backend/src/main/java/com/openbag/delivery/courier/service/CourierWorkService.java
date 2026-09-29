@@ -30,7 +30,7 @@ import com.openbag.order.realtime.OrderChangedEvent;
 import com.openbag.order.core.repository.OrderRepository;
 import com.openbag.order.core.service.OrderService;
 import com.openbag.order.core.service.RestaurantOrderService;
-import com.openbag.modules.organization.entity.Organization;
+import com.openbag.association.core.entity.Organization;
 import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.restaurant.store.repository.RestaurantRepository;
 import com.openbag.platform.geo.GeoUtils;
