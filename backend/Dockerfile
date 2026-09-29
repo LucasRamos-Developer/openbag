@@ -17,5 +17,9 @@ RUN mvn clean package -DskipTests && cp target/openbag-backend-*.jar app.jar
 # Expor a porta
 EXPOSE 8080
 
+# Perfil de produção por padrão: exige os segredos por variável de ambiente (ver application-prod.properties).
+# O docker-compose de desenvolvimento troca para o perfil docker
+ENV SPRING_PROFILES_ACTIVE=prod
+
 # Comando para executar a aplicação
 CMD ["java", "-jar", "app.jar"]

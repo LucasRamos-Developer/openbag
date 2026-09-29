@@ -44,6 +44,7 @@ public class Permission {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToMany(mappedBy = "permissions")
     @Builder.Default
     private Set<Role> roles = new HashSet<>();

@@ -59,11 +59,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                     authorities.add(new SimpleGrantedAuthority(permission.getName()));
                 }
             }
-            
-            // Fallback para compatibilidade: se não tiver roles mas tiver userType
-            if (authorities.isEmpty() && user.getUserType() != null) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getUserType().name()));
-            }
+
+            // Sem roles, sem permissões: o userType é legado e nunca concede acesso
             
             return authorities;
         }

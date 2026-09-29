@@ -69,6 +69,9 @@ public class StompAuthInterceptor implements ChannelInterceptor {
             throw new MessagingException("Token inválido");
         }
         UserDetails user = userDetailsService.loadUserById(tokenProvider.getUserIdFromJWT(token));
+        if (!user.isEnabled()) {
+            throw new MessagingException("Conta desativada");
+        }
         return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
     }
 

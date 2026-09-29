@@ -1,6 +1,5 @@
 package com.openbag.modules.user.dto;
 
-import com.openbag.enums.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -37,11 +36,4 @@ public class RegisterRequest {
     @Size(min = 6, max = 100, message = "Senha deve ter entre 6 e 100 caracteres")
     @Schema(description = "Senha do usuário", example = "senhaSegura123", required = true, minLength = 6, maxLength = 100)
     private String password;
-
-    /**
-     * @deprecated Use roles instead
-     */
-    @Deprecated
-    @Schema(description = "Tipo de usuário (deprecated, use roles)", deprecated = true)
-    private UserType userType = UserType.CUSTOMER;
 }

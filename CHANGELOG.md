@@ -46,6 +46,20 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ## [Não lançado]
 
+### Segurança
+
+- **Segredos de produção obrigatórios.** O novo perfil `prod` (padrão da imagem Docker) não tem valores padrão para o segredo do JWT, o banco e as origens do app. O `SecretsValidator` impede o backend de subir com o segredo de desenvolvimento, com a senha `admin123` ou com a conta de demonstração ligada. Nos outros perfis, ele só avisa no log.
+- **O cadastro público sempre cria um cliente.** Antes, o `userType` enviado no corpo era gravado e, sem roles, virava a permissão do usuário. Isso permitia criar uma conta ADMIN. O tipo legado não concede mais permissão nenhuma.
+- **Uploads só de imagens de verdade.** O tipo é detectado pelos bytes do arquivo (JPEG, PNG, WEBP ou GIF), e a extensão salva vem desse tipo, e não do nome enviado. A pasta de destino fica presa ao diretório de upload. A rota `/files` só serve imagens, com o tipo fixo e uma política que não roda scripts. Antes, um HTML enviado como `.png` ou com a extensão `.html` era servido como página.
+- A rota genérica `POST /files/upload/{folder}`, que qualquer usuário logado podia usar, saiu. Cada imagem continua sendo enviada pela rota do próprio recurso.
+- **CORS e WebSocket só das origens configuradas** (`OPENBAG_CORS_ORIGINS`), em vez de qualquer origem. O CORS passou a aceitar `PATCH`.
+- Uma conta desativada perde o acesso na hora, na API e no WebSocket, mesmo com um token ainda válido.
+
+### Corrigido
+
+- A resposta da foto de perfil e o `GET /users/profile` entravam num laço entre papéis e permissões e quebravam no meio do JSON.
+- Método não permitido e rota inexistente respondiam 500. Agora respondem 405 e 404.
+
 ### Adicionado
 
 - **Roadmap da 0.4.0 (Segurança e integridade dos dados)** em [docs/roadmap/0.4.0-seguranca.md](docs/roadmap/0.4.0-seguranca.md). O documento compara cada item com o código atual e lista os casos encontrados: brechas no cadastro, no upload e nos segredos padrão, ações simultâneas que corrompem pedidos e faturas, e a falta de idempotência, limites de requisição e migrações versionadas.

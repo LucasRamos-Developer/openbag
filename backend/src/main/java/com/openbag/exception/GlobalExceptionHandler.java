@@ -132,6 +132,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(
             Exception ex, WebRequest request) {
+        // Erros do próprio Spring MVC (método não permitido, rota inexistente, parâmetro faltando...)
+        // mantêm o status deles, sem virar 500
+        if (ex instanceof org.springframework.web.ErrorResponse springError && springError.getStatusCode().is4xxClientError()) {
+            HttpStatus status = HttpStatus.valueOf(springError.getStatusCode().value());
+            return new ResponseEntity<>(new ErrorResponse(status.value(), status.getReasonPhrase(),
+                    LocalDateTime.now(), request.getDescription(false)), status);
+        }
+
         // Log completo do erro para debug
         logger.error("Erro não tratado capturado pelo GlobalExceptionHandler", ex);
         

@@ -11,6 +11,9 @@ import com.openbag.modules.user.entity.User;
 import com.openbag.modules.user.repository.UserRepository;
 import com.openbag.security.JwtTokenProvider;
 import com.openbag.modules.user.service.RoleService;
+import com.openbag.modules.user.service.AccountService;
+import com.openbag.modules.organization.dto.AccountRequest;
+import com.openbag.enums.UserType;
 import com.openbag.modules.restaurant.dto.RestaurantOnboardingRequest;
 import com.openbag.modules.restaurant.dto.RestaurantOnboardingResponse;
 import com.openbag.modules.restaurant.service.RestaurantOnboardingService;
@@ -60,6 +63,9 @@ public class AuthController {
     @Autowired
     private RestaurantOnboardingService restaurantOnboardingService;
 
+    @Autowired
+    private AccountService accountService;
+
     @PostMapping("/login")
     @Operation(summary = "Login do usuário", description = "Autentica um usuário e retorna um token JWT com roles e permissões")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -96,42 +102,16 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(summary = "Registro de usuário", description = "Registra um novo usuário no sistema")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest signUpRequest) {
-        try {
-            if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-                return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Email já está em uso"));
-            }
+        // O cadastro público sempre cria um cliente: o tipo e as roles nunca vêm do pedido.
+        // Loja, associação e entregador têm cadastros próprios
+        AccountRequest account = new AccountRequest(signUpRequest.getFullName(), signUpRequest.getEmail(),
+                signUpRequest.getPhoneNumber(), signUpRequest.getPassword());
+        User result = accountService.createAccount(account, UserType.CUSTOMER, "CUSTOMER");
 
-            if (userRepository.existsByPhoneNumber(signUpRequest.getPhoneNumber())) {
-                return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Telefone já está em uso"));
-            }
-
-            // Criar novo usuário
-            User user = new User();
-            user.setFullName(signUpRequest.getFullName());
-            user.setEmail(signUpRequest.getEmail());
-            user.setPhoneNumber(signUpRequest.getPhoneNumber());
-            user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
-            
-            // Mantém userType para compatibilidade
-            if (signUpRequest.getUserType() != null) {
-                user.setUserType(signUpRequest.getUserType());
-            }
-
-            User result = userRepository.save(user);
-
-            // Registro público sempre cria usuário CUSTOMER
-            roleService.addRolesToUser(result.getId(), List.of("CUSTOMER"));
-
-            return ResponseEntity.ok(Map.of(
-                "message", "Usuário registrado com sucesso",
-                "userId", result.getId()
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Erro ao registrar usuário: " + e.getMessage()));
-        }
+        return ResponseEntity.ok(Map.of(
+            "message", "Usuário registrado com sucesso",
+            "userId", result.getId()
+        ));
     }
 
     @GetMapping("/me")

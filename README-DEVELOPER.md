@@ -308,7 +308,7 @@ Em produção, use um Nominatim próprio ou um serviço contratado.
 |---------|-----------|-----|
 | `local` | Desenvolvimento local (localhost) | Banco local, Redis local |
 | `docker` | Conecta aos serviços Docker | Banco/Redis no Docker, app local |
-| `prod` | Produção | Configurações de produção |
+| `prod` | Produção | Exige os segredos por variável de ambiente, sem SQL no log e sem Swagger |
 
 ### Estrutura de Pacotes
 
@@ -606,18 +606,23 @@ elasticsearch.host=elasticsearch
 elasticsearch.port=9200
 ```
 
-#### Variáveis Sensíveis (Produção)
+#### Produção (perfil `prod`)
 
-Para produção, defina como variáveis de ambiente:
+Em produção, rode com o perfil `prod` (é o padrão da imagem do `backend/Dockerfile`). Ele não tem valores padrão para segredos: sem as variáveis abaixo, o backend não sobe. O `SecretsValidator` também recusa um segredo do JWT curto ou de desenvolvimento, a senha `admin123`, uma senha de ADMIN com menos de 12 caracteres e a conta de demonstração ligada. Nos outros perfis, ele só avisa no log.
 
 ```bash
-export JWT_SECRET=seu_jwt_secret_aqui
-export DB_PASSWORD=senha_segura
-export REDIS_PASSWORD=senha_redis
-export OPENBAG_ADMIN_EMAIL=admin@seu-dominio.com   # ADMIN inicial (só se não houver nenhum)
-export OPENBAG_ADMIN_PASSWORD=senha_forte
-# OPENBAG_DEMO_ENABLED fica desligado em produção (conta demo com senha pública)
+export SPRING_PROFILES_ACTIVE=prod
+export SPRING_DATASOURCE_URL=jdbc:postgresql://host:5432/openbag
+export SPRING_DATASOURCE_USERNAME=openbag
+export SPRING_DATASOURCE_PASSWORD=senha_segura
+export OPENBAG_JWT_SECRET="$(openssl rand -base64 48)"   # pelo menos 32 bytes
+export OPENBAG_CORS_ORIGINS=https://seu-dominio.com      # origens do app web, separadas por vírgula
+export OPENBAG_ADMIN_EMAIL=admin@seu-dominio.com         # ADMIN inicial (só se não houver nenhum)
+export OPENBAG_ADMIN_PASSWORD=senha_forte_com_12_ou_mais # vazia: nenhum ADMIN é criado
+# OPENBAG_DEMO_ENABLED não pode ser ligado em produção (conta demo com senha pública)
 ```
+
+Em desenvolvimento, o CORS e o WebSocket aceitam qualquer porta de `localhost` e `127.0.0.1`. Para outras origens, use `OPENBAG_CORS_ORIGINS`.
 
 ### Frontend
 

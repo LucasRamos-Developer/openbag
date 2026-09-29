@@ -109,7 +109,6 @@ class AuthService extends ChangeNotifier {
     required String email,
     required String phoneNumber,
     required String password,
-    UserType? userType,
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -119,7 +118,6 @@ class AuthService extends ChangeNotifier {
         'email': email,
         'phoneNumber': phoneNumber,
         'password': password,
-        if (userType != null) 'userType': userType.name,
       });
       return null;
     } on ApiException catch (e) {

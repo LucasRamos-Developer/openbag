@@ -4,17 +4,15 @@ import com.openbag.modules.shared.exception.BadRequestException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Serviço para gerenciamento de upload e armazenamento de arquivos
@@ -25,9 +23,19 @@ public class FileStorageService {
 
     private final Path fileStorageLocation;
 
-    private static final List<String> ALLOWED_IMAGE_TYPES = Arrays.asList(
-            "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"
+    /**
+     * Imagens aceitas, pela extensão com que são salvas. O tipo é detectado pelos bytes do arquivo,
+     * nunca pelo nome nem pelo Content-Type do navegador (um HTML com nome .png seria servido como página)
+     */
+    public static final Map<String, String> IMAGE_TYPES_BY_EXTENSION = Map.of(
+            "jpg", "image/jpeg",
+            "png", "image/png",
+            "webp", "image/webp",
+            "gif", "image/gif"
     );
+
+    /** Pastas de imagens: letras minúsculas, números, hífen e sublinhado, com subpastas (ex: "restaurants/logos") */
+    private static final Pattern FOLDER_PATTERN = Pattern.compile("[a-z0-9_-]+(/[a-z0-9_-]+)*");
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -55,29 +63,81 @@ public class FileStorageService {
      */
     public String storeImage(MultipartFile file, String folder) {
         validateImageFile(file);
-
-        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
-        String fileExtension = getFileExtension(originalFilename);
-        String fileName = UUID.randomUUID().toString() + fileExtension;
+        Path folderPath = imageFolder(folder);
 
         try {
-            // Criar pasta específica se não existir
-            Path folderPath = this.fileStorageLocation.resolve(folder);
+            byte[] bytes = file.getBytes();
+            String extension = detectImageExtension(bytes);
+            if (extension == null) {
+                throw new BadRequestException("Tipo de arquivo não permitido. Use: JPEG, PNG, WEBP ou GIF");
+            }
+            String fileName = UUID.randomUUID() + "." + extension;
+
             Files.createDirectories(folderPath);
+            Files.write(folderPath.resolve(fileName), bytes);
 
-            // Copiar arquivo
-            Path targetLocation = folderPath.resolve(fileName);
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-            // Retornar caminho relativo
             String relativePath = folder + "/" + fileName;
             log.info("Arquivo salvo: {}", relativePath);
             return relativePath;
 
         } catch (IOException ex) {
-            log.error("Erro ao salvar arquivo: {}", originalFilename, ex);
-            throw new RuntimeException("Erro ao armazenar arquivo: " + originalFilename, ex);
+            log.error("Erro ao salvar imagem em {}", folder, ex);
+            throw new RuntimeException("Erro ao armazenar a imagem", ex);
         }
+    }
+
+    /**
+     * Extensão da imagem pelos primeiros bytes (assinatura do formato), ou null se não for uma imagem aceita
+     */
+    static String detectImageExtension(byte[] bytes) {
+        if (startsWith(bytes, 0, 0xFF, 0xD8, 0xFF)) {
+            return "jpg";
+        }
+        if (startsWith(bytes, 0, 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A)) {
+            return "png";
+        }
+        if (startsWith(bytes, 0, 'G', 'I', 'F', '8') && (startsWith(bytes, 4, '7', 'a') || startsWith(bytes, 4, '9', 'a'))) {
+            return "gif";
+        }
+        if (startsWith(bytes, 0, 'R', 'I', 'F', 'F') && startsWith(bytes, 8, 'W', 'E', 'B', 'P')) {
+            return "webp";
+        }
+        return null;
+    }
+
+    private static boolean startsWith(byte[] bytes, int offset, int... signature) {
+        if (bytes.length < offset + signature.length) {
+            return false;
+        }
+        for (int i = 0; i < signature.length; i++) {
+            if ((bytes[offset + i] & 0xFF) != signature[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Pasta de destino de uma imagem, sempre dentro do diretório de upload e fora da pasta restrita */
+    private Path imageFolder(String folder) {
+        if (folder == null || !FOLDER_PATTERN.matcher(folder).matches() || isPrivate(folder)) {
+            throw new BadRequestException("Pasta inválida");
+        }
+        Path folderPath = this.fileStorageLocation.resolve(folder).normalize();
+        if (!folderPath.startsWith(this.fileStorageLocation)) {
+            throw new BadRequestException("Pasta inválida");
+        }
+        return folderPath;
+    }
+
+    /** Tipo de uma imagem guardada pela extensão (salva por {@link #storeImage}), ou null se não for imagem */
+    public static String imageContentType(String relativePath) {
+        int dot = relativePath.lastIndexOf('.');
+        if (dot < 0) {
+            return null;
+        }
+        String extension = relativePath.substring(dot + 1).toLowerCase(java.util.Locale.ROOT);
+        // Imagens enviadas antes da checagem pelos bytes podem ter a extensão .jpeg
+        return IMAGE_TYPES_BY_EXTENSION.get(extension.equals("jpeg") ? "jpg" : extension);
     }
 
     /**
@@ -161,37 +221,12 @@ public class FileStorageService {
             throw new BadRequestException("Arquivo não pode ser vazio");
         }
 
-        // Validar tipo de conteúdo
-        String contentType = file.getContentType();
-        if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase())) {
-            throw new BadRequestException(
-                "Tipo de arquivo não permitido. Use: JPEG, PNG, WEBP ou GIF"
-            );
-        }
-
         // Validar tamanho
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new BadRequestException(
                 "Arquivo muito grande. Tamanho máximo: 5MB"
             );
         }
-
-        // Validar nome do arquivo
-        String filename = file.getOriginalFilename();
-        if (filename == null || filename.contains("..")) {
-            throw new BadRequestException("Nome de arquivo inválido");
-        }
-    }
-
-    /**
-     * Extrai extensão do arquivo
-     */
-    private String getFileExtension(String filename) {
-        int lastIndexOf = filename.lastIndexOf(".");
-        if (lastIndexOf == -1) {
-            return "";
-        }
-        return filename.substring(lastIndexOf);
     }
 
     /**
