@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/ui/ui.dart';
 import '../../models/restaurant.dart';
+import '../../services/customer_location_service.dart';
 import '../../services/restaurant_service.dart';
 import '../../utils/search.dart';
 import '../../widgets/cart/cart_bar.dart';
@@ -24,6 +25,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String _query = '';
   RestaurantSort _sort = RestaurantSort.recommended;
 
+  /// "Mais perto" só aparece se der para localizar o cliente (GPS ou último endereço)
+  bool _nearestAvailable = false;
+
   @override
   void dispose() {
     _search.dispose();
@@ -34,19 +38,38 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Restaurant> _visible(List<Restaurant> all) => _sort.apply([
         for (final r in all)
           if (matchesSearch(_query, [r.name, ...r.categories, r.address?.neighborhood, r.address?.city])) r,
-      ]);
+      ], origin: context.read<CustomerLocationService>().origin);
+
+  Future<void> _changeSort(RestaurantSort sort) async {
+    if (sort != RestaurantSort.nearest) {
+      setState(() => _sort = sort);
+      return;
+    }
+    final location = context.read<CustomerLocationService>();
+    if (await location.locate()) {
+      if (mounted) setState(() => _sort = sort);
+    } else if (mounted) {
+      AppToast.show(context,
+          message: 'Não conseguimos sua localização. Libere o acesso no navegador ou faça um pedido para usarmos o endereço.',
+          type: ToastType.warning,
+          duration: const Duration(seconds: 6));
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       context.read<RestaurantService>().fetchRestaurants();
+      final available = await context.read<CustomerLocationService>().isAvailable();
+      if (mounted) setState(() => _nearestAvailable = available);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final service = context.watch<RestaurantService>();
+    context.watch<CustomerLocationService>();
 
     return StorefrontScaffold(
       current: StorefrontLink.restaurants,
@@ -96,9 +119,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final sort = AppPillSelect<RestaurantSort>(
       tooltip: 'Ordenar por',
       icon: Icons.swap_vert_rounded,
-      items: [for (final option in RestaurantSort.values) SelectItem(value: option, label: option.label)],
+      items: [
+        for (final option in RestaurantSort.values)
+          if (option != RestaurantSort.nearest || _nearestAvailable) SelectItem(value: option, label: option.label),
+      ],
       value: _sort,
-      onChanged: (value) => setState(() => _sort = value),
+      onChanged: _changeSort,
     );
     if (compact) {
       return Column(
@@ -140,10 +166,35 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    return AppResponsiveGrid(
+    final location = context.read<CustomerLocationService>();
+    final grid = AppResponsiveGrid(
       children: [
         for (final restaurant in visible)
-          RestaurantCard(restaurant: restaurant, onTap: () => context.push('/r/${restaurant.slug}')),
+          RestaurantCard(
+            restaurant: restaurant,
+            distanceKm: RestaurantSort.distanceKm(restaurant, location.origin),
+            onTap: () => context.push('/r/${restaurant.slug}'),
+          ),
+      ],
+    );
+    if (_sort != RestaurantSort.nearest || location.source == null) return grid;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Row(
+            children: [
+              Icon(Icons.near_me_outlined, size: 16, color: context.appColors.textMuted),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text('Distâncias a partir de ${location.source!.label}, em linha reta',
+                    style: TextStyle(color: context.appColors.textMuted, fontSize: 13)),
+              ),
+            ],
+          ),
+        ),
+        grid,
       ],
     );
   }

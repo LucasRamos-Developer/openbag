@@ -199,7 +199,12 @@ String formatDeliveryFee(double fee, {bool byDistance = false}) {
 }
 
 /// Distância com uma casa decimal: "8,0 km"
-String formatDistance(double km) => '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
+/// Distância legível: "menos de 100 m", metros abaixo de 1 km ("450 m") e km com uma casa acima ("2,4 km")
+String formatDistance(double km) {
+  if (km < 0.1) return 'menos de 100 m';
+  if (km < 1) return '${((km * 1000) / 10).round() * 10} m';
+  return '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
+}
 
 /// Percentual sem zeros à toa: "5%", "2,5%"
 String formatPercent(num value) {

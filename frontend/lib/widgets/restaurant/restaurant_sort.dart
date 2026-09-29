@@ -1,8 +1,10 @@
 import '../../models/restaurant.dart';
+import '../../utils/geo.dart';
 
 /// Ordenações da vitrine. Em todas, as lojas abertas vêm antes das fechadas.
 enum RestaurantSort {
   recommended('Recomendados'),
+  nearest('Mais perto'),
   rating('Melhor avaliados'),
   fastest('Entrega mais rápida'),
   cheapestFee('Menor taxa de entrega'),
@@ -11,21 +13,26 @@ enum RestaurantSort {
   final String label;
   const RestaurantSort(this.label);
 
-  /// Nova lista ordenada; "Recomendados" mantém a ordem do servidor (só sobe as abertas)
-  List<Restaurant> apply(List<Restaurant> restaurants) {
+  /// Nova lista ordenada; "Recomendados" mantém a ordem do servidor (só sobe as abertas).
+  /// "Mais perto" usa o [origin] do cliente; sem ele, fica na ordem do servidor.
+  List<Restaurant> apply(List<Restaurant> restaurants, {GeoPoint? origin}) {
     final sorted = [...restaurants];
     // sort do Dart não é estável: o índice original desempata
     final position = {for (var i = 0; i < restaurants.length; i++) restaurants[i]: i};
     sorted.sort((a, b) {
       if (a.openNow != b.openNow) return a.openNow ? -1 : 1;
-      final byCriteria = _compare(a, b);
+      final byCriteria = _compare(a, b, origin);
       return byCriteria != 0 ? byCriteria : position[a]!.compareTo(position[b]!);
     });
     return sorted;
   }
 
-  int _compare(Restaurant a, Restaurant b) => switch (this) {
+  int _compare(Restaurant a, Restaurant b, GeoPoint? origin) => switch (this) {
         recommended => 0,
+        // Loja sem localização fica depois das localizadas
+        nearest => origin == null
+            ? 0
+            : (distanceKm(a, origin) ?? double.infinity).compareTo(distanceKm(b, origin) ?? double.infinity),
         // Loja sem avaliação ("Novo") fica depois das avaliadas
         rating => _ratingOf(b).compareTo(_ratingOf(a)),
         fastest => (a.deliveryTimeMin + a.deliveryTimeMax).compareTo(b.deliveryTimeMin + b.deliveryTimeMax),
@@ -34,4 +41,11 @@ enum RestaurantSort {
       };
 
   static double _ratingOf(Restaurant r) => r.totalReviews > 0 ? r.rating : -1;
+
+  /// Distância em linha reta do cliente até a loja (null sem a localização de um dos dois)
+  static double? distanceKm(Restaurant restaurant, GeoPoint? origin) {
+    final address = restaurant.address;
+    if (origin == null || address == null || !address.hasLocation) return null;
+    return haversineKm(origin, GeoPoint(address.latitude!, address.longitude!));
+  }
 }

@@ -9,6 +9,7 @@ import '../../models/order/order.dart';
 import '../../services/api_client.dart';
 import '../../services/auth_service.dart';
 import '../../services/cart_service.dart';
+import '../../services/customer_location_service.dart';
 import '../../services/order_service.dart';
 import '../../utils/formatters.dart';
 import '../../widgets/address/address_form.dart';
@@ -127,6 +128,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_lastAddressKey, json.encode(address));
+      // Reserva da vitrine "Mais perto" quando o GPS não estiver liberado
+      await CustomerLocationService.rememberDeliveryPoint(order.deliveryLatitude, order.deliveryLongitude);
       cart.clear();
 
       if (!mounted) return;

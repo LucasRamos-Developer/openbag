@@ -28,6 +28,7 @@ import 'services/association_service.dart';
 import 'services/restaurant_panel_service.dart';
 import 'services/restaurant_service.dart';
 import 'services/cart_service.dart';
+import 'services/customer_location_service.dart';
 import 'services/cooperative_service.dart';
 import 'services/member_area_service.dart';
 import 'services/order_service.dart';
@@ -93,6 +94,7 @@ class _OpenBagAppState extends State<OpenBagApp> {
         ChangeNotifierProvider(create: (_) => RestaurantOrdersService(_authService.apiClient, _realtime)),
         ChangeNotifierProvider(create: (_) => CourierWorkService(_authService.apiClient, _realtime)),
         ChangeNotifierProvider(create: (_) => CartService()),
+        ChangeNotifierProvider(create: (_) => CustomerLocationService(_authService.apiClient, _authService)),
       ],
       child: MaterialApp.router(
         title: AppConstants.appName,

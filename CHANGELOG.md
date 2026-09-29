@@ -48,6 +48,7 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ### Adicionado
 
+- **Vitrine por proximidade**: a ordenação "Mais perto" usa o GPS do navegador e, se ele for negado, o ponto do último endereço de entrega (guardado no aparelho ao fazer um pedido ou, com login, o do último pedido). O card mostra a distância em linha reta, e a vitrine diz de onde ela foi medida. A opção só some quando o GPS foi bloqueado de vez e não há endereço. A posição fica só no aparelho; nada é enviado ao servidor. Distâncias abaixo de 1 km aparecem em metros.
 - **Roadmap da 0.6.0 (Operação do dia a dia)** em [docs/roadmap/0.6.0-operacao.md](docs/roadmap/0.6.0-operacao.md). O documento compara as sugestões de produto por papel com o código atual e lista oito itens para antes do piloto, cada um com o estado atual, o código relacionado, o que falta e quando fica pronto.
 - **Gestão da associação** no painel da cooperativa:
   - **Financeiro**, com cinco abas:
@@ -238,7 +239,7 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 - ~~Gestão da associação~~: mensalidade (fixa ou percentual com teto), seguro e outros adicionais, faturas com baixa manual, caixinha solidária, painel financeiro, convênios, enquetes, atas e exportação dos associados (concluído).
 - ~~Taxa repassada ao cliente~~: "a partir de" na vitrine, valor por distância no checkout e contraproposta na tabela entre loja e associação (concluído).
 - ~~Fluxo do cliente fora da fase de testes, com coleta de avaliações~~: jornada revisada de ponta a ponta no desktop e no celular, com cadastro no meio da compra (concluído).
-- Visibilidade: página da loja otimizada para buscadores (SEO) e vitrine ordenada por avaliações e proximidade, sem posição paga.
+- Visibilidade: página da loja otimizada para buscadores (SEO) e ~~vitrine ordenada por avaliações e proximidade~~ (concluído), sem posição paga.
 
 ### 0.4.0: Segurança e integridade dos dados
 - **Race conditions:** dois entregadores aceitando a mesma oferta, pedido mudando de status ao mesmo tempo no painel e na cozinha, acerto de caixa em paralelo. Usar travas otimistas (`@Version`) e restrições no banco, com testes de concorrência.

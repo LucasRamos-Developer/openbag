@@ -15,7 +15,10 @@ class RestaurantCard extends StatelessWidget {
   final Restaurant restaurant;
   final VoidCallback? onTap;
 
-  const RestaurantCard({super.key, required this.restaurant, this.onTap});
+  /// Distância até o cliente, quando a vitrine sabe onde ele está
+  final double? distanceKm;
+
+  const RestaurantCard({super.key, required this.restaurant, this.onTap, this.distanceKm});
 
   static const double _logoSize = 52;
 
@@ -30,6 +33,11 @@ class RestaurantCard extends StatelessWidget {
     final placeholder = _brandTheme(const AppBrandBackdrop(gap: 18));
     final closedLabel = restaurant.paused ? 'Pausado' : 'Fechado';
     final address = restaurant.address;
+    // Bairro e cidade, mais a distância até o cliente quando a vitrine sabe onde ele está
+    final areaLine = [
+      if (address != null && address.areaLine.isNotEmpty) address.areaLine,
+      if (distanceKm != null) formatDistance(distanceKm!),
+    ].join(' · ');
 
     return AppCard(
       padding: EdgeInsets.zero,
@@ -132,7 +140,7 @@ class RestaurantCard extends StatelessWidget {
                             style: TextStyle(color: c.text, fontSize: 13, fontWeight: FontWeight.w600),
                           ),
                           Text(
-                            address == null || address.areaLine.isEmpty ? ' ' : address.areaLine,
+                            areaLine.isEmpty ? ' ' : areaLine,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(color: c.textMuted, fontSize: 12.5),
