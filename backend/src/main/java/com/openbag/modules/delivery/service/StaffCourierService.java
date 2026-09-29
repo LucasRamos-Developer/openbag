@@ -5,7 +5,7 @@ import com.openbag.modules.delivery.dto.StaffCourierDTO;
 import com.openbag.modules.delivery.dto.StaffCourierRequest;
 import com.openbag.modules.delivery.entity.StaffCourier;
 import com.openbag.modules.delivery.repository.StaffCourierRepository;
-import com.openbag.modules.restaurant.repository.RestaurantRepository;
+import com.openbag.restaurant.store.repository.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

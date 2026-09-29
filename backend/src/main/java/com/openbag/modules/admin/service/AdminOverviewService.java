@@ -11,7 +11,7 @@ import com.openbag.modules.admin.dto.AdminDTOs.UserRow;
 import com.openbag.modules.delivery.repository.DeliveryPersonRepository;
 import com.openbag.modules.order.repository.OrderRepository;
 import com.openbag.modules.organization.repository.OrganizationRepository;
-import com.openbag.modules.restaurant.repository.RestaurantRepository;
+import com.openbag.restaurant.store.repository.RestaurantRepository;
 import com.openbag.modules.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

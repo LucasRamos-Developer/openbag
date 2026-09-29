@@ -1,0 +1,128 @@
+package com.openbag.restaurant.catalog.entity;
+
+import com.openbag.restaurant.store.entity.Restaurant;
+import com.openbag.modules.order.entity.OrderItem;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.openbag.restaurant.menu.entity.MenuSection;
+import com.openbag.platform.util.StringListConverter;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "products")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank
+    @Size(max = 100)
+    private String name;
+
+    @Size(max = 500)
+    private String description;
+
+    @NotNull
+    @Column(precision = 10, scale = 2)
+    private BigDecimal price;
+
+    @Column(name = "promotional_price", precision = 10, scale = 2)
+    private BigDecimal promotionalPrice;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    /** Selos livres do cardápio (ex: "Tradicional", "Picante"), no máximo 2 */
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "badges", length = 60)
+    private List<String> badges = new ArrayList<>();
+
+    @Column(name = "is_available")
+    private boolean isAvailable = true;
+
+    @Column(name = "is_active")
+    private boolean isActive = true;
+
+    @Column(name = "preparation_time")
+    private Integer preparationTime;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "product_type", length = 20)
+    private ProductType productType = ProductType.CUSTOM;
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "global_product_id")
+    private GlobalProduct globalProduct;
+
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "restaurant_id")
+    private Restaurant restaurant;
+
+    // Seção do cardápio definida pelo restaurante
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_section_id")
+    private MenuSection menuSection;
+
+    // Ordem dentro da seção
+    @Column(name = "position")
+    private Integer position = 0;
+
+    // Exclusão lógica: itens com pedidos não podem ser apagados de fato
+    @JsonIgnore
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    // Sem cascade: itens de pedidos já feitos nunca podem ser apagados junto com o produto
+    @JsonIgnore
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<OrderItem> orderItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<CustomizationGroup> customizationGroups = new ArrayList<>();
+
+    public Product(String name, String description, BigDecimal price, Restaurant restaurant, Category category) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.restaurant = restaurant;
+        this.category = category;
+    }
+
+    public BigDecimal getCurrentPrice() {
+        return promotionalPrice != null ? promotionalPrice : price;
+    }
+}

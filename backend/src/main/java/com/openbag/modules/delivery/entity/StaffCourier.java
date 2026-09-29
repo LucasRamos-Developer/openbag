@@ -1,6 +1,6 @@
 package com.openbag.modules.delivery.entity;
 
-import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.restaurant.store.entity.Restaurant;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

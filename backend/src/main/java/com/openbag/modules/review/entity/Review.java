@@ -2,7 +2,7 @@ package com.openbag.modules.review.entity;
 
 import com.openbag.modules.delivery.entity.DeliveryPerson;
 import com.openbag.modules.order.entity.Order;
-import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.modules.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;

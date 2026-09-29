@@ -8,7 +8,7 @@ import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.order.entity.Order;
 import com.openbag.modules.order.realtime.OrderChangedEvent;
 import com.openbag.modules.order.repository.OrderRepository;
-import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.restaurant.store.entity.Restaurant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.PlatformTransactionManager;

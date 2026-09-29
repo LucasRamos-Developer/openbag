@@ -5,7 +5,7 @@ import com.openbag.enums.PartnershipSide;
 import com.openbag.enums.PartnershipStatus;
 import com.openbag.modules.delivery.entity.RestaurantPartnership;
 import com.openbag.modules.organization.dto.DeliveryRateDTO;
-import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.restaurant.store.entity.Restaurant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -25,7 +25,7 @@ import com.openbag.modules.order.repository.OrderRepository;
 import com.openbag.modules.order.service.OrderService;
 import com.openbag.modules.organization.entity.DeliveryRate;
 import com.openbag.modules.organization.entity.Organization;
-import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.modules.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

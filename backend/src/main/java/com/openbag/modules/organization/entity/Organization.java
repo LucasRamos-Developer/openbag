@@ -5,7 +5,7 @@ import com.openbag.enums.OrganizationStatus;
 import com.openbag.enums.OrganizationType;
 import com.openbag.modules.user.entity.User;
 import com.openbag.modules.user.entity.Address;
-import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

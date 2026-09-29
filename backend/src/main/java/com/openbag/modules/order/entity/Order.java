@@ -1,9 +1,9 @@
 package com.openbag.modules.order.entity;
 
 import com.openbag.modules.user.entity.User;
-import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
-import com.openbag.modules.delivery.entity.CourierSettlement;
+import com.openbag.restaurant.cash.entity.CourierSettlement;
 import com.openbag.modules.delivery.entity.DeliveryRoute;
 import com.openbag.modules.delivery.entity.StaffCourier;
 import com.openbag.modules.organization.entity.Organization;

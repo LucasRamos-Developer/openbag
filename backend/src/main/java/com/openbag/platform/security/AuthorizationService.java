@@ -1,12 +1,12 @@
 package com.openbag.platform.security;
 
 import com.openbag.modules.user.entity.User;
-import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.modules.order.entity.Order;
 import com.openbag.modules.organization.entity.Organization;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
 import com.openbag.modules.user.repository.UserRepository;
-import com.openbag.modules.restaurant.repository.RestaurantRepository;
+import com.openbag.restaurant.store.repository.RestaurantRepository;
 import com.openbag.modules.order.repository.OrderRepository;
 import com.openbag.modules.organization.repository.OrganizationRepository;
 import com.openbag.modules.delivery.repository.DeliveryPersonRepository;

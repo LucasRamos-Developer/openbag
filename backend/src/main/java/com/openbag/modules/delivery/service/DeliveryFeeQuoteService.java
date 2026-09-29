@@ -7,7 +7,7 @@ import com.openbag.modules.delivery.repository.RestaurantPartnershipRepository;
 import com.openbag.modules.organization.entity.DeliveryRate;
 import com.openbag.modules.organization.entity.Organization;
 import com.openbag.modules.organization.repository.OrganizationRepository;
-import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.platform.geo.GeocodingService;
 import com.openbag.platform.geo.GeoUtils;
 import org.springframework.beans.factory.annotation.Autowired;

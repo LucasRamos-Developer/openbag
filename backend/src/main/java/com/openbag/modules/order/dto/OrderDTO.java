@@ -12,7 +12,7 @@ import com.openbag.modules.order.entity.Order;
 import com.openbag.modules.order.entity.OrderItem;
 import com.openbag.modules.order.entity.OrderTracking;
 import com.openbag.modules.product.entity.OrderItemCustomization;
-import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.modules.review.dto.OrderReviewDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

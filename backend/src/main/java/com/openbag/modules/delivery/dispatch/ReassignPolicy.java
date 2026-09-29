@@ -4,7 +4,7 @@ import com.openbag.enums.ShiftMode;
 import com.openbag.modules.delivery.entity.CourierShift;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
 import com.openbag.modules.order.entity.Order;
-import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.platform.geo.GeoUtils;
 
 import java.time.LocalDateTime;

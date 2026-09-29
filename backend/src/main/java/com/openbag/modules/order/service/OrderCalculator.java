@@ -1,11 +1,11 @@
 package com.openbag.modules.order.service;
 
 import com.openbag.platform.web.exception.BadRequestException;
-import com.openbag.modules.combo.entity.Combo;
+import com.openbag.restaurant.combo.entity.Combo;
 import com.openbag.modules.order.dto.CreateOrderRequest;
-import com.openbag.modules.product.entity.CustomizationGroup;
-import com.openbag.modules.product.entity.CustomizationOption;
-import com.openbag.modules.product.entity.Product;
+import com.openbag.restaurant.catalog.entity.CustomizationGroup;
+import com.openbag.restaurant.catalog.entity.CustomizationOption;
+import com.openbag.restaurant.catalog.entity.Product;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;

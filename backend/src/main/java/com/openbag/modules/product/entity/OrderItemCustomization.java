@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import com.openbag.restaurant.catalog.entity.CustomizationOption;
 
 /**
  * OrderItemCustomization - Customizações aplicadas a um item específico do pedido

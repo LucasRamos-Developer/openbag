@@ -14,7 +14,7 @@ import com.openbag.modules.organization.entity.AssociationMembership;
 import com.openbag.modules.organization.entity.Organization;
 import com.openbag.modules.organization.repository.AssociationMembershipRepository;
 import com.openbag.modules.organization.repository.OrganizationRepository;
-import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.modules.user.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

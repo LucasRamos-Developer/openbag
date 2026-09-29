@@ -1,6 +1,6 @@
 package com.openbag.modules.order.entity;
 
-import com.openbag.modules.product.entity.Product;
+import com.openbag.restaurant.catalog.entity.Product;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -52,7 +52,7 @@ public class OrderItem {
     @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "combo_id")
-    private com.openbag.modules.combo.entity.Combo combo;
+    private com.openbag.restaurant.combo.entity.Combo combo;
 
     // Nome no momento do pedido (o cardápio pode mudar depois)
     @Column(name = "item_name", length = 200)

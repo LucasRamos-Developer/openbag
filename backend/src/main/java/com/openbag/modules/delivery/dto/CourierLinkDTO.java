@@ -4,7 +4,7 @@ import com.openbag.enums.CourierLinkStatus;
 import com.openbag.enums.LinkRequester;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
 import com.openbag.modules.delivery.entity.RestaurantCourierLink;
-import com.openbag.modules.restaurant.entity.Restaurant;
+import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.modules.user.entity.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
