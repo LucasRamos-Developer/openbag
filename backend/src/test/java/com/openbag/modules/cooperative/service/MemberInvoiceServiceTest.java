@@ -12,7 +12,7 @@ import com.openbag.modules.cooperative.dto.PayInvoiceRequest;
 import com.openbag.modules.cooperative.entity.AddonPlan;
 import com.openbag.modules.cooperative.entity.MemberInvoice;
 import com.openbag.modules.cooperative.repository.MemberInvoiceRepository;
-import com.openbag.modules.delivery.entity.DeliveryPerson;
+import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.order.core.repository.OrderRepository;
 import com.openbag.modules.organization.entity.AssociationMembership;
 import com.openbag.modules.organization.entity.MembershipFeePolicy;

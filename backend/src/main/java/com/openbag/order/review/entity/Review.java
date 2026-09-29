@@ -1,6 +1,6 @@
 package com.openbag.order.review.entity;
 
-import com.openbag.modules.delivery.entity.DeliveryPerson;
+import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.order.core.entity.Order;
 import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.modules.user.entity.User;

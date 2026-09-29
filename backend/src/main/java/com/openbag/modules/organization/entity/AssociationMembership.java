@@ -2,7 +2,7 @@ package com.openbag.modules.organization.entity;
 
 import com.openbag.enums.MembershipOrigin;
 import com.openbag.enums.MembershipStatus;
-import com.openbag.modules.delivery.entity.DeliveryPerson;
+import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.modules.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;

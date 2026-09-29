@@ -1,13 +1,13 @@
 package com.openbag.order.core.dto;
 
-import com.openbag.modules.delivery.dispatch.ReassignPolicy;
+import com.openbag.delivery.dispatch.service.ReassignPolicy;
 import com.openbag.enums.CancelledBy;
 import com.openbag.enums.FulfillmentType;
 import com.openbag.enums.OrderChannel;
 import com.openbag.enums.OrderStatus;
 import com.openbag.enums.VehicleType;
-import com.openbag.modules.delivery.entity.DeliveryPerson;
-import com.openbag.modules.delivery.entity.Vehicle;
+import com.openbag.delivery.courier.entity.DeliveryPerson;
+import com.openbag.delivery.courier.entity.Vehicle;
 import com.openbag.order.core.entity.Order;
 import com.openbag.order.core.entity.OrderItem;
 import com.openbag.order.core.entity.OrderTracking;

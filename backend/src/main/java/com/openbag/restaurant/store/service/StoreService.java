@@ -19,7 +19,7 @@ import com.openbag.restaurant.catalog.repository.CategoryRepository;
 import com.openbag.modules.user.dto.AddressDTO;
 import com.openbag.modules.user.entity.Address;
 import com.openbag.modules.user.entity.User;
-import com.openbag.modules.delivery.service.RestaurantDeliveryService;
+import com.openbag.delivery.dispatch.service.RestaurantDeliveryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

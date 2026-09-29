@@ -1,6 +1,6 @@
 package com.openbag.restaurant.cash.dto;
 
-import com.openbag.modules.delivery.dispatch.ReassignPolicy.CourierKind;
+import com.openbag.delivery.dispatch.service.ReassignPolicy.CourierKind;
 import com.openbag.order.core.entity.Order;
 
 import java.math.BigDecimal;

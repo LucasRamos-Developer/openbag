@@ -2,10 +2,10 @@ package com.openbag.order.core.entity;
 
 import com.openbag.modules.user.entity.User;
 import com.openbag.restaurant.store.entity.Restaurant;
-import com.openbag.modules.delivery.entity.DeliveryPerson;
+import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.restaurant.cash.entity.CourierSettlement;
-import com.openbag.modules.delivery.entity.DeliveryRoute;
-import com.openbag.modules.delivery.entity.StaffCourier;
+import com.openbag.delivery.route.entity.DeliveryRoute;
+import com.openbag.delivery.link.entity.StaffCourier;
 import com.openbag.modules.organization.entity.Organization;
 import com.openbag.enums.CancelledBy;
 import com.openbag.enums.FulfillmentType;

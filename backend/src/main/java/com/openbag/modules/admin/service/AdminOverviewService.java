@@ -8,7 +8,7 @@ import com.openbag.modules.admin.dto.AdminDTOs.OrderRow;
 import com.openbag.modules.admin.dto.AdminDTOs.Overview;
 import com.openbag.modules.admin.dto.AdminDTOs.RestaurantRow;
 import com.openbag.modules.admin.dto.AdminDTOs.UserRow;
-import com.openbag.modules.delivery.repository.DeliveryPersonRepository;
+import com.openbag.delivery.courier.repository.DeliveryPersonRepository;
 import com.openbag.order.core.repository.OrderRepository;
 import com.openbag.modules.organization.repository.OrganizationRepository;
 import com.openbag.restaurant.store.repository.RestaurantRepository;

@@ -1,6 +1,6 @@
 package com.openbag.order.core.controller;
 
-import com.openbag.modules.delivery.dto.DeliveryQuoteDTO;
+import com.openbag.delivery.dispatch.dto.DeliveryQuoteDTO;
 import com.openbag.order.core.dto.CreateOrderRequest;
 import com.openbag.order.core.dto.DeliveryQuoteRequest;
 import com.openbag.order.core.dto.OrderDTO;

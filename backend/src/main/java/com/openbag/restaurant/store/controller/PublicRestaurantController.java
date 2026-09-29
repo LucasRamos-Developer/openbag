@@ -1,8 +1,8 @@
 package com.openbag.restaurant.store.controller;
 
 import com.openbag.platform.web.exception.ResourceNotFoundException;
-import com.openbag.modules.delivery.dto.DeliveryQuoteDTO;
-import com.openbag.modules.delivery.service.DeliveryFeeQuoteService;
+import com.openbag.delivery.dispatch.dto.DeliveryQuoteDTO;
+import com.openbag.delivery.dispatch.service.DeliveryFeeQuoteService;
 import com.openbag.restaurant.menu.dto.MenuDTO;
 import com.openbag.restaurant.menu.service.MenuService;
 import com.openbag.restaurant.store.dto.RestaurantCardDTO;

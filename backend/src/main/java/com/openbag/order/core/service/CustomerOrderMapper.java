@@ -1,9 +1,9 @@
 package com.openbag.order.core.service;
 
 import com.openbag.enums.OrderStatus;
-import com.openbag.modules.delivery.dispatch.DispatchProperties;
-import com.openbag.modules.delivery.entity.DeliveryPerson;
-import com.openbag.modules.delivery.tracking.CourierTracking;
+import com.openbag.delivery.dispatch.service.DispatchProperties;
+import com.openbag.delivery.courier.entity.DeliveryPerson;
+import com.openbag.delivery.courier.tracking.CourierTracking;
 import com.openbag.order.core.dto.OrderDTO;
 import com.openbag.order.core.entity.Order;
 import com.openbag.order.core.repository.OrderRepository;

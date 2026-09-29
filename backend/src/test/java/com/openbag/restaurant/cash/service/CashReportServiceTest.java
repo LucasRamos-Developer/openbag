@@ -1,13 +1,13 @@
 package com.openbag.restaurant.cash.service;
 
 import com.openbag.platform.web.exception.BadRequestException;
-import com.openbag.modules.delivery.dispatch.ReassignPolicy.CourierKind;
+import com.openbag.delivery.dispatch.service.ReassignPolicy.CourierKind;
 import com.openbag.restaurant.cash.dto.CashReportDTO;
 import com.openbag.restaurant.cash.dto.SettleCourierRequest;
 import com.openbag.restaurant.cash.dto.SettlementDTO;
 import com.openbag.restaurant.cash.entity.CourierSettlement;
-import com.openbag.modules.delivery.entity.DeliveryPerson;
-import com.openbag.modules.delivery.entity.StaffCourier;
+import com.openbag.delivery.courier.entity.DeliveryPerson;
+import com.openbag.delivery.link.entity.StaffCourier;
 import com.openbag.restaurant.cash.repository.CourierSettlementRepository;
 import com.openbag.order.core.entity.Order;
 import com.openbag.order.core.repository.OrderRepository;

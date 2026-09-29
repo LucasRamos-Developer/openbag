@@ -2,7 +2,7 @@ package com.openbag.order.core.repository;
 
 import com.openbag.order.core.entity.Order;
 import com.openbag.restaurant.store.entity.Restaurant;
-import com.openbag.modules.delivery.entity.DeliveryPerson;
+import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.enums.OrderStatus;
 import com.openbag.modules.user.entity.User;
 import org.springframework.data.domain.Page;

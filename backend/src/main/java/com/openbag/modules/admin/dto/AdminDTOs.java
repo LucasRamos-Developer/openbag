@@ -2,8 +2,8 @@ package com.openbag.modules.admin.dto;
 
 import com.openbag.enums.CourierWorkStatus;
 import com.openbag.enums.OrderStatus;
-import com.openbag.modules.delivery.entity.DeliveryPerson;
-import com.openbag.modules.delivery.entity.Vehicle;
+import com.openbag.delivery.courier.entity.DeliveryPerson;
+import com.openbag.delivery.courier.entity.Vehicle;
 import com.openbag.order.core.entity.Order;
 import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.modules.user.entity.Role;

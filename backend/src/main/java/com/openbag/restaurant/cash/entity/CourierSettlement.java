@@ -9,8 +9,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import com.openbag.modules.delivery.entity.DeliveryPerson;
-import com.openbag.modules.delivery.entity.StaffCourier;
+import com.openbag.delivery.courier.entity.DeliveryPerson;
+import com.openbag.delivery.link.entity.StaffCourier;
 
 /**
  * Acerto do caixa entre a loja e um entregador (do app ou da equipe própria): fecha os pedidos entregues que

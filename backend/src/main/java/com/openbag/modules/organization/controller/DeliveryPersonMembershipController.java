@@ -1,7 +1,7 @@
 package com.openbag.modules.organization.controller;
 
-import com.openbag.modules.delivery.dto.AssociationReportDTO;
-import com.openbag.modules.delivery.service.AssociationReportService;
+import com.openbag.association.partnership.dto.AssociationReportDTO;
+import com.openbag.association.partnership.service.AssociationReportService;
 import com.openbag.modules.organization.dto.JoinAssociationRequest;
 import com.openbag.modules.organization.dto.MemberDTO;
 import com.openbag.modules.organization.dto.ReasonRequest;

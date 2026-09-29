@@ -5,7 +5,7 @@ import com.openbag.enums.RestaurantThemePreset;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.restaurant.catalog.entity.Category;
 import com.openbag.restaurant.catalog.repository.CategoryRepository;
-import com.openbag.modules.delivery.service.RestaurantDeliveryService;
+import com.openbag.delivery.dispatch.service.RestaurantDeliveryService;
 import com.openbag.restaurant.store.dto.AppearanceRequest;
 import com.openbag.restaurant.store.dto.RestaurantProfileRequest;
 import com.openbag.restaurant.store.dto.StoreAddressRequest;

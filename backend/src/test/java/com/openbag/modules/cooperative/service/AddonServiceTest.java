@@ -7,7 +7,7 @@ import com.openbag.modules.cooperative.entity.AddonPlan;
 import com.openbag.modules.cooperative.entity.MemberAddon;
 import com.openbag.modules.cooperative.repository.AddonPlanRepository;
 import com.openbag.modules.cooperative.repository.MemberAddonRepository;
-import com.openbag.modules.delivery.entity.DeliveryPerson;
+import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.modules.organization.entity.AssociationMembership;
 import com.openbag.modules.organization.repository.AssociationMembershipRepository;
 import com.openbag.modules.organization.service.AssociationService;

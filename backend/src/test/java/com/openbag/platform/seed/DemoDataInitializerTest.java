@@ -1,8 +1,8 @@
 package com.openbag.platform.seed;
 
-import com.openbag.modules.delivery.entity.DeliveryPerson;
-import com.openbag.modules.delivery.repository.DeliveryPersonRepository;
-import com.openbag.modules.delivery.service.CourierProfileService;
+import com.openbag.delivery.courier.entity.DeliveryPerson;
+import com.openbag.delivery.courier.repository.DeliveryPersonRepository;
+import com.openbag.delivery.courier.service.CourierProfileService;
 import com.openbag.restaurant.menu.service.MenuService;
 import com.openbag.modules.organization.entity.Organization;
 import com.openbag.modules.organization.repository.AssociationMembershipRepository;
