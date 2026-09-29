@@ -2,7 +2,7 @@ package com.openbag.modules.organization.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.openbag.exception.BadRequestException;
+import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.modules.organization.dto.AssociationDTO;
 import com.openbag.modules.organization.dto.AssociationOnboardingRequest;
 import com.openbag.modules.organization.dto.DeliveryPersonRegisterRequest;

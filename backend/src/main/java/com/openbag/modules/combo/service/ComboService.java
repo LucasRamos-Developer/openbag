@@ -11,7 +11,7 @@ import com.openbag.modules.product.entity.Category;
 import com.openbag.modules.product.entity.Product;
 import com.openbag.modules.product.repository.CategoryRepository;
 import com.openbag.modules.product.repository.ProductRepository;
-import com.openbag.modules.shared.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.restaurant.repository.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

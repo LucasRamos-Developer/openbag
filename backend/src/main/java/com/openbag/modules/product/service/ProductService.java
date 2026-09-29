@@ -6,7 +6,7 @@ import com.openbag.modules.product.entity.GlobalProduct;
 import com.openbag.modules.product.entity.Product;
 import com.openbag.modules.product.entity.ProductType;
 import com.openbag.modules.restaurant.entity.Restaurant;
-import com.openbag.modules.shared.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.product.repository.CategoryRepository;
 import com.openbag.modules.product.repository.GlobalProductRepository;
 import com.openbag.modules.product.repository.ProductRepository;

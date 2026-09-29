@@ -1,8 +1,8 @@
 package com.openbag.modules.delivery.service;
 
 import com.openbag.enums.MembershipStatus;
-import com.openbag.exception.BadRequestException;
-import com.openbag.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.BadRequestException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.delivery.dto.AssociationReportDTO;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
 import com.openbag.modules.delivery.entity.RestaurantPartnership;

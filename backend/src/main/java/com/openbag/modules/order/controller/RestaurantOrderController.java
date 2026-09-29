@@ -1,6 +1,6 @@
 package com.openbag.modules.order.controller;
 
-import com.openbag.annotation.IsRestaurantOwner;
+import com.openbag.platform.security.annotation.IsRestaurantOwner;
 import com.openbag.enums.OrderStatus;
 import com.openbag.modules.order.dto.CreateStoreOrderRequest;
 import com.openbag.modules.order.dto.OrderDTO;

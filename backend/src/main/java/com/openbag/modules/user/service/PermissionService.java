@@ -2,7 +2,7 @@ package com.openbag.modules.user.service;
 
 import com.openbag.modules.user.entity.Permission;
 import com.openbag.modules.user.entity.Role;
-import com.openbag.modules.shared.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.user.repository.PermissionRepository;
 import com.openbag.modules.user.repository.RoleRepository;
 import lombok.extern.slf4j.Slf4j;

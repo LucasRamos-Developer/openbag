@@ -4,7 +4,7 @@ import com.openbag.modules.product.dto.LinkGlobalProductRequest;
 import com.openbag.modules.product.entity.Category;
 import com.openbag.modules.product.entity.Product;
 import com.openbag.modules.product.service.ProductService;
-import com.openbag.modules.shared.service.FileStorageService;
+import com.openbag.platform.files.FileStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

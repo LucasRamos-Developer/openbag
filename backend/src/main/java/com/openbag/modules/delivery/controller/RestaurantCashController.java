@@ -1,6 +1,6 @@
 package com.openbag.modules.delivery.controller;
 
-import com.openbag.annotation.IsRestaurantOwner;
+import com.openbag.platform.security.annotation.IsRestaurantOwner;
 import com.openbag.modules.delivery.dto.CashReportDTO;
 import com.openbag.modules.delivery.dto.SettleCourierRequest;
 import com.openbag.modules.delivery.dto.SettlementDTO;

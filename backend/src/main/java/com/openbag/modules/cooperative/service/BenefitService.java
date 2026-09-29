@@ -1,12 +1,12 @@
 package com.openbag.modules.cooperative.service;
 
-import com.openbag.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.cooperative.dto.BenefitDTO;
 import com.openbag.modules.cooperative.dto.BenefitRequest;
 import com.openbag.modules.cooperative.entity.Benefit;
 import com.openbag.modules.cooperative.repository.BenefitRepository;
 import com.openbag.modules.organization.service.AssociationService;
-import com.openbag.modules.shared.service.FileStorageService;
+import com.openbag.platform.files.FileStorageService;
 import com.openbag.modules.user.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

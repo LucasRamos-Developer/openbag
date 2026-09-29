@@ -1,8 +1,14 @@
 package com.openbag.modules.restaurant.service;
 
-import com.openbag.exception.BadRequestException;
-import com.openbag.exception.ResourceNotFoundException;
-import com.openbag.modules.restaurant.dto.*;
+import com.openbag.platform.web.exception.BadRequestException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
+import com.openbag.modules.restaurant.dto.AppearanceRequest;
+import com.openbag.modules.restaurant.dto.OpeningHourDTO;
+import com.openbag.modules.restaurant.dto.RestaurantProfileRequest;
+import com.openbag.modules.restaurant.dto.RestaurantSummaryDTO;
+import com.openbag.modules.restaurant.dto.StoreAddressRequest;
+import com.openbag.modules.restaurant.dto.StoreDTO;
+import com.openbag.modules.restaurant.dto.StoreSettingsRequest;
 import com.openbag.enums.RestaurantThemePreset;
 import com.openbag.modules.restaurant.entity.LayoutConfig;
 import com.openbag.modules.restaurant.entity.OpeningHour;

@@ -10,7 +10,7 @@ import com.openbag.modules.organization.entity.DeliveryRate;
 import com.openbag.modules.organization.entity.Organization;
 import com.openbag.modules.organization.repository.OrganizationRepository;
 import com.openbag.modules.restaurant.entity.Restaurant;
-import com.openbag.modules.shared.service.GeocodingService;
+import com.openbag.platform.geo.GeocodingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

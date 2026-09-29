@@ -1,7 +1,7 @@
 package com.openbag.modules.cooperative.service;
 
 import com.openbag.enums.MembershipStatus;
-import com.openbag.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
 import com.openbag.modules.delivery.repository.DeliveryPersonRepository;
 import com.openbag.modules.organization.entity.AssociationMembership;

@@ -1,6 +1,6 @@
 package com.openbag.modules.order.service;
 
-import com.openbag.exception.BadRequestException;
+import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.modules.combo.entity.Combo;
 import com.openbag.modules.order.dto.CreateOrderRequest.ItemRequest;
 import com.openbag.modules.product.entity.CustomizationGroup;

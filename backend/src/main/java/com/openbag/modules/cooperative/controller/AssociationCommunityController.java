@@ -1,8 +1,12 @@
 package com.openbag.modules.cooperative.controller;
 
-import com.openbag.annotation.IsAssociationManager;
+import com.openbag.platform.security.annotation.IsAssociationManager;
 import com.openbag.enums.AssociationDocumentType;
-import com.openbag.modules.cooperative.dto.*;
+import com.openbag.modules.cooperative.dto.AssociationDocumentDTO;
+import com.openbag.modules.cooperative.dto.BenefitDTO;
+import com.openbag.modules.cooperative.dto.BenefitRequest;
+import com.openbag.modules.cooperative.dto.PollDTO;
+import com.openbag.modules.cooperative.dto.PollRequest;
 import com.openbag.modules.cooperative.service.AssociationDocumentService;
 import com.openbag.modules.cooperative.service.BenefitService;
 import com.openbag.modules.cooperative.service.PollService;

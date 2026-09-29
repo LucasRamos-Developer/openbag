@@ -1,6 +1,6 @@
 package com.openbag.modules.delivery.service;
 
-import com.openbag.exception.BadRequestException;
+import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.modules.delivery.dispatch.ReassignPolicy.CourierKind;
 import com.openbag.modules.delivery.dto.CashReportDTO;
 import com.openbag.modules.delivery.dto.SettleCourierRequest;

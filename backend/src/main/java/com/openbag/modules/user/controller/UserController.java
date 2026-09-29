@@ -11,7 +11,7 @@ import com.openbag.modules.user.repository.UserRepository;
 import com.openbag.modules.user.service.PermissionService;
 import com.openbag.modules.user.service.RoleService;
 import com.openbag.modules.user.service.UserService;
-import com.openbag.modules.shared.service.FileStorageService;
+import com.openbag.platform.files.FileStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -180,7 +180,7 @@ public class UserController {
     @GetMapping("/me/permissions")
     @Operation(summary = "Minhas permissões", description = "Retorna roles e permissões do usuário logado")
     public ResponseEntity<?> getMyPermissions(Authentication authentication) {
-        var principal = (com.openbag.security.CustomUserDetailsService.CustomUserPrincipal) authentication.getPrincipal();
+        var principal = (com.openbag.platform.security.CustomUserDetailsService.CustomUserPrincipal) authentication.getPrincipal();
         Long userId = principal.getId();
 
         User user = userRepository.findById(userId)

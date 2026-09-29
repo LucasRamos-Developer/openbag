@@ -1,6 +1,6 @@
 package com.openbag.support;
 
-import com.openbag.modules.shared.idempotency.IdempotencyStore;
+import com.openbag.platform.web.idempotency.IdempotencyStore;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;

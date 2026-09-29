@@ -6,7 +6,7 @@ import com.openbag.enums.MemberPaymentMethod;
 import com.openbag.enums.MembershipFeeMode;
 import com.openbag.enums.MembershipStatus;
 import com.openbag.enums.OrganizationStatus;
-import com.openbag.exception.BadRequestException;
+import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.modules.cooperative.dto.InvoiceMonthDTO;
 import com.openbag.modules.cooperative.dto.PayInvoiceRequest;
 import com.openbag.modules.cooperative.entity.AddonPlan;

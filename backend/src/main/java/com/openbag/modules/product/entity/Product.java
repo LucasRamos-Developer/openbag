@@ -5,7 +5,7 @@ import com.openbag.modules.order.entity.OrderItem;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.openbag.modules.menu.entity.MenuSection;
-import com.openbag.modules.shared.entity.StringListConverter;
+import com.openbag.platform.util.StringListConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

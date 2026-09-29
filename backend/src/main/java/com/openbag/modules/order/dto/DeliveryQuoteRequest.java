@@ -1,6 +1,6 @@
 package com.openbag.modules.order.dto;
 
-import com.openbag.modules.shared.service.GeocodingService;
+import com.openbag.platform.geo.GeocodingService;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 

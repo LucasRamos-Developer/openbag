@@ -8,7 +8,7 @@ import com.openbag.modules.delivery.entity.Vehicle;
 import com.openbag.modules.delivery.repository.VehicleRepository;
 import com.openbag.modules.organization.entity.AssociationMembership;
 import com.openbag.modules.organization.repository.AssociationMembershipRepository;
-import com.openbag.modules.shared.util.CsvWriter;
+import com.openbag.platform.util.CsvWriter;
 import com.openbag.modules.user.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;

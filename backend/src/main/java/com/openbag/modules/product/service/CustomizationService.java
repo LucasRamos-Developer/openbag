@@ -8,7 +8,7 @@ import com.openbag.modules.product.entity.Product;
 import com.openbag.modules.product.repository.CustomizationGroupRepository;
 import com.openbag.modules.product.repository.CustomizationOptionRepository;
 import com.openbag.modules.product.repository.ProductRepository;
-import com.openbag.modules.shared.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

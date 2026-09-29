@@ -3,7 +3,7 @@ package com.openbag.modules.restaurant.controller;
 import com.openbag.modules.product.entity.Product;
 import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.restaurant.service.RestaurantService;
-import com.openbag.modules.shared.service.FileStorageService;
+import com.openbag.platform.files.FileStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

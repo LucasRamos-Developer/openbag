@@ -1,7 +1,7 @@
 package com.openbag.modules.organization.service;
 
-import com.openbag.exception.BadRequestException;
-import com.openbag.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.BadRequestException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.organization.dto.AssociationSummaryDTO;
 import com.openbag.modules.organization.dto.CreateInviteRequest;
 import com.openbag.modules.organization.dto.InviteDTO;

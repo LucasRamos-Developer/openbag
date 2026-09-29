@@ -1,6 +1,6 @@
 package com.openbag.concurrency;
 
-import com.openbag.config.DemoDataInitializer;
+import com.openbag.platform.seed.DemoDataInitializer;
 import com.openbag.enums.DeliveryOfferStatus;
 import com.openbag.enums.FulfillmentType;
 import com.openbag.enums.InvoiceStatus;

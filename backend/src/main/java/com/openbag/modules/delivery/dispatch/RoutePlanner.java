@@ -1,6 +1,6 @@
 package com.openbag.modules.delivery.dispatch;
 
-import com.openbag.modules.shared.util.GeoUtils;
+import com.openbag.platform.geo.GeoUtils;
 
 import java.text.Normalizer;
 import java.time.Duration;

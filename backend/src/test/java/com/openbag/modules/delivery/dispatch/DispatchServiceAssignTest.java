@@ -7,7 +7,7 @@ import com.openbag.enums.OrderStatus;
 import com.openbag.enums.OrganizationStatus;
 import com.openbag.enums.PartnershipStatus;
 import com.openbag.enums.ShiftMode;
-import com.openbag.exception.BadRequestException;
+import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.modules.delivery.dto.AssignCourierRequest;
 import com.openbag.modules.delivery.dto.CourierMessage;
 import com.openbag.modules.delivery.entity.CourierShift;

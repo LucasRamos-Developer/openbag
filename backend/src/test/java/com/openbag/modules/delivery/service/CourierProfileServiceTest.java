@@ -2,7 +2,7 @@ package com.openbag.modules.delivery.service;
 
 import com.openbag.enums.SocialPlatform;
 import com.openbag.enums.VehicleType;
-import com.openbag.exception.BadRequestException;
+import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.modules.delivery.dto.VehicleDTO;
 import com.openbag.modules.delivery.dto.VehicleRequest;
 import com.openbag.modules.delivery.entity.DeliveryPerson;

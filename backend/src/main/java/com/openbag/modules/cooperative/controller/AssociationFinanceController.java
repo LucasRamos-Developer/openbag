@@ -1,8 +1,18 @@
 package com.openbag.modules.cooperative.controller;
 
-import com.openbag.annotation.IsAssociationManager;
+import com.openbag.platform.security.annotation.IsAssociationManager;
 import com.openbag.enums.LedgerAccount;
-import com.openbag.modules.cooperative.dto.*;
+import com.openbag.modules.cooperative.dto.AddonPlanDTO;
+import com.openbag.modules.cooperative.dto.AddonPlanRequest;
+import com.openbag.modules.cooperative.dto.FeePolicyDTO;
+import com.openbag.modules.cooperative.dto.FinanceSummaryDTO;
+import com.openbag.modules.cooperative.dto.InvoiceDTO;
+import com.openbag.modules.cooperative.dto.InvoiceMonthDTO;
+import com.openbag.modules.cooperative.dto.LedgerEntryDTO;
+import com.openbag.modules.cooperative.dto.LedgerEntryRequest;
+import com.openbag.modules.cooperative.dto.MemberAddonDTO;
+import com.openbag.modules.cooperative.dto.PayInvoiceRequest;
+import com.openbag.modules.cooperative.dto.ProposeAddonRequest;
 import com.openbag.modules.cooperative.service.AddonService;
 import com.openbag.modules.cooperative.service.LedgerService;
 import com.openbag.modules.cooperative.service.MemberInvoiceService;

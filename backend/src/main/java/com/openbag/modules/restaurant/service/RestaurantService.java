@@ -3,7 +3,7 @@ package com.openbag.modules.restaurant.service;
 import com.openbag.modules.product.entity.Product;
 import com.openbag.modules.restaurant.entity.Restaurant;
 import com.openbag.modules.user.entity.User;
-import com.openbag.modules.shared.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.product.repository.ProductRepository;
 import com.openbag.modules.restaurant.repository.RestaurantRepository;
 import com.openbag.modules.user.service.RoleService;

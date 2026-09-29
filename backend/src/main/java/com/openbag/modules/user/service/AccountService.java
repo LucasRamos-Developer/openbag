@@ -1,8 +1,8 @@
 package com.openbag.modules.user.service;
 
 import com.openbag.enums.UserType;
-import com.openbag.exception.BadRequestException;
-import com.openbag.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.BadRequestException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.organization.dto.AccountRequest;
 import com.openbag.modules.user.entity.User;
 import com.openbag.modules.user.repository.RoleRepository;

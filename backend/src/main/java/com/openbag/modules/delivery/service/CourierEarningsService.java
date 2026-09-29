@@ -1,8 +1,8 @@
 package com.openbag.modules.delivery.service;
 
 import com.openbag.enums.CourierLinkStatus;
-import com.openbag.exception.BadRequestException;
-import com.openbag.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.BadRequestException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.delivery.dto.CourierEarningsDTO;
 import com.openbag.modules.delivery.dto.WorkHistoryDTO;
 import com.openbag.modules.delivery.entity.DeliveryPerson;

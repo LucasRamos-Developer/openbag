@@ -3,7 +3,7 @@ package com.openbag.modules.user.service;
 import com.openbag.modules.user.dto.AddressDTO;
 import com.openbag.modules.user.entity.Address;
 import com.openbag.modules.user.entity.User;
-import com.openbag.modules.shared.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.user.repository.AddressRepository;
 import com.openbag.modules.user.repository.UserRepository;
 import org.modelmapper.ModelMapper;
@@ -51,7 +51,7 @@ public class UserService {
         if (phoneNumber != null && !phoneNumber.isBlank()) {
             String phone = phoneNumber.trim();
             if (!phone.equals(currentUser.getPhoneNumber()) && userRepository.existsByPhoneNumber(phone)) {
-                throw new com.openbag.exception.BadRequestException("Telefone já está em uso");
+                throw new com.openbag.platform.web.exception.BadRequestException("Telefone já está em uso");
             }
             currentUser.setPhoneNumber(phone);
         }

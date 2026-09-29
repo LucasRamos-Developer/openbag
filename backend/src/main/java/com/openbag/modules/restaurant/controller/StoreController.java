@@ -1,7 +1,15 @@
 package com.openbag.modules.restaurant.controller;
 
-import com.openbag.annotation.IsRestaurantOwner;
-import com.openbag.modules.restaurant.dto.*;
+import com.openbag.platform.security.annotation.IsRestaurantOwner;
+import com.openbag.modules.restaurant.dto.AppearanceRequest;
+import com.openbag.modules.restaurant.dto.OpenRequest;
+import com.openbag.modules.restaurant.dto.OpeningHoursRequest;
+import com.openbag.modules.restaurant.dto.PauseRequest;
+import com.openbag.modules.restaurant.dto.RestaurantProfileRequest;
+import com.openbag.modules.restaurant.dto.RestaurantSummaryDTO;
+import com.openbag.modules.restaurant.dto.StoreAddressRequest;
+import com.openbag.modules.restaurant.dto.StoreDTO;
+import com.openbag.modules.restaurant.dto.StoreSettingsRequest;
 import com.openbag.modules.restaurant.service.StoreService;
 import com.openbag.modules.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;

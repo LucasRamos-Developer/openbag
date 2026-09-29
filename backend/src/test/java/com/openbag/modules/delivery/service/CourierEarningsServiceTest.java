@@ -1,7 +1,7 @@
 package com.openbag.modules.delivery.service;
 
 import com.openbag.enums.OrderStatus;
-import com.openbag.exception.BadRequestException;
+import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.modules.delivery.dto.CourierEarningsDTO;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
 import com.openbag.modules.delivery.repository.DeliveryPersonRepository;

@@ -1,6 +1,6 @@
 package com.openbag.modules.delivery.service;
 
-import com.openbag.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.delivery.dto.StaffCourierDTO;
 import com.openbag.modules.delivery.dto.StaffCourierRequest;
 import com.openbag.modules.delivery.entity.StaffCourier;

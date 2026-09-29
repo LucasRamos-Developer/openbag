@@ -9,7 +9,7 @@ import com.openbag.modules.user.dto.RoleDTO;
 import com.openbag.modules.user.dto.PermissionDTO;
 import com.openbag.modules.user.entity.User;
 import com.openbag.modules.user.repository.UserRepository;
-import com.openbag.security.JwtTokenProvider;
+import com.openbag.platform.security.JwtTokenProvider;
 import com.openbag.modules.user.service.RoleService;
 import com.openbag.modules.user.service.AccountService;
 import com.openbag.modules.organization.dto.AccountRequest;
@@ -80,7 +80,7 @@ public class AuthController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = tokenProvider.generateToken(authentication);
 
-            User user = userRepository.findById(((com.openbag.security.CustomUserDetailsService.CustomUserPrincipal) authentication.getPrincipal()).getId())
+            User user = userRepository.findById(((com.openbag.platform.security.CustomUserDetailsService.CustomUserPrincipal) authentication.getPrincipal()).getId())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
             JwtAuthenticationResponse.UserDto userDto = new JwtAuthenticationResponse.UserDto(user);
@@ -175,7 +175,7 @@ public class AuthController {
         try {
             request = objectMapper.readValue(dataJson, RestaurantOnboardingRequest.class);
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-            throw new com.openbag.exception.BadRequestException("Dados do cadastro inválidos");
+            throw new com.openbag.platform.web.exception.BadRequestException("Dados do cadastro inválidos");
         }
 
         Restaurant restaurant = restaurantOnboardingService.completeOnboarding(request, logo, banner);

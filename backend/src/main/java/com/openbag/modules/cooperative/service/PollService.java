@@ -2,8 +2,8 @@ package com.openbag.modules.cooperative.service;
 
 import com.openbag.enums.MembershipStatus;
 import com.openbag.enums.PollStatus;
-import com.openbag.exception.BadRequestException;
-import com.openbag.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.BadRequestException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.cooperative.dto.PollDTO;
 import com.openbag.modules.cooperative.dto.PollRequest;
 import com.openbag.modules.cooperative.entity.Poll;

@@ -1,8 +1,8 @@
 package com.openbag.modules.delivery.controller;
 
-import com.openbag.annotation.IsAssociationManager;
+import com.openbag.platform.security.annotation.IsAssociationManager;
 import com.openbag.enums.PartnershipSide;
-import com.openbag.exception.BadRequestException;
+import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.modules.delivery.dto.AssociationPartnershipDTO;
 import com.openbag.modules.delivery.dto.AssociationReportDTO;
 import com.openbag.modules.delivery.dto.InviteRestaurantRequest;

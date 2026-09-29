@@ -1,13 +1,13 @@
 package com.openbag.modules.cooperative.service;
 
 import com.openbag.enums.AssociationDocumentType;
-import com.openbag.exception.BadRequestException;
-import com.openbag.exception.ResourceNotFoundException;
+import com.openbag.platform.web.exception.BadRequestException;
+import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.modules.cooperative.dto.AssociationDocumentDTO;
 import com.openbag.modules.cooperative.entity.AssociationDocument;
 import com.openbag.modules.cooperative.repository.AssociationDocumentRepository;
 import com.openbag.modules.organization.service.AssociationService;
-import com.openbag.modules.shared.service.FileStorageService;
+import com.openbag.platform.files.FileStorageService;
 import com.openbag.modules.user.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
