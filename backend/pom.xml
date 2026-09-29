@@ -94,7 +94,7 @@
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-provider-jdbc-template</artifactId>
-            <version>5.16.0</version>
+            <version>7.10.1</version>
         </dependency>
 
         <!-- Migrações versionadas do banco (src/main/resources/db/migration) -->
