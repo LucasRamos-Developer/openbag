@@ -55,6 +55,16 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 - **CORS e WebSocket só das origens configuradas** (`OPENBAG_CORS_ORIGINS`), em vez de qualquer origem. O CORS passou a aceitar `PATCH`.
 - Uma conta desativada perde o acesso na hora, na API e no WebSocket, mesmo com um token ainda válido.
 
+### Adicionado
+
+- **Idempotência** pelo cabeçalho `Idempotency-Key`: a mesma ação enviada de novo com a mesma chave recebe a resposta da primeira vez, e não é aplicada de novo.
+  - Vale para qualquer POST, PUT, PATCH ou DELETE de um usuário logado.
+  - Com a mesma chave e outro corpo, o servidor responde 422. Se a primeira ainda estiver rodando, responde 409 com `Retry-After`.
+  - As chaves ficam guardadas por 24 horas (V4).
+  - O app manda a chave ao finalizar o pedido, no pedido do balcão, no acerto de caixa, na baixa de fatura, no lançamento do livro-caixa e no aceite de oferta. Leituras e envios com chave são tentados de novo sozinhos quando a rede falha. A chave só muda quando o servidor responde: se a rede cair no meio do checkout, tocar de novo devolve o mesmo pedido, sem criar outro.
+  - Aceitar de novo uma oferta já aceita pelo mesmo entregador devolve a entrega dele, em vez de "oferta não disponível".
+- **Roadmap da 0.4.0 (Segurança e integridade dos dados)** em [docs/roadmap/0.4.0-seguranca.md](docs/roadmap/0.4.0-seguranca.md). O documento compara cada item com o código atual e lista os casos encontrados: brechas no cadastro, no upload e nos segredos padrão, ações simultâneas que corrompem pedidos e faturas, e a falta de idempotência, limites de requisição e migrações versionadas.
+
 ### Alterado
 
 - **Migrações versionadas com Flyway.** O esquema vem de `db/migration`, e o Hibernate só confere se as entidades batem com o banco (`ddl-auto=validate`). A V1 foi gerada das entidades e tem os mesmos nomes de chaves, únicos e checks que o `ddl-auto=update` criava, então um banco que já existia entra com *baseline* na V1 sem diferença. Os preenchimentos que rodavam em toda subida (`DataBackfill`) viraram a V2. Saíram o `schema.sql` (a V1 cria a extensão PostGIS) e os scripts MySQL antigos, que nunca rodavam.
@@ -82,10 +92,6 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 - A expiração de pedidos sem resposta e a geração mensal de faturas rodavam numa transação só: um erro desfazia todos. Agora é uma transação por pedido e por associação. O despacho em segundo plano tenta de novo quando encontra um conflito.
 - A resposta da foto de perfil e o `GET /users/profile` entravam num laço entre papéis e permissões e quebravam no meio do JSON.
 - Método não permitido e rota inexistente respondiam 500. Agora respondem 405 e 404.
-
-### Adicionado
-
-- **Roadmap da 0.4.0 (Segurança e integridade dos dados)** em [docs/roadmap/0.4.0-seguranca.md](docs/roadmap/0.4.0-seguranca.md). O documento compara cada item com o código atual e lista os casos encontrados: brechas no cadastro, no upload e nos segredos padrão, ações simultâneas que corrompem pedidos e faturas, e a falta de idempotência, limites de requisição e migrações versionadas.
 
 ---
 

@@ -1,10 +1,12 @@
 package com.openbag.config;
 
+import com.openbag.modules.shared.idempotency.IdempotencyFilter;
 import com.openbag.security.CustomPermissionEvaluator;
 import com.openbag.security.CustomUserDetailsService;
 import com.openbag.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -42,9 +44,20 @@ public class SecurityConfig {
     @Autowired
     private CustomPermissionEvaluator customPermissionEvaluator;
 
+    @Autowired
+    private IdempotencyFilter idempotencyFilter;
+
     /** Origens do app web (padrões do Spring, ex.: https://openbag.app ou http://localhost:[*]) */
     @Value("${app.cors.allowed-origins}")
     private List<String> allowedOrigins;
+
+    /** O filtro de idempotência roda só dentro da cadeia do Spring Security, nunca como filtro solto do servlet */
+    @Bean
+    public FilterRegistrationBean<IdempotencyFilter> idempotencyFilterRegistration(IdempotencyFilter filter) {
+        FilterRegistrationBean<IdempotencyFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -101,6 +114,8 @@ public class SecurityConfig {
 
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        // Depois do JWT: a chave de idempotência é por usuário
+        http.addFilterAfter(idempotencyFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }
@@ -111,6 +126,8 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(allowedOrigins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
+        // O app web lê estes cabeçalhos: quanto esperar (409 em andamento, 429) e se a resposta foi repetida
+        configuration.setExposedHeaders(Arrays.asList("Retry-After", IdempotencyFilter.REPLAYED_HEADER));
         // O app manda o JWT no cabeçalho Authorization, sem cookies
         configuration.setAllowCredentials(false);
 

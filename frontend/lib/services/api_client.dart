@@ -16,7 +16,13 @@ class ApiException implements Exception {
 }
 
 /// Cliente HTTP autenticado (Dio): injeta o token JWT e converte erros do backend em [ApiException]
+///
+/// Leituras e envios com chave de idempotência são tentados de novo quando a rede falha: repetir é seguro, porque
+/// o servidor devolve o resultado da primeira vez em vez de aplicar a ação de novo.
 class ApiClient {
+  static const idempotencyHeader = 'Idempotency-Key';
+  static const _maxAttempts = 3;
+
   final String? Function() _tokenProvider;
   final void Function()? _onUnauthorized;
 
@@ -51,9 +57,15 @@ class ApiClient {
   }
 
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) =>
-      _send(() => dio.get(path, queryParameters: _clean(query)));
+      _send(() => dio.get(path, queryParameters: _clean(query)), retryable: true);
 
-  Future<dynamic> post(String path, {Object? data}) => _send(() => dio.post(path, data: data));
+  /// [idempotencyKey]: a mesma ação enviada de novo com a mesma chave não é aplicada duas vezes (ver IdempotencyKey)
+  Future<dynamic> post(String path, {Object? data, String? idempotencyKey}) => _send(
+        () => dio.post(path,
+            data: data,
+            options: idempotencyKey == null ? null : Options(headers: {idempotencyHeader: idempotencyKey})),
+        retryable: idempotencyKey != null,
+      );
 
   Future<dynamic> put(String path, {Object? data}) => _send(() => dio.put(path, data: data));
 
@@ -79,13 +91,37 @@ class ApiClient {
     }
   }
 
-  Future<dynamic> _send(Future<Response> Function() request) async {
-    try {
-      final response = await request();
-      return response.data;
-    } on DioException catch (e) {
-      throw toApiException(e);
+  Future<dynamic> _send(Future<Response> Function() request, {bool retryable = false}) async {
+    for (var attempt = 1;; attempt++) {
+      try {
+        final response = await request();
+        return response.data;
+      } on DioException catch (e) {
+        final wait = retryable && attempt < _maxAttempts ? _retryDelay(e, attempt) : null;
+        if (wait == null) throw toApiException(e);
+        await Future.delayed(wait);
+      }
     }
+  }
+
+  /// Quanto esperar antes de tentar de novo, ou null se não vale tentar: só falha de rede (sem resposta) e a
+  /// ação idêntica ainda em andamento no servidor (409 com Retry-After)
+  static Duration? _retryDelay(DioException e, int attempt) {
+    final response = e.response;
+    if (response == null) {
+      const network = {
+        DioExceptionType.connectionTimeout,
+        DioExceptionType.sendTimeout,
+        DioExceptionType.receiveTimeout,
+        DioExceptionType.connectionError,
+      };
+      return network.contains(e.type) ? Duration(seconds: attempt) : null;
+    }
+    final retryAfter = int.tryParse(response.headers.value('retry-after') ?? '');
+    if (response.statusCode == 409 && retryAfter != null) {
+      return Duration(seconds: retryAfter);
+    }
+    return null;
   }
 
   Map<String, dynamic>? _clean(Map<String, dynamic>? query) {

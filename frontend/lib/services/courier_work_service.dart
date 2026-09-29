@@ -5,6 +5,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../models/courier/courier_work.dart';
 import 'alert_sound.dart';
 import 'api_client.dart';
+import 'idempotency_key.dart';
 import 'realtime_service.dart';
 
 /// Localização indisponível (sem permissão ou GPS desligado)
@@ -232,7 +233,11 @@ class CourierWorkService extends ChangeNotifier {
 
   Future<void> checkOut() => _action(() => _api.post('$_base/checkout'));
 
-  Future<void> acceptOffer(CourierOffer offer) => _action(() => _api.post('$_base/offers/${offer.offerId}/accept'));
+  final _acceptKey = IdempotencyKey();
+
+  /// Aceita a oferta. Toque duplo ou rede instável: o servidor devolve o mesmo aceite, sem erro.
+  Future<void> acceptOffer(CourierOffer offer) => _acceptKey.run(offer.offerId,
+      (key) => _action(() => _api.post('$_base/offers/${offer.offerId}/accept', idempotencyKey: key)));
 
   Future<void> declineOffer(CourierOffer offer) => _action(() => _api.post('$_base/offers/${offer.offerId}/decline'));
 

@@ -2,12 +2,14 @@ import 'package:flutter/foundation.dart';
 import '../models/order/order.dart';
 import 'alert_sound.dart';
 import 'api_client.dart';
+import 'idempotency_key.dart';
 import 'realtime_service.dart';
 
 /// Pedidos ativos de um restaurante em tempo real (gestor de pedidos e cozinha).
 /// Carrega o quadro pelo REST, aplica os eventos do WebSocket e ressincroniza ao reconectar.
 class RestaurantOrdersService extends ChangeNotifier {
   final ApiClient _api;
+  final _storeOrderKey = IdempotencyKey();
   final RealtimeService _realtime;
   final AlertSound alertSound = AlertSound();
 
@@ -145,7 +147,10 @@ class RestaurantOrdersService extends ChangeNotifier {
 
   /// Registra um pedido do balcão, telefone ou WhatsApp (entra já aceito)
   Future<Order> createStoreOrder(int restaurantId, Map<String, dynamic> body) async {
-    final order = Order.fromJson(await _api.post('/restaurants/$restaurantId/orders', data: body));
+    final order = await _storeOrderKey.run(
+        {'restaurantId': restaurantId, ...body},
+        (key) async =>
+            Order.fromJson(await _api.post('/restaurants/$restaurantId/orders', data: body, idempotencyKey: key)));
     if (restaurantId == _restaurantId) _upsert(order);
     return order;
   }

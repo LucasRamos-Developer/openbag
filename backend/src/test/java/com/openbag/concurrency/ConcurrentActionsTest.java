@@ -151,7 +151,8 @@ class ConcurrentActionsTest extends IntegrationTest {
                 () -> courierWorkService.acceptOffer(demo, offerId),
                 () -> courierWorkService.acceptOffer(demo, offerId));
 
-        assertThat(results).containsOnlyOnce((Throwable) null);
+        // O segundo toque espera o primeiro e recebe a entrega já aceita, sem erro
+        assertThat(results).containsOnlyNulls();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM order_tracking WHERE order_id = ? AND description LIKE 'Entregador definido%'",
                 Integer.class, orderId)).isEqualTo(1);
     }

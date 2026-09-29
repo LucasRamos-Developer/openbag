@@ -6,11 +6,14 @@ import '../models/cooperative/community.dart';
 import '../models/cooperative/ledger.dart';
 import '../utils/formatters.dart';
 import 'api_client.dart';
+import 'idempotency_key.dart';
 
 /// Gestão da associação: cobrança (política, adicionais, faturas), livro-caixa e caixinha, convênios,
 /// enquetes e documentos. As rotas são da associação [organizationId].
 class CooperativeService {
   final ApiClient _api;
+  final _payKey = IdempotencyKey();
+  final _ledgerKey = IdempotencyKey();
 
   CooperativeService(this._api);
 
@@ -56,12 +59,17 @@ class CooperativeService {
       await _api.post('${_base(organizationId)}/invoices/generate?month=${apiMonth(month)}'));
 
   Future<Invoice> payInvoice(int organizationId, int invoiceId,
-          {required MemberPaymentMethod method, DateTime? paidOn, String? notes}) async =>
-      Invoice.fromJson(await _api.post('${_base(organizationId)}/invoices/$invoiceId/pay', data: {
-        'method': method.name,
-        if (paidOn != null) 'paidOn': apiDate(paidOn),
-        if (notes != null && notes.isNotEmpty) 'notes': notes,
-      }));
+      {required MemberPaymentMethod method, DateTime? paidOn, String? notes}) {
+    final body = {
+      'method': method.name,
+      if (paidOn != null) 'paidOn': apiDate(paidOn),
+      if (notes != null && notes.isNotEmpty) 'notes': notes,
+    };
+    return _payKey.run(
+        {'invoiceId': invoiceId, ...body},
+        (key) async => Invoice.fromJson(await _api.post('${_base(organizationId)}/invoices/$invoiceId/pay',
+            data: body, idempotencyKey: key)));
+  }
 
   Future<Invoice> waiveInvoice(int organizationId, int invoiceId, String? reason) async => Invoice.fromJson(
       await _api.post('${_base(organizationId)}/invoices/$invoiceId/waive', data: {'reason': reason}));
@@ -85,18 +93,23 @@ class CooperativeService {
       }));
 
   Future<LedgerEntry> createLedgerEntry(int organizationId,
-          {required ManualEntryKind kind,
-          required double amount,
-          required String description,
-          DateTime? date,
-          int? membershipId}) async =>
-      LedgerEntry.fromJson(await _api.post('${_base(organizationId)}/ledger', data: {
-        'kind': kind.name,
-        'amount': amount,
-        'description': description,
-        if (date != null) 'date': apiDate(date),
-        if (membershipId != null) 'membershipId': membershipId,
-      }));
+      {required ManualEntryKind kind,
+      required double amount,
+      required String description,
+      DateTime? date,
+      int? membershipId}) {
+    final body = {
+      'kind': kind.name,
+      'amount': amount,
+      'description': description,
+      if (date != null) 'date': apiDate(date),
+      if (membershipId != null) 'membershipId': membershipId,
+    };
+    return _ledgerKey.run(
+        {'organizationId': organizationId, ...body},
+        (key) async => LedgerEntry.fromJson(
+            await _api.post('${_base(organizationId)}/ledger', data: body, idempotencyKey: key)));
+  }
 
   Future<void> deleteLedgerEntry(int organizationId, int entryId) =>
       _api.delete('${_base(organizationId)}/ledger/$entryId');

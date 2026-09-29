@@ -226,6 +226,12 @@ O mesmo pedido pode ser mexido ao mesmo tempo pela loja, pelo entregador, pelo c
 - **As mudanças de status passam por `OrderStatus.canTransitionTo`.**
 - O teste `ConcurrentActionsTest` reproduz cada corrida com duas threads contra o banco de verdade.
 
+### Idempotência
+
+- **Chave de idempotência.** Uma escrita com o cabeçalho `Idempotency-Key` fica registrada em `idempotency_keys` (`IdempotencyFilter`, na cadeia do Spring Security, depois do JWT). Repetida com a mesma chave e o mesmo corpo, ela recebe a resposta guardada, e a ação não roda de novo.
+- **Quando a chave é liberada.** Erro do servidor, 409 e 429 liberam a chave, para que a ação possa ser tentada de novo.
+- **No app.** Cada ação que cria algo ou mexe com dinheiro usa um `IdempotencyKey`, e o `ApiClient` tenta de novo sozinho quando a rede falha. Uma ação nova desse tipo deve seguir o mesmo padrão.
+
 ---
 
 ## Frontend (Flutter)

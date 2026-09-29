@@ -1,5 +1,6 @@
 import '../models/order/order.dart';
 import 'api_client.dart';
+import 'idempotency_key.dart';
 
 /// Pedidos do cliente
 class OrderService {
@@ -7,7 +8,11 @@ class OrderService {
 
   OrderService(this._api);
 
-  Future<Order> createOrder(Map<String, dynamic> body) async => Order.fromJson(await _api.post('/orders', data: body));
+  final _createKey = IdempotencyKey();
+
+  /// Finaliza o pedido. Se a rede cair no meio, tocar de novo não cria um segundo pedido.
+  Future<Order> createOrder(Map<String, dynamic> body) => _createKey.run(
+      body, (key) async => Order.fromJson(await _api.post('/orders', data: body, idempotencyKey: key)));
 
   /// Taxa de entrega para o endereço do checkout (a loja pode cobrar pela distância)
   Future<DeliveryQuote> quoteDelivery(int restaurantId, Map<String, dynamic> address) async =>

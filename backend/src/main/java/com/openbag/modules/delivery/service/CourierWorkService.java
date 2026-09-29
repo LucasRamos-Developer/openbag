@@ -203,6 +203,10 @@ public class CourierWorkService {
         // A oferta é lida depois das travas: a expiração e a recusa mexem nela com o pedido ou o entregador travado
         DeliveryOffer offer = offerRepository.findByIdAndDeliveryPersonId(offerId, courier.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Oferta não encontrada"));
+        if (offer.getStatus() == DeliveryOfferStatus.ACCEPTED) {
+            // Toque duplo ou nova tentativa depois de um timeout: o aceite já valeu, devolve a entrega dele
+            return toState(courier);
+        }
         LocalDateTime now = LocalDateTime.now(clock);
         if (offer.getStatus() != DeliveryOfferStatus.PENDING || now.isAfter(offer.getExpiresAt())) {
             throw new BadRequestException("Esta oferta não está mais disponível");
