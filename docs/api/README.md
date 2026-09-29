@@ -1,357 +1,178 @@
-# 🔌 API Documentation
+# API REST do OpenBag
 
-Documentação completa dos endpoints da API REST do OpenBag.
+> Descreve o código da branch atual (0.3.0 com as mudanças da 0.4.0, ainda não lançada). A lista completa e sempre atualizada fica no **Swagger**: `http://localhost:8080/api/swagger-ui.html`. O Swagger só existe em desenvolvimento e fica desligado no perfil `prod`.
 
-## 📋 Índice Geral
-
-- [Autenticação](#autenticação)
-- [Restaurantes](#restaurantes)
-- [Produtos](#produtos)
-- [Pedidos](#pedidos)
-- [Usuários](#usuários)
-- [Entregadores](#entregadores)
+Todas as rotas ficam sob o prefixo **`/api`**. Os exemplos abaixo omitem esse prefixo.
 
 ---
 
-## 🔐 Autenticação
+## Autenticação
 
-Todos os endpoints protegidos requerem autenticação via **JWT Bearer Token**.
-
-### Incluir Token nas Requisições
+O login devolve um **JWT** (`accessToken`, válido por 24 horas), que vai no cabeçalho de cada requisição:
 
 ```bash
-Authorization: Bearer <seu_token_jwt>
-```
-
-### Obter Token
-
-Use os endpoints de registro ou login para obter um token JWT.
-
----
-
-## 📑 Endpoints Disponíveis
-
-### Autenticação e Onboarding
-
-#### [Onboarding de Restaurante](onboarding-restaurante.md)
-
-Documentação completa do processo de cadastro de restaurantes.
-
-**Endpoints:**
-- `GET /api/auth/check-email` - Verificar disponibilidade de email
-- `POST /api/auth/register/restaurant` - Cadastro completo de restaurante
-- `POST /api/auth/login` - Login (obtém JWT token)
-
-**[📖 Ver documentação completa](onboarding-restaurante.md)**
-
----
-
-### Restaurantes
-
-> **Status:** Em desenvolvimento  
-> **Documentação:** _A ser criada_
-
-**Endpoints previstos:**
-```
-GET    /api/restaurants              # Listar restaurantes
-GET    /api/restaurants/{id}         # Detalhes do restaurante
-GET    /api/restaurants/search       # Buscar por nome, categoria, localização
-POST   /api/restaurants              # Criar restaurante (ADMIN)
-PUT    /api/restaurants/{id}         # Atualizar restaurante (OWNER)
-DELETE /api/restaurants/{id}         # Remover restaurante (ADMIN)
-GET    /api/restaurants/{id}/menu    # Cardápio completo
-```
-
----
-
-### Produtos
-
-> **Status:** Em desenvolvimento  
-> **Documentação:** _A ser criada_
-
-**Endpoints previstos:**
-```
-GET    /api/products                 # Listar produtos
-GET    /api/products/{id}            # Detalhes do produto
-POST   /api/products                 # Criar produto (RESTAURANT_OWNER)
-PUT    /api/products/{id}            # Atualizar produto
-DELETE /api/products/{id}            # Remover produto
-PATCH  /api/products/{id}/stock      # Atualizar estoque
-```
-
----
-
-### Pedidos
-
-> **Status:** Em desenvolvimento  
-> **Documentação:** _A ser criada_
-
-**Endpoints previstos:**
-```
-GET    /api/orders                   # Listar pedidos do usuário
-GET    /api/orders/{id}              # Detalhes do pedido
-POST   /api/orders                   # Criar novo pedido
-PUT    /api/orders/{id}/status       # Atualizar status (RESTAURANT/DRIVER)
-DELETE /api/orders/{id}              # Cancelar pedido
-GET    /api/orders/{id}/tracking     # Rastreamento em tempo real
-```
-
----
-
-### Usuários
-
-> **Status:** Em desenvolvimento  
-> **Documentação:** _A ser criada_
-
-**Endpoints previstos:**
-```
-GET    /api/users/me                 # Perfil do usuário logado
-PUT    /api/users/me                 # Atualizar perfil
-PUT    /api/users/me/password        # Alterar senha
-GET    /api/users/me/addresses       # Endereços salvos
-POST   /api/users/me/addresses       # Adicionar endereço
-DELETE /api/users/me/addresses/{id}  # Remover endereço
-```
-
----
-
-### Entregadores
-
-> **Status:** Em desenvolvimento  
-> **Documentação:** _A ser criada_
-
-**Endpoints previstos:**
-```
-GET    /api/drivers                  # Listar entregadores (ADMIN/COOPERATIVE)
-GET    /api/drivers/{id}             # Detalhes do entregador
-POST   /api/drivers                  # Cadastrar entregador
-PUT    /api/drivers/{id}             # Atualizar informações
-GET    /api/drivers/{id}/deliveries  # Histórico de entregas
-GET    /api/drivers/available        # Entregadores disponíveis
-```
-
----
-
-## 🧪 Testando a API
-
-### Swagger UI (Recomendado)
-
-A interface interativa Swagger está disponível quando o backend está rodando:
-
-**URL:** http://localhost:8080/swagger-ui.html
-
-### Postman Collection
-
-Importe a collection localizada em:
-
-```
-backend/docs/postman-collection.json
-```
-
-### cURL Examples
-
-```bash
-# Verificar email disponível
-curl -X GET "http://localhost:8080/api/auth/check-email?email=teste@example.com"
-
-# Login
-curl -X POST "http://localhost:8080/api/auth/login" \
+curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{
-    "email": "teste@example.com",
-    "password": "senha123"
-  }'
+  -d '{"email": "demo@openbag.local", "password": "demo1234"}'
 
-# Listar restaurantes (com token)
-curl -X GET "http://localhost:8080/api/restaurants" \
-  -H "Authorization: Bearer SEU_TOKEN_JWT"
+curl http://localhost:8080/api/orders/mine -H "Authorization: Bearer <accessToken>"
 ```
+
+A conta `demo@openbag.local` só existe com `OPENBAG_DEMO_ENABLED=true` (veja o [guia de desenvolvimento](../../README-DEVELOPER.md#conta-de-demonstração)).
+
+- O token carrega só o id do usuário. Os papéis e as permissões são lidos do banco a cada requisição, e uma conta desativada perde o acesso na hora.
+- **Papéis:** `CUSTOMER`, `RESTAURANT_OWNER`, `DELIVERY_PERSON`, `ASSOCIATION_MANAGER` e `ADMIN`. Um usuário pode ter vários.
+- **Dono do recurso:** além do papel, cada rota confere o dono (`@IsRestaurantOwner`, `@IsAssociationManager` e consultas limitadas ao usuário). O ADMIN passa em todas.
+- O cadastro público (`POST /auth/register`) sempre cria um **cliente**. Loja, associação e entregador têm cadastros próprios.
 
 ---
 
-## 📊 Schemas e Modelos
+## Cabeçalhos especiais
 
-### Restaurant Schema
-
-```json
-{
-  "id": "uuid",
-  "name": "string",
-  "email": "string",
-  "phone": "string",
-  "category": "string",
-  "description": "string",
-  "address": {
-    "street": "string",
-    "number": "string",
-    "complement": "string",
-    "neighborhood": "string",
-    "city": "string",
-    "state": "string",
-    "zipCode": "string",
-    "latitude": "number",
-    "longitude": "number"
-  },
-  "operatingHours": [
-    {
-      "dayOfWeek": "MONDAY",
-      "openTime": "09:00",
-      "closeTime": "18:00"
-    }
-  ],
-  "isActive": "boolean",
-  "rating": "number",
-  "createdAt": "timestamp"
-}
-```
-
-### Order Schema
-
-```json
-{
-  "id": "uuid",
-  "customer": {
-    "id": "uuid",
-    "name": "string"
-  },
-  "restaurant": {
-    "id": "uuid",
-    "name": "string"
-  },
-  "items": [
-    {
-      "product": {
-        "id": "uuid",
-        "name": "string",
-        "price": "number"
-      },
-      "quantity": "number",
-      "subtotal": "number"
-    }
-  ],
-  "deliveryAddress": "Address",
-  "status": "PENDING | CONFIRMED | PREPARING | READY | IN_DELIVERY | DELIVERED | CANCELLED",
-  "totalAmount": "number",
-  "deliveryFee": "number",
-  "platformFee": 2.00,
-  "createdAt": "timestamp",
-  "estimatedDelivery": "timestamp"
-}
-```
+| Cabeçalho | Direção | Uso |
+|---|---|---|
+| `Authorization: Bearer <token>` | envio | Autenticação |
+| `Idempotency-Key: <uuid>` | envio | A mesma ação enviada de novo com a mesma chave recebe a resposta da primeira vez, sem repetir a ação. Vale para qualquer POST, PUT, PATCH ou DELETE de um usuário logado (menos uploads). O app manda a chave ao fazer pedido, no pedido do balcão, no acerto de caixa, na baixa de fatura, no livro-caixa e no aceite de oferta. |
+| `Idempotency-Replayed: true` | resposta | A resposta é a repetição da primeira |
+| `Retry-After: <segundos>` | resposta | Quanto esperar: em um 429 (limite de requisições) ou em um 409 de "ação ainda em andamento" |
 
 ---
 
-## 🔒 Autenticação e Autorização
+## Rotas por área
 
-### Roles (Papéis)
+As tabelas mostram as rotas principais de cada área. Todas as rotas estão no Swagger.
 
-| Role | Descrição | Permissões |
-|------|-----------|------------|
-| `CUSTOMER` | Cliente final | Fazer pedidos, avaliar |
-| `RESTAURANT_OWNER` | Dono de restaurante | Gerenciar cardápio, pedidos |
-| `DRIVER` | Entregador | Aceitar/concluir entregas |
-| `COOPERATIVE_ADMIN` | Admin de cooperativa | Gerenciar entregadores |
-| `ADMIN` | Administrador da plataforma | Acesso total |
+### Cadastro e conta
 
-### JWT Token Structure
+| Rota | O que faz |
+|---|---|
+| `POST /auth/login` | Login (limite: 10 por minuto por IP e 10 a cada 15 minutos por email) |
+| `POST /auth/register` | Cadastro de cliente |
+| `POST /auth/register/restaurant` | Cadastro de loja, em JSON ou multipart com logo e banner ([detalhes](../../backend/docs/onboarding-restaurante.md)) |
+| `POST /auth/register/association` e `/auth/register/delivery-person` | Cadastro de associação e de entregador |
+| `GET /auth/check-email` | Email disponível? |
+| `GET /auth/me` | Usuário logado, com papéis e permissões |
+| `GET`, `PUT`, `DELETE /users/profile` | Perfil (nome e telefone) e desativação da conta |
+| `/users/addresses` | Endereços salvos |
 
-```json
-{
-  "sub": "user_id",
-  "email": "user@example.com",
-  "roles": ["CUSTOMER"],
-  "iat": 1234567890,
-  "exp": 1234567890
-}
-```
+### Vitrine (sem login)
 
-**Duração do token:** 24 horas
+| Rota | O que faz |
+|---|---|
+| `GET /public/restaurants` | Lojas ativas (também `/search`, `/nearby` e `/category/{id}`) |
+| `GET /public/restaurants/{idOrSlug}` e `/menu` | Página e cardápio da loja |
+| `GET /public/restaurants/{idOrSlug}/delivery-quote` | Taxa de entrega para um endereço |
+| `GET /public/categories` | Categorias |
+| `GET /public/couriers/{slug}` | Perfil público do entregador (placa QR) |
+| `GET /public/associations` e `/invites/{code}` | Associações ativas e validação de convite |
+
+### Cliente
+
+| Rota | O que faz |
+|---|---|
+| `POST /orders` | Fazer pedido. O servidor recalcula os preços e a taxa. Aceita `Idempotency-Key`. |
+| `POST /orders/delivery-quote` | Taxa de entrega no checkout |
+| `GET /orders/mine` e `GET /orders/{id}` | Meus pedidos e acompanhamento |
+| `POST /orders/{id}/cancel` | Cancelar (só antes de a loja aceitar) |
+| `POST /orders/{id}/review` | Avaliar a loja e o entregador |
+
+### Loja (dono do restaurante)
+
+| Rota | O que faz |
+|---|---|
+| `GET /restaurants/mine` e `/restaurants/{id}/store` | Minhas lojas e a situação de cada uma |
+| `PUT /restaurants/{id}/settings`, `/profile`, `/address`, `/appearance` e `/opening-hours` | Configurações, dados, endereço, tema e horários |
+| `POST` e `DELETE /restaurants/{id}/pause`, `PUT /restaurants/{id}/open` | Pausar, abrir e fechar |
+| `/restaurants/{id}/menu/**` | Cardápio: seções, itens, complementos, combos, fotos e disponibilidade |
+| `GET /restaurants/{id}/orders/board` e `GET /restaurants/{id}/orders` | Pedidos ativos e histórico do dia |
+| `POST /restaurants/{id}/orders` | Pedido do balcão, do telefone ou do WhatsApp (entra já aceito). Aceita `Idempotency-Key`. |
+| `POST /restaurants/{id}/orders/{orderId}/accept`, `reject`, `start`, `ready`, `dispatch` e `deliver` | Etapas do pedido |
+| `/restaurants/{id}/delivery/**` | Regras de entrega, parcerias, entregadores fixos, equipe própria e atribuição do entregador |
+| `/restaurants/{id}/routes/**` | Rotas: juntar, separar, chamar o entregador agora e atribuir |
+| `GET /restaurants/{id}/cash` e `POST /restaurants/{id}/cash/settlements` | Caixa do período e acerto com um entregador. O acerto aceita `Idempotency-Key`. |
+| `/restaurants/{id}/reviews` | Avaliações e respostas |
+
+### Entregador
+
+| Rota | O que faz |
+|---|---|
+| `/me/courier` | Perfil, foto, veículos, ganhos e histórico |
+| `/me/courier/restaurants` | Vínculos de entregador fixo |
+| `GET /me/courier/work` | Situação: turno, oferta pendente e entregas em andamento |
+| `POST /me/courier/work/online` e `/offline`, `/checkin/{restaurantId}` e `/checkout` | Turno livre ou fixo |
+| `PUT /me/courier/work/location` | Posição (o servidor aceita no máximo uma a cada 10 s) |
+| `POST /me/courier/work/offers/{id}/accept` e `/decline` | Responder a oferta. Repetir o aceite devolve a mesma entrega. |
+| `POST /me/courier/work/orders/{id}/pickup` e `/deliver` | Retirada e entrega |
+| `/me/association/**` | Área do cooperado: vínculo, resumo, faturas, adicionais, caixinha, convênios, enquetes e documentos |
+
+### Associação ou cooperativa (gestor)
+
+| Rota | O que faz |
+|---|---|
+| `GET /associations/me`, `GET` e `PUT /associations/{id}`, `PUT /associations/{id}/delivery-rate` | Dados e tabela de entrega |
+| `/associations/{id}/members/**` e `/invites/**` | Associados (com exportação em CSV) e convites |
+| `/associations/{id}/partnerships/**` e `/reports` | Lojas parceiras, tabela especial e relatórios |
+| `/associations/{id}/fee-policy`, `/addon-plans`, `/invoices/**`, `/ledger` e `/finance/summary` | Mensalidade, adicionais, faturas (baixa, dispensa e reabertura), livro-caixa e painel financeiro |
+| `/associations/{id}/benefits`, `/polls` e `/documents` | Convênios, enquetes e atas |
+
+### Administração
+
+| Rota | O que faz |
+|---|---|
+| `/admin/overview`, `/admin/restaurants`, `/admin/couriers`, `/admin/users` e `/admin/orders` | Painel da plataforma (só leitura) |
+| `/admin/associations/**` | Aprovar, recusar e suspender associações |
+
+### Arquivos e saúde
+
+| Rota | O que faz |
+|---|---|
+| `GET /files/**` | Imagens enviadas (lojas, itens, entregadores, associações e convênios). Só serve imagens, com o tipo fixo. |
+| `GET /health` | Health check |
+
+> **Rotas antigas.** `/products`, `/combos`, `/customizations`, `/global-products` e o CRUD de `/restaurants` vêm do MVP. O app não usa essas rotas, e as escritas são só de ADMIN. O cardápio da loja fica em `/restaurants/{id}/menu`. Decidir se elas saem está anotado em [Fora desta versão](../roadmap/0.4.0-seguranca.md#fora-desta-versão).
 
 ---
 
-## ⚠️ Códigos de Erro
+## Tempo real (WebSocket/STOMP)
 
-| Código | Significado | Descrição |
-|--------|-------------|-----------|
-| `200` | OK | Requisição bem-sucedida |
-| `201` | Created | Recurso criado com sucesso |
-| `204` | No Content | Sucesso sem conteúdo de retorno |
-| `400` | Bad Request | Dados inválidos |
-| `401` | Unauthorized | Token ausente ou inválido |
-| `403` | Forbidden | Sem permissão |
-| `404` | Not Found | Recurso não encontrado |
-| `409` | Conflict | Conflito (ex: email já existe) |
-| `422` | Unprocessable Entity | Validação falhou |
-| `500` | Internal Server Error | Erro no servidor |
+- **Endpoint:** `/api/ws`. O JWT vai no cabeçalho `Authorization` do frame `CONNECT`, e a sessão é fechada quando o token vence.
+- **Tópicos:**
+  - `/topic/restaurants/{id}/orders`: pedidos da loja, para o dono;
+  - `/topic/orders/{id}`: acompanhamento do pedido, para o cliente;
+  - `/topic/couriers/{id}`: ofertas e entregas, para o entregador.
+- Cada `SUBSCRIBE` é autorizado, e os clientes não enviam mensagens. Detalhes na [arquitetura](../architecture/README.md#tempo-real-websocketstomp).
 
-### Formato de Erro
+---
+
+## Erros
+
+O corpo de erro é sempre JSON:
 
 ```json
 {
-  "timestamp": "2026-04-23T10:30:00Z",
   "status": 400,
-  "error": "Bad Request",
-  "message": "Email já está em uso",
-  "path": "/api/auth/register"
+  "message": "Informe o motivo para o cliente",
+  "timestamp": "2026-09-29T14:30:00",
+  "path": "uri=/api/restaurants/1/orders/10/reject"
 }
 ```
 
----
+Erros de validação trazem também `fieldErrors`, com a mensagem de cada campo.
 
-## 📈 Rate Limiting
-
-> **Status:** Planejado  
-> **Implementação:** _A ser definida_
-
-Limites previstos:
-- **Anônimo**: 100 req/hora
-- **Autenticado**: 1000 req/hora
-- **Restaurante**: 5000 req/hora
-
----
-
-## 🔄 Versionamento
-
-**Versão atual:** `v1`
-
-Todas as APIs estão sob o prefixo `/api/v1/` (ou apenas `/api/` para v1).
-
-Mudanças futuras usarão:
-- `/api/v2/` para breaking changes
-- Backward compatibility mantida por 6 meses
+| Código | Quando |
+|---|---|
+| `400` | Dados inválidos ou ação não permitida no estado atual (ex.: pedido já cancelado) |
+| `401` e `403` | Sem login ou sem permissão |
+| `404` | Recurso não existe ou não é seu |
+| `405` | Método não aceito pela rota |
+| `409` | Conflito: outra pessoa mudou o registro no mesmo instante, uma restrição do banco foi violada ou a mesma ação ainda está em andamento (com `Retry-After`). Atualize e tente de novo. |
+| `413` | Envio acima de 10 MB. Uma imagem acima de 5 MB recebe 400. |
+| `422` | `Idempotency-Key` já usada com outro corpo |
+| `429` | Limite de requisições atingido, com `Retry-After` ([limites](../../README-DEVELOPER.md#limite-de-requisições-rate-limiting)) |
+| `500` | Erro inesperado, sem detalhes internos na resposta |
 
 ---
 
-## 📝 Changelog
+## Coleção do Postman
 
-### v1.0.0 (Current)
-- ✅ Autenticação JWT
-- ✅ Onboarding de restaurantes
-- ✅ Cadastro de usuários
-- 🚧 CRUD de produtos (em desenvolvimento)
-- 🚧 Sistema de pedidos (em desenvolvimento)
-
----
-
-## 🤝 Contribuindo
-
-Quer adicionar ou melhorar documentação de API?
-
-1. Veja [CONTRIBUTING.md](../../CONTRIBUTING.md)
-2. Use o tipo de commit `docs(api):`
-3. Inclua exemplos de request/response
-4. Teste os exemplos antes de commitar
-
----
-
-## 📞 Suporte
-
-- 🐛 [Reportar Bug de API](https://github.com/LucasRamos-Developer/openbag/issues)
-- 💬 [Discussões](https://github.com/LucasRamos-Developer/openbag/discussions)
-- 📧 Email: api@openbag.app
-
----
-
-<p align="center">
-  <a href="../README.md">📚 Voltar para Documentação Geral</a>
-</p>
+`backend/docs/postman-collection.json` cobre só o cadastro de restaurante. Para o resto, use o Swagger.

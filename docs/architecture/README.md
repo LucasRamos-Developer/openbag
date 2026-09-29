@@ -1,8 +1,8 @@
 # Arquitetura do OpenBag
 
-> Versão da documentação: **0.3.0**, atualizada em 2026-09-29. O que mudou está no [CHANGELOG](../../CHANGELOG.md).
+> Versão da documentação: **0.3.0**, com as mudanças da 0.4.0 (prontas e ainda não lançadas), atualizada em 2026-09-29. O que mudou está no [CHANGELOG](../../CHANGELOG.md).
 
-Este documento explica como o sistema está organizado hoje: módulos do backend, tempo real, despacho de entregas, rotas, caixa e a estrutura do app Flutter. Para rodar o projeto, veja o [guia de desenvolvimento](../../README-DEVELOPER.md).
+Este documento explica como o sistema está organizado hoje: módulos do backend, tempo real, segurança, despacho de entregas, rotas, caixa, dados e a estrutura do app Flutter. Para rodar o projeto, veja o [guia de desenvolvimento](../../README-DEVELOPER.md).
 
 ---
 
@@ -24,11 +24,13 @@ flowchart LR
     end
 
     DB[(PostgreSQL<br/>+ PostGIS)]
+    RD[(Redis<br/>limite de requisições)]
     OSM[OpenStreetMap<br/>tiles e endereços]
 
     App -- HTTP --> REST
     App <-- eventos --> WS
     REST --> DB
+    REST --> RD
     JOBS --> DB
     JOBS -- ofertas e status --> WS
     App -- mapas --> OSM
@@ -37,12 +39,14 @@ flowchart LR
 | Camada | Tecnologia |
 |--------|------------|
 | App | Flutter 3.16+ (web e mobile), Provider, GoRouter, `flutter_map`, `stomp_dart_client` |
-| API | Java 25, Spring Boot 3.3, Spring Security + JWT, Spring Data JPA, SpringDoc |
+| API | Java 25, Spring Boot 3.5, Spring Security + JWT, Spring Data JPA, SpringDoc, Bucket4j, ShedLock |
 | Tempo real | WebSocket com STOMP (broker simples do Spring) |
-| Banco | PostgreSQL 15 com PostGIS 3 (caminho das rotas) |
+| Banco | PostgreSQL 15 com PostGIS 3 (caminho das rotas), esquema versionado com Flyway |
+| Cache e limites | Redis: contadores do limite de requisições. Sem Redis, cada instância conta sozinha. |
 | Infra local | Docker Compose: PostgreSQL com PostGIS, Redis, Elasticsearch e Kibana |
+| CI | GitHub Actions: testes do backend (Testcontainers) e do app a cada push, Dependency-Check semanal e Dependabot |
 
-Hoje o Redis só tem a configuração e o Elasticsearch não é usado pelo código. Os dois continuam no `docker-compose.yml` para a busca e o cache que virão.
+O Elasticsearch continua no `docker-compose.yml` para a busca que virá, mas o código ainda não o usa.
 
 ---
 
@@ -52,20 +56,24 @@ O código fica em `backend/src/main/java/com/openbag` e é **organizado por mód
 
 ```
 com/openbag/
-├── config/          # Segurança, OpenAPI, Redis, agendamento, dados iniciais
-├── security/        # JWT (filtro e provider), UserDetails, PermissionEvaluator
+├── annotation/      # @IsRestaurantOwner e @IsAssociationManager (dono do recurso)
+├── config/          # Segurança, agendamento (SchedulingConfig), segredos de produção, dados iniciais e demo
+├── security/        # JWT (filtro e provider), UserDetails
 ├── enums/           # Status e tipos compartilhados (OrderStatus, CourierPolicy...)
-├── exception/       # GlobalExceptionHandler
+├── exception/       # GlobalExceptionHandler (400, 404, 409, 429...)
 └── modules/
     ├── user/          # Cadastro, login, perfil, endereços
     ├── restaurant/    # Restaurante, loja (horários, pausa, aparência), página pública
     ├── menu/          # Seções e itens do cardápio do dono
-    ├── product/       # Produtos, categorias, complementos, catálogo global
-    ├── combo/         # Combos
-    ├── order/         # Pedidos do cliente e gestão pela loja, tempo real
+    ├── product/       # Produtos, categorias, complementos, catálogo global (rotas antigas)
+    ├── combo/         # Combos (rotas antigas; o cardápio usa menu/)
+    ├── order/         # Pedidos do cliente, do balcão e gestão pela loja, tempo real
+    ├── review/        # Avaliações da loja e do entregador
     ├── delivery/      # Entregadores, vínculos, despacho, rotas, caixa, ganhos
     ├── organization/  # Associações e cooperativas, membros, convites, tabela
-    └── shared/        # Arquivos, health check, utilitários e entidades base
+    ├── cooperative/   # Gestão da associação: mensalidade, faturas, livro-caixa, caixinha, convênios, enquetes, atas
+    ├── admin/         # Painel da plataforma (só leitura)
+    └── shared/        # Arquivos, idempotência, limite de requisições, health check e utilitários
 ```
 
 ### Módulos e rotas principais
@@ -79,15 +87,17 @@ Todas as rotas ficam sob o prefixo `/api`. A lista completa está no Swagger: `h
 | `menu` | `/restaurants/{id}/menu` | Seções (com ícone) e itens do cardápio, disponibilidade |
 | `product` | `/products`, `/customizations`, `/public/categories`, `/global-products` | Produtos, grupos de complementos, categorias |
 | `combo` | `/combos` | Combos da loja |
-| `order` | `/orders`, `/restaurants/{id}/orders` | Checkout do cliente e ciclo do pedido na loja (aceitar, preparar, pronto, despachar, entregar) |
+| `order` | `/orders`, `/restaurants/{id}/orders` | Checkout do cliente, pedido do balcão e ciclo do pedido na loja (aceitar, preparar, pronto, despachar, entregar) |
+| `review` | `/orders/{id}/review`, `/restaurants/{id}/reviews` | Avaliações e respostas da loja |
+| `admin` | `/admin/**` | Números da plataforma e moderação de associações |
 | `delivery` | `/me/courier`, `/me/courier/work`, `/public/couriers`, `/restaurants/{id}/delivery`, `/associations/{id}/partnerships`, `/associations/{id}/reports`, `/routes`, `/cash` | Perfil e veículos do entregador, turno e ofertas, configurações de entrega da loja, parcerias entre loja e associação (com tabela especial), relatórios da associação, rotas e caixa |
 | `cooperative` | `/associations/{id}/fee-policy`, `/addon-plans`, `/invoices`, `/ledger`, `/finance/summary`, `/benefits`, `/polls`, `/documents`; `/me/association/invoices`, `/addons`, `/solidarity-fund`, `/benefits`, `/polls`, `/documents` | Gestão da associação: cobrança da mensalidade (fixa ou percentual com teto), adicionais, faturas com baixa manual, livro-caixa e caixinha solidária, convênios, enquetes e atas; e a área do cooperado |
 | `organization` | `/associations`, `/me/association`, `/public/associations`, `/admin/associations` | Associações: cadastro, aprovação, membros, convites, tabela de entrega e o resumo da associação para o cooperado (`/me/association/report`) |
-| `shared` | `/files`, `/health` | Upload e download de arquivos, health check |
+| `shared` | `/files`, `/health` | Imagens enviadas (só leitura: cada upload é feito pela rota do próprio recurso), health check, filtros de idempotência e de limite |
 
 ### Papéis
 
-`UserType`: `CUSTOMER`, `RESTAURANT_OWNER`, `DELIVERY_PERSON`, `ORGANIZATION` e `ADMIN`. Um mesmo usuário pode ter mais de um painel, e o app mostra um seletor de perfil no menu. As permissões por recurso (por exemplo, "é dono deste restaurante") ficam no `CustomPermissionEvaluator`.
+Papéis (`Role`): `CUSTOMER`, `RESTAURANT_OWNER`, `DELIVERY_PERSON`, `ASSOCIATION_MANAGER` e `ADMIN`. Um mesmo usuário pode ter mais de um painel, e o app mostra um seletor de perfil no menu. O antigo `UserType` só existe por compatibilidade e não dá permissão nenhuma. O dono do recurso ("é dono deste restaurante", "gerencia esta associação") é conferido pelo `AuthorizationService`, com as anotações `@IsRestaurantOwner` e `@IsAssociationManager` e com consultas limitadas ao dono (`findByIdAndRestaurantId`...).
 
 ---
 
@@ -96,14 +106,22 @@ Todas as rotas ficam sob o prefixo `/api`. A lista completa está no Swagger: `h
 ```mermaid
 stateDiagram-v2
     [*] --> PENDING: cliente faz o pedido
+    [*] --> CONFIRMED: pedido do balcão (entra aceito)
     PENDING --> CONFIRMED: loja aceita (manual ou automático)
-    PENDING --> CANCELLED: loja recusa ou o prazo expira
+    PENDING --> CANCELLED: cliente cancela, loja recusa ou o prazo expira
     CONFIRMED --> PREPARING
+    CONFIRMED --> READY_FOR_PICKUP: item sem preparo
+    CONFIRMED --> CANCELLED: loja cancela
     PREPARING --> READY_FOR_PICKUP
+    PREPARING --> CANCELLED: loja cancela
     READY_FOR_PICKUP --> OUT_FOR_DELIVERY: entregador retira
+    READY_FOR_PICKUP --> DELIVERED: cliente retira na loja
     OUT_FOR_DELIVERY --> DELIVERED
     DELIVERED --> [*]
+    CANCELLED --> [*]
 ```
+
+- **Transições:** todas as mudanças de status passam por `OrderStatus.canTransitionTo`. Cada ação ainda restringe a origem, por exemplo "o cliente só cancela antes do aceite".
 
 - **Preço calculado no servidor:** o `OrderCalculator` recalcula itens e complementos, e o valor enviado pelo app não é usado.
 - **Código do dia:** cada pedido recebe um `#0001` que reinicia a cada dia.
@@ -124,6 +142,27 @@ Endpoint: `/api/ws`. O `StompAuthInterceptor` valida o JWT no `CONNECT` e verifi
 | `/topic/couriers/{id}` | O próprio entregador | Ofertas, atribuições, rotas |
 
 Os eventos só saem **depois do commit** da transação (`OrderEventPublisher` e `CourierNotifier`). Assim, ninguém recebe um estado que acabou desfeito.
+
+- **Limites da sessão:** mensagem de até 8 KB (os clientes só conectam e se inscrevem), buffer de envio de 512 KB e 15 s de tempo de envio. Um cliente lento é desconectado.
+- **Validade:** a sessão vale até o token do `CONNECT` vencer. Depois disso, o `StompSessionRegistry` fecha a sessão, e o app reconecta com o token atual.
+- **Origens:** as mesmas do CORS (`app.cors.allowed-origins`).
+
+---
+
+## Segurança
+
+| Proteção | Onde |
+|---|---|
+| **Segredos de produção:** o perfil `prod` (padrão da imagem Docker) não tem valores padrão. O backend não sobe sem as variáveis e recusa segredos de desenvolvimento e a conta demo. | `ProductionEnvironmentCheck`, `SecretsValidator`, `application-prod.properties` |
+| **Cadastro:** o público sempre cria um cliente, e o papel nunca vem do corpo da requisição. | `AuthController`, `AccountService` |
+| **Uploads:** o tipo da imagem é detectado pelos bytes, a extensão vem desse tipo e a pasta fica presa ao diretório. `/files` só serve imagens, com CSP `sandbox`. | `FileStorageService`, `FileController` |
+| **CORS e WebSocket:** só as origens configuradas. | `SecurityConfig`, `WebSocketConfig` |
+| **Conta desativada:** perde o acesso na hora, na API e no WebSocket. | `JwtAuthenticationFilter`, `StompAuthInterceptor` |
+| **Limite de requisições:** login (por IP e por email), cadastros, consulta de email, cotações, pedidos e uploads, com 429 e `Retry-After`. | `RateLimitFilter`, `RateLimiter` (Bucket4j no Redis) |
+| **Idempotência:** a mesma escrita com a mesma `Idempotency-Key` não é aplicada duas vezes. | `IdempotencyFilter` (veja [Idempotência](#idempotência)) |
+| **Erros:** as respostas não trazem detalhes internos, e o log fica em INFO, sem SQL, fora do perfil `local`. | `GlobalExceptionHandler` |
+
+Ordem dos filtros no Spring Security: JWT → limite de requisições → idempotência. O checklist do OWASP Top 10 está no [roadmap da 0.4.0](../roadmap/0.4.0-seguranca.md#checklist-owasp-top-10-2021).
 
 ---
 
@@ -262,10 +301,12 @@ frontend/lib/
 | `/pedidos`, `/pedidos/:id` | Meus pedidos, acompanhamento e avaliação | Pronto |
 | `/restaurante/*` | Painel do restaurante (pedidos, cardápio, entregadores, rotas, caixa, avaliações, loja) | Pronto |
 | `/restaurante/cozinha` | Tela da cozinha | Pronto |
+| `/restaurante/pedidos/novo` | Novo pedido do balcão, telefone ou WhatsApp | Em testes (falta o teste de ponta a ponta) |
 | `/entregador/*` | Painel do entregador | Pronto |
 | `/e/:slug` | Perfil público do entregador (placa QR) | Pronto |
-| `/associacao/*` | Painel da associação ou cooperativa (membros, convites, lojas parceiras, tabela, relatórios) | Pronto |
-| `/admin/associacoes` | Moderação de associações | Pronto |
+| `/associacao/*` | Painel da associação ou cooperativa (membros, convites, lojas parceiras, tabela, relatórios, financeiro, convênios, assembleia) | Pronto |
+| `/entregador/associacao` | Área do cooperado (faturas, adicionais, caixinha, convênios, enquetes e atas) | Pronto |
+| `/admin/*` | Painel da plataforma (só leitura) e moderação de associações | Pronto |
 
 ### Padrões
 
@@ -281,8 +322,8 @@ As capturas de tela de cada área estão em [`layout/`](../../layout/).
 
 ## Próximas etapas
 
-O roadmap completo, versão por versão, está no [CHANGELOG](../../CHANGELOG.md#roadmap). Os pontos que afetam a arquitetura são:
+O roadmap completo, versão por versão, está no [CHANGELOG](../../CHANGELOG.md#roadmap). A 0.4.0 (segurança e integridade) está pronta e falta lançar. O detalhe está em [docs/roadmap/0.4.0-seguranca.md](../roadmap/0.4.0-seguranca.md). Os próximos pontos que afetam a arquitetura são:
 
-- **0.4.0 Segurança e integridade:** travas contra race conditions (`@Version`, restrições no banco), rate limiting, throttling de localização e de WebSocket, idempotência nas ações que mexem com dinheiro e com status, migrações versionadas e trava distribuída para os jobs.
 - **0.5.0 Auditoria de dados:** trilha de auditoria com o valor anterior e o novo, histórico que não pode ser alterado para caixa e ganhos, e LGPD.
-- **0.6.0 Operação do dia a dia:** pedido criado pela loja (sem conta de cliente) no mesmo fluxo do `POST /orders`, ocorrências e novos carimbos de chegada no `Order`, custos do veículo e métricas calculadas em `CourierEarningsService`. O detalhe está em [docs/roadmap/0.6.0-operacao.md](../roadmap/0.6.0-operacao.md).
+- **0.6.0 Operação do dia a dia (em andamento):** o pedido do balcão já está no código e falta o teste de ponta a ponta. Os próximos itens são as ocorrências e os carimbos de chegada no `Order`, os custos do veículo e as métricas em `CourierEarningsService`. O detalhe está em [docs/roadmap/0.6.0-operacao.md](../roadmap/0.6.0-operacao.md).
+- **Depois:** Spring Boot 4, broker externo do WebSocket (várias instâncias) e a decisão sobre as rotas antigas de produtos e combos.

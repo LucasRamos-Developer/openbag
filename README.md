@@ -18,7 +18,7 @@
   <img src="layout/temas/01-fresh-green.png" alt="Página de um restaurante no OpenBag" width="860">
 </p>
 
-> Esta documentação descreve a versão **0.3.0**. Veja o que mudou no [CHANGELOG](CHANGELOG.md).
+> Esta documentação descreve a versão **0.3.0** e as mudanças de segurança da **0.4.0**, prontas e ainda não lançadas. Veja o que mudou no [CHANGELOG](CHANGELOG.md).
 
 ---
 
@@ -65,7 +65,7 @@ O restaurante personaliza a própria página: **8 temas** (5 claros e 3 escuros)
 
 ### Operação do restaurante
 
-Pedidos em tempo real, tela da cozinha, comanda impressa, cardápio com complementos e combos, horários, rotas de entrega e caixa com o acerto de cada entregador.
+Pedidos em tempo real, tela da cozinha, comanda impressa, cardápio com complementos e combos, horários, rotas de entrega e caixa com o acerto de cada entregador. A loja também registra pedidos feitos **no balcão, por telefone ou pelo WhatsApp**, que seguem o mesmo fluxo dos pedidos do app. Esse recurso está em testes.
 
 | Rotas | Caixa |
 |---|---|
@@ -128,10 +128,16 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 | 0.1.0 | MVP: cadastro, onboarding, carrinho, pedidos, mapas | Lançada |
 | 0.2.0 | Operação do restaurante, associações e personalização da loja | Lançada |
 | **0.3.0** | **Entregador, cooperativa e cliente** | **Atual** |
-| 0.4.0 | Segurança e integridade dos dados | Em andamento |
+| 0.4.0 | Segurança e integridade dos dados | Concluída, falta lançar |
 | 0.5.0 | Auditoria de dados | Planejada |
-| 0.6.0 | Operação do dia a dia | Planejada |
+| 0.6.0 | Operação do dia a dia | Em andamento (1 de 8 itens) |
 | 1.0.0 | Primeira versão estável, com piloto real | Planejada |
+
+> **Em andamento agora**
+> - **Lançar a 0.4.0.** Os sete itens estão prontos e testados. Faltam o fechamento da versão e o merge da branch `feature/painel-cooperativa`, que também leva a tag da 0.3.0.
+> - **Pedido do balcão (item 1 da 0.6.0).** Está no código e no painel da loja. Falta o teste de ponta a ponta: balcão → cozinha → entregador → caixa.
+>
+> A 0.5.0 (auditoria) e os outros itens da 0.6.0 ainda não começaram.
 
 **0.3.0: Entregador, cooperativa e cliente**
 - [x] Concluir as telas do entregador
@@ -157,7 +163,7 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [ ] LGPD: exportação, exclusão e retenção de dados
 
 **0.6.0: Operação do dia a dia** ([detalhes](docs/roadmap/0.6.0-operacao.md))
-- [ ] Pedido feito no balcão ou por telefone, no mesmo fluxo dos pedidos online
+- [ ] Pedido feito no balcão ou por telefone, no mesmo fluxo dos pedidos online (implementado; falta o teste de ponta a ponta)
 - [ ] Ocorrências ligadas ao pedido
 - [ ] Chegada na loja e no cliente, tempos do pedido e espera média por loja
 - [ ] Km, tempo e médias na aba Ganhos do entregador
@@ -176,7 +182,7 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - **[Design system](frontend/lib/core/ui/README.md)**: componentes e temas do app.
 - **[Layout](layout/)**: capturas de tela de referência.
 
-Stack: **Java 25 + Spring Boot**, **Flutter** (web e mobile), **PostgreSQL** com **PostGIS**, **Redis**, **WebSocket/STOMP** e **OpenStreetMap**.
+Stack: **Java 25 + Spring Boot 3.5**, **Flutter** (web e mobile), **PostgreSQL** com **PostGIS** (migrações com Flyway), **Redis** (limite de requisições), **WebSocket/STOMP** e **OpenStreetMap**. Os testes rodam no GitHub Actions a cada push.
 
 ---
 

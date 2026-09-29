@@ -2,22 +2,22 @@
 
 Documentação técnica completa para desenvolvedores que desejam contribuir com o projeto OpenBag.
 
-> Versão da documentação: **0.3.0**, atualizada em 2026-09-29. Veja o [CHANGELOG](CHANGELOG.md) e a [arquitetura](docs/architecture/README.md).
+> Versão da documentação: **0.3.0**, com as mudanças da 0.4.0 (prontas e ainda não lançadas), atualizada em 2026-09-29. Veja o [CHANGELOG](CHANGELOG.md) e a [arquitetura](docs/architecture/README.md).
 
 ## 📋 Índice
 
-- [Pré-requisitos](#pré-requisitos)
-- [Configuração do Ambiente](#configuração-do-ambiente)
-- [Estrutura do Projeto](#estrutura-do-projeto)
-- [Backend (Java Spring Boot)](#backend-java-spring-boot)
-- [Frontend (Flutter)](#frontend-flutter)
-- [Banco de Dados](#banco-de-dados)
-- [Docker & Docker Compose](#docker--docker-compose)
-- [Variáveis de Ambiente](#variáveis-de-ambiente)
-- [API Documentation](#api-documentation)
-- [Workflow de Desenvolvimento](#workflow-de-desenvolvimento)
-- [Testes](#testes)
-- [Troubleshooting](#troubleshooting)
+- [Pré-requisitos](#-pré-requisitos)
+- [Configuração do Ambiente](#-configuração-do-ambiente)
+- [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Backend (Java Spring Boot)](#-backend-java-spring-boot)
+- [Frontend (Flutter)](#-frontend-flutter)
+- [Banco de Dados](#-banco-de-dados)
+- [Docker & Docker Compose](#-docker--docker-compose)
+- [Variáveis de Ambiente](#-variáveis-de-ambiente)
+- [API Documentation](#-api-documentation)
+- [Workflow de Desenvolvimento](#-workflow-de-desenvolvimento)
+- [Testes](#-testes)
+- [Troubleshooting](#-troubleshooting)
 
 ---
 
@@ -87,14 +87,17 @@ A maneira mais rápida de rodar o projeto completo com todos os serviços:
 git clone https://github.com/LucasRamos-Developer/openbag.git
 cd openbag
 
-# 2. Subir todos os serviços (PostgreSQL, Redis, Elasticsearch, Kibana)
+# 2. Senhas do Postgres e do Redis (opcional em desenvolvimento: sem o .env valem as de dev)
+cp .env.example .env
+
+# 3. Subir todos os serviços (PostgreSQL, Redis, Elasticsearch, Kibana)
 docker compose up -d
 
-# 3. Rodar o backend localmente (conectando aos serviços Docker)
+# 4. Rodar o backend localmente (conectando aos serviços Docker)
 cd backend
 mvn spring-boot:run -Dspring-boot.run.profiles=docker
 
-# 4. Rodar o frontend (em outro terminal)
+# 5. Rodar o frontend (em outro terminal)
 cd frontend
 flutter pub get
 flutter run -d chrome  # Para web
@@ -102,12 +105,12 @@ flutter run -d chrome  # Para web
 flutter run            # Para mobile (requer emulador/device)
 ```
 
-**Portas utilizadas:**
+**Portas utilizadas** (os serviços do Docker só aparecem em `127.0.0.1`, não na rede local):
 - `8080` - Backend API
 - `5432` - PostgreSQL
-- `6379` - Redis
-- `9200` - Elasticsearch
-- `5601` - Kibana (dashboard)
+- `6379` - Redis (com senha)
+- `9200` - Elasticsearch (ainda sem uso no código)
+- `5601` - Kibana
 
 ### Opção 2: Backend no Docker (Full Stack)
 
@@ -157,8 +160,8 @@ backend/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/openbag/
-│   │   │   ├── annotation/         # Anotações de validação
-│   │   │   ├── config/             # Security, OpenAPI, Redis, agendamento
+│   │   │   ├── annotation/         # @IsRestaurantOwner e @IsAssociationManager
+│   │   │   ├── config/             # Security, agendamento, segredos de produção, dados iniciais e demo
 │   │   │   ├── enums/              # Status e tipos compartilhados
 │   │   │   ├── exception/          # GlobalExceptionHandler
 │   │   │   ├── security/           # JWT, UserDetails, PermissionEvaluator
@@ -168,15 +171,20 @@ backend/
 │   │   │       ├── menu/           # Cardápio do dono
 │   │   │       ├── product/        # Produtos, categorias, complementos
 │   │   │       ├── combo/          # Combos
-│   │   │       ├── order/          # Pedidos e tempo real (WebSocket)
+│   │   │       ├── order/          # Pedidos (app e balcão) e tempo real (WebSocket)
+│   │   │       ├── review/         # Avaliações
 │   │   │       ├── delivery/       # Entregadores, despacho, rotas, caixa
 │   │   │       ├── organization/   # Associações e cooperativas
-│   │   │       └── shared/         # Arquivos, health, utilitários
+│   │   │       ├── cooperative/    # Gestão da associação (faturas, caixinha, convênios, enquetes)
+│   │   │       ├── admin/          # Painel da plataforma
+│   │   │       └── shared/         # Arquivos, idempotência, limite de requisições, health
 │   │   └── resources/
-│   │       ├── application.properties           # Config padrão
-│   │       ├── application-local.properties     # Config local
-│   │       └── application-docker.properties    # Config Docker
-│   └── test/                       # Testes unitários e de serviço
+│   │       ├── application.properties           # Config padrão (desenvolvimento)
+│   │       ├── application-local.properties     # Config local (com SQL e DEBUG no log)
+│   │       ├── application-docker.properties    # Config Docker
+│   │       ├── application-prod.properties      # Produção: segredos obrigatórios por variável
+│   │       └── db/migration/                    # Migrações do Flyway (V1, V2...)
+│   └── test/                       # Unitários e de integração (Testcontainers)
 ├── docs/                           # Documentação de APIs
 ├── Dockerfile
 └── pom.xml                         # Versão do backend (ver CHANGELOG)
@@ -229,14 +237,15 @@ As capturas de tela de referência ficam em [`layout/`](layout/) e o histórico 
 
 ### Tecnologias
 
-- **Spring Boot 3.3.0** (Java 25)
+- **Spring Boot 3.5** (Java 25)
 - **Spring Security** + JWT Authentication
-- **Spring Data JPA** (Hibernate)
-- **PostgreSQL** (Database)
+- **Spring Data JPA** (Hibernate) e **Flyway** (migrações)
+- **PostgreSQL** com **PostGIS**
 - **WebSocket + STOMP** (pedidos e ofertas em tempo real)
-- **Redis** e **Elasticsearch** (no Docker Compose; ainda sem uso relevante no código)
+- **Redis** + **Bucket4j** (limite de requisições) e **ShedLock** (jobs em uma instância só)
+- **Elasticsearch** (no Docker Compose; ainda sem uso no código)
 - **SpringDoc OpenAPI** (API Documentation)
-- **ModelMapper** (DTO mapping)
+- **Testcontainers** (testes de integração com Postgres + PostGIS e Redis)
 
 ### Build & Run
 
@@ -321,17 +330,6 @@ Em produção, use um Nominatim próprio ou um serviço contratado.
 - **`security`** - JWT, autenticação, autorização
 - **`exception`** - Tratamento de exceções customizadas
 
-### Hot Reload
-
-Para desenvolvimento com hot reload:
-
-```bash
-# Adicionar spring-boot-devtools no pom.xml (já incluído)
-mvn spring-boot:run
-
-# O servidor reiniciará automaticamente ao detectar mudanças
-```
-
 ---
 
 ## 📱 Frontend (Flutter)
@@ -376,16 +374,11 @@ flutter build ios
 
 ### Configuração de API URL
 
-Edite `lib/constants/app_constants.dart`:
+O endereço da API é definido no build, sem editar código. O padrão é `http://localhost:8080/api`:
 
-```dart
-class AppConstants {
-  // Desenvolvimento local
-  static const String baseUrl = 'http://localhost:8080/api';
-  
-  // Produção
-  // static const String baseUrl = 'https://api.openbag.com/api';
-}
+```bash
+flutter run -d chrome --dart-define=API_URL=http://localhost:8090/api
+flutter build web --dart-define=API_URL=https://api.seu-dominio.com/api
 ```
 
 ### Estrutura de State Management
@@ -494,14 +487,15 @@ SELECT * FROM restaurants LIMIT 10;
 Guarda os contadores do limite de requisições (veja [Limite de requisições](#limite-de-requisições-rate-limiting)). A senha é `OPENBAG_REDIS_PASSWORD` do `.env`, e o padrão de desenvolvimento é `openbag-redis`. O backend lê a mesma variável. Sem Redis, o backend funciona normalmente: cada instância conta sozinha.
 
 ```bash
-# Acessar Redis CLI
-docker exec -it open-bag-redis redis-cli
+# Acessar Redis CLI (a senha é OPENBAG_REDIS_PASSWORD; o padrão de dev é openbag-redis)
+docker exec -it open-bag-redis redis-cli -a openbag-redis
 
-# Comandos úteis
-KEYS *              # Listar todas as keys
-GET user:123        # Obter valor
-FLUSHALL            # Limpar cache (cuidado!)
+# Contadores do limite de requisições (somem sozinhos quando o limite se refaz)
+KEYS rl:*
+DEL "rl:login-ip:127.0.0.1"   # Liberar um IP bloqueado em desenvolvimento
 ```
+
+Um Redis criado antes da senha continua sem ela até ser recriado: `docker compose up -d redis`. Enquanto isso, o backend avisa no log e conta os limites na memória.
 
 ### Elasticsearch
 
@@ -529,7 +523,7 @@ curl http://localhost:9200/restaurants/_search?pretty
 O `docker-compose.yml` define 5 serviços:
 
 1. **postgres** - PostgreSQL 15
-2. **redis** - Redis 7 (cache)
+2. **redis** - Redis 7 (contadores do limite de requisições)
 3. **elasticsearch** - Elasticsearch 8.11
 4. **kibana** - Kibana 8.11 (dashboard)
 5. **app** - Spring Boot API (profile `backend` apenas)
@@ -585,35 +579,19 @@ Todos os serviços estão na mesma rede (`open-bag-network`) e podem se comunica
 
 ### Backend
 
-#### Profile: `local`
+#### Desenvolvimento (perfil padrão, `local` e `docker`)
 
-```properties
-# application-local.properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/openbag
-spring.datasource.username=seu_usuario
-spring.datasource.password=sua_senha
+Os três perfis de desenvolvimento têm valores padrão para tudo e sobem sem nenhuma variável. As mais úteis:
 
-spring.redis.host=localhost
-spring.redis.port=6379
+| Variável | Padrão | Uso |
+|---|---|---|
+| `OPENBAG_DB_PASSWORD` | `openbag123` | Senha do Postgres (a mesma do `.env` do docker-compose) |
+| `OPENBAG_REDIS_PASSWORD` | `openbag-redis` | Senha do Redis |
+| `OPENBAG_DEMO_ENABLED` | `false` | Conta de demonstração com todos os perfis |
+| `OPENBAG_CORS_ORIGINS` | qualquer porta de `localhost` e `127.0.0.1` | Origens do app web |
+| `OPENBAG_GEOCODING_ENABLED` e `OPENBAG_ROUTING_ENABLED` | `true` | Desligam o Nominatim e o OSRM (útil sem internet) |
 
-elasticsearch.host=localhost
-elasticsearch.port=9200
-```
-
-#### Profile: `docker`
-
-```properties
-# application-docker.properties
-spring.datasource.url=jdbc:postgresql://postgres:5432/openbag
-spring.datasource.username=openbag
-spring.datasource.password=openbag123
-
-spring.redis.host=redis
-spring.redis.port=6379
-
-elasticsearch.host=elasticsearch
-elasticsearch.port=9200
-```
+O perfil `docker` aponta para os nomes dos serviços do compose (`postgres`, `redis`). O `local` liga o SQL e o DEBUG no log. Os segredos de desenvolvimento (JWT e senha do ADMIN) são públicos: o backend avisa no log e se recusa a usá-los no perfil `prod`.
 
 #### Produção (perfil `prod`)
 
@@ -751,22 +729,15 @@ Abra um Pull Request no GitHub com descrição detalhada.
 
 ### Code Review
 
-- PRs requerem pelo menos 1 aprovação
-- Todos os testes devem passar
-- Code coverage mínimo: 80%
+- O CI (`.github/workflows/ci.yml`) roda os testes do backend e do app, e precisa passar.
+- Mudança de entidade vem com a migração do Flyway, e mudança de comportamento vem com teste.
 
 ### Padrões de Código
 
 #### Java
 
 - **Estilo**: Google Java Style Guide
-- **Formatter**: IntelliJ/Eclipse default
-- **Checkstyle**: Configurado no Maven
-
-```bash
-# Verificar estilo
-mvn checkstyle:check
-```
+- **Formatter**: IntelliJ/Eclipse default (não há checkstyle configurado no Maven)
 
 #### Dart/Flutter
 
@@ -793,17 +764,19 @@ cd backend
 # Rodar todos os testes (os de integração precisam do Docker; sem ele, são pulados)
 mvn test
 
-# Rodar com coverage
-mvn test jacoco:report
+# Um teste só
+mvn test -Dtest=ConcurrentActionsTest
 
-# Ver report de coverage
-open target/site/jacoco/index.html
+# Dependências com vulnerabilidades conhecidas (precisa de NVD_API_KEY; roda toda semana no CI)
+mvn -Psecurity verify -DskipTests
 ```
 
 #### Estrutura de Testes
 
 - A maioria é de unidade, com JUnit 5 e Mockito, ao lado do pacote testado (`modules/<módulo>/service/...Test`).
-- Os testes de integração estendem `support/IntegrationTest`: sobem o backend inteiro contra um Postgres + PostGIS em container (Testcontainers, com a imagem de `database/Dockerfile`), com o esquema criado pelas migrações. A primeira execução constrói a imagem e demora cerca de um minuto.
+- Os testes de integração estendem `support/IntegrationTest`: sobem o backend inteiro contra um Postgres + PostGIS em container (Testcontainers, com a imagem de `database/Dockerfile`), com o esquema criado pelas migrações e a conta de demonstração ligada. A primeira execução constrói a imagem e demora cerca de um minuto.
+- Os casos de ações simultâneas ficam em `concurrency/ConcurrentActionsTest`: duas threads disputando o mesmo pedido, a mesma fatura ou a mesma caixinha.
+- Os jobs agendados ficam desligados nos testes (`application-test.properties`). Um teste que precisa de um job chama o método direto.
 
 ### Frontend (Flutter Test)
 
@@ -881,18 +854,10 @@ open -a Simulator
 
 **Erro**: `CORS policy: No 'Access-Control-Allow-Origin' header`
 
-**Solução**: Verificar configuração em `backend/src/main/java/com/openbag/config/CorsConfig.java`
+**Solução**: o CORS e o WebSocket aceitam as origens de `app.cors.allowed-origins`. Em desenvolvimento, isso vale para qualquer porta de `localhost` e `127.0.0.1`. Se o app roda em outro endereço (um IP da rede, por exemplo), passe a origem:
 
-```java
-@Configuration
-public class CorsConfig implements WebMvcConfigurer {
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:*")  // Permite todas portas localhost
-                .allowedMethods("*");
-    }
-}
+```bash
+OPENBAG_CORS_ORIGINS=http://192.168.0.10:[*] mvn spring-boot:run
 ```
 
 #### 5. Erro de restrição ao salvar um valor novo de enum
@@ -903,7 +868,19 @@ public class CorsConfig implements WebMvcConfigurer {
 
 **Solução**: crie uma migração que recria o `CHECK` com o valor novo (veja [Schema e migrações](#schema-e-migrações-flyway)). Não altere o banco à mão: os outros bancos (de outras pessoas, do CI e de produção) ficariam diferentes.
 
-#### 6. Redis connection timeout
+#### 6. O backend não sobe: `Schema-validation: missing column`
+
+**Causa**: o banco está atrás do código (foi criado antes de uma entidade mudar, ou antes do Flyway).
+
+**Solução**: suba uma vez com `--spring.jpa.hibernate.ddl-auto=update` e volte ao normal (veja [Schema e migrações](#schema-e-migrações-flyway)). Se a coluna é nova no código, falta a migração dela.
+
+#### 7. Resposta 429 em desenvolvimento
+
+**Causa**: o limite de requisições (por exemplo, 10 logins por minuto do mesmo IP).
+
+**Solução**: espere o tempo do `Retry-After`, apague o contador no Redis (`DEL "rl:login-ip:127.0.0.1"`) ou suba com `--app.rate-limit.enabled=false`.
+
+#### 8. Redis connection timeout
 
 **Solução**:
 ```bash

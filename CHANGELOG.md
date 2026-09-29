@@ -79,6 +79,11 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - As chaves ficam guardadas por 24 horas (V4).
   - O app manda a chave ao finalizar o pedido, no pedido do balcão, no acerto de caixa, na baixa de fatura, no lançamento do livro-caixa e no aceite de oferta. Leituras e envios com chave são tentados de novo sozinhos quando a rede falha. A chave só muda quando o servidor responde: se a rede cair no meio do checkout, tocar de novo devolve o mesmo pedido, sem criar outro.
   - Aceitar de novo uma oferta já aceita pelo mesmo entregador devolve a entrega dele, em vez de "oferta não disponível".
+- **Pedido do balcão, do telefone e do WhatsApp** (item 1 da 0.6.0, em testes):
+  - A loja registra o pedido de um cliente sem conta (`POST /restaurants/{id}/orders`), com canal, retirada ou entrega, endereço, forma de pagamento e troco.
+  - O pedido entra já aceito e segue o mesmo fluxo do app: cozinha, despacho e caixa. A retirada fica fora do despacho e termina com "Cliente retirou".
+  - Os preços são recalculados pelo cardápio, e a taxa sai do endereço, como no checkout.
+  - Falta o teste de ponta a ponta: balcão → cozinha → entregador → caixa.
 - **Roadmap da 0.4.0 (Segurança e integridade dos dados)** em [docs/roadmap/0.4.0-seguranca.md](docs/roadmap/0.4.0-seguranca.md). O documento compara cada item com o código atual e lista os casos encontrados: brechas no cadastro, no upload e nos segredos padrão, ações simultâneas que corrompem pedidos e faturas, e a falta de idempotência, limites de requisição e migrações versionadas.
 
 ### Alterado
@@ -304,9 +309,9 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 | 0.1.0 | MVP | Lançada |
 | 0.2.0 | Operação do restaurante, associações e personalização | Lançada |
 | 0.3.0 | Entregador, cooperativa e cliente | **Atual** |
-| 0.4.0 | Segurança e integridade dos dados | Em andamento |
+| 0.4.0 | Segurança e integridade dos dados | Concluída, falta lançar |
 | 0.5.0 | Auditoria de dados | Planejada |
-| 0.6.0 | Operação do dia a dia | Planejada |
+| 0.6.0 | Operação do dia a dia | Em andamento (1 de 8 itens) |
 | 1.0.0 | Primeira versão estável (piloto real) | Planejada |
 
 ### 0.3.0: Entregador, cooperativa e cliente
@@ -335,7 +340,7 @@ O detalhe de cada item, com o que foi feito e o que ficou para depois, está em 
 
 ### 0.6.0: Operação do dia a dia
 O detalhe de cada item, com o código em que ele se apoia e o que falta, está em [docs/roadmap/0.6.0-operacao.md](docs/roadmap/0.6.0-operacao.md).
-- Pedido feito no balcão ou por telefone, que entra no mesmo fluxo dos pedidos online.
+- Pedido feito no balcão ou por telefone, que entra no mesmo fluxo dos pedidos online (implementado, em testes).
 - Ocorrências ligadas ao pedido: pedido não pronto, cliente não localizado, endereço incorreto e outras.
 - "Cheguei na loja" e "Cheguei no cliente", tempos de cada pedido e espera média por loja no relatório da cooperativa.
 - Km, tempo em operação e médias (R$ por km e R$ por hora) na aba Ganhos do entregador.

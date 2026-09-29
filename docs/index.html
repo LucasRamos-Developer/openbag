@@ -486,7 +486,7 @@
                     <div style="text-align:center; margin-bottom:1.5rem;">
                         <span class="badge badge-ok">Pronto</span>
                         <h3 style="margin-top:.6rem;">Operação do restaurante</h3>
-                        <p style="color:var(--muted); max-width:640px; margin:0 auto;">Pedidos em tempo real, cozinha, comanda impressa, rotas de entrega e o caixa com o acerto de cada entregador.</p>
+                        <p style="color:var(--muted); max-width:640px; margin:0 auto;">Pedidos em tempo real, cozinha, comanda impressa, rotas de entrega e o caixa com o acerto de cada entregador. Pedidos do balcão, do telefone e do WhatsApp entram no mesmo fluxo (em testes).</p>
                     </div>
                     <div class="ops">
                         <figure>
@@ -596,7 +596,7 @@
                         </ul>
                     </div>
                     <div class="release">
-                        <div class="release-head"><code>0.4.0</code><h3>Segurança e integridade dos dados</h3><span class="badge badge-dev">Em andamento</span></div>
+                        <div class="release-head"><code>0.4.0</code><h3>Segurança e integridade dos dados</h3><span class="badge badge-test">Concluída, falta lançar</span></div>
                         <ul>
                             <li><strong>Race conditions:</strong> ofertas, status do pedido, caixa e faturas à prova de ações simultâneas (concluído).</li>
                             <li><strong>Rate limiting:</strong> login, cadastro, pedidos e envio de arquivos (concluído).</li>
@@ -614,9 +614,9 @@
                         </ul>
                     </div>
                     <div class="release">
-                        <div class="release-head"><code>0.6.0</code><h3>Operação do dia a dia</h3><span class="badge badge-plan">Planejada</span></div>
+                        <div class="release-head"><code>0.6.0</code><h3>Operação do dia a dia</h3><span class="badge badge-dev">Em andamento</span></div>
                         <ul>
-                            <li>Pedido feito no balcão ou por telefone, no mesmo fluxo dos pedidos online.</li>
+                            <li>Pedido feito no balcão ou por telefone, no mesmo fluxo dos pedidos online (implementado, em testes).</li>
                             <li>Ocorrências, chegada na loja e tempos de cada pedido.</li>
                             <li>Km, tempo e custo estimado do veículo para o entregador.</li>
                             <li>Comunicados da cooperativa e PIN de entrega.</li>
@@ -639,19 +639,19 @@
         <section id="docs">
             <div class="container">
                 <h2>Documentação</h2>
-                <p class="subtitle">Tudo que você precisa para entender, rodar e contribuir. Documentação da versão 0.3.0.</p>
+                <p class="subtitle">Tudo que você precisa para entender, rodar e contribuir. Documentação da versão 0.3.0, com as mudanças da 0.4.0 ainda não lançadas.</p>
                 <div class="docs-grid">
                     <a class="doc-link" href="https://github.com/LucasRamos-Developer/openbag/blob/main/docs/architecture/README.md" target="_blank" rel="noopener">
-                        <strong>Arquitetura</strong><span>Módulos, tempo real, despacho, rotas e caixa</span>
+                        <strong>Arquitetura</strong><span>Módulos, tempo real, segurança, despacho, rotas, caixa e dados</span>
                     </a>
                     <a class="doc-link" href="https://github.com/LucasRamos-Developer/openbag/blob/main/README-DEVELOPER.md" target="_blank" rel="noopener">
-                        <strong>Guia de desenvolvimento</strong><span>Setup, Docker, variáveis e testes</span>
+                        <strong>Guia de desenvolvimento</strong><span>Setup, Docker, variáveis, migrações e testes</span>
                     </a>
                     <a class="doc-link" href="https://github.com/LucasRamos-Developer/openbag/blob/main/CHANGELOG.md" target="_blank" rel="noopener">
                         <strong>Changelog e versões</strong><span>O que mudou em cada versão</span>
                     </a>
                     <a class="doc-link" href="https://github.com/LucasRamos-Developer/openbag/blob/main/docs/api/README.md" target="_blank" rel="noopener">
-                        <strong>API</strong><span>Endpoints REST</span>
+                        <strong>API</strong><span>Rotas REST, WebSocket, idempotência e erros</span>
                     </a>
                     <a class="doc-link" href="https://github.com/LucasRamos-Developer/openbag/blob/main/frontend/lib/core/ui/README.md" target="_blank" rel="noopener">
                         <strong>Design system</strong><span>Componentes e temas do app</span>

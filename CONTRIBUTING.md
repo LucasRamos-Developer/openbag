@@ -4,15 +4,15 @@ Obrigado por considerar contribuir com o OpenBag! Este projeto é construído pe
 
 ## 📋 Índice
 
-- [Como Posso Contribuir?](#como-posso-contribuir)
-- [Configurando o Ambiente de Desenvolvimento](#configurando-o-ambiente-de-desenvolvimento)
-- [Workflow de Contribuição](#workflow-de-contribuição)
-- [Padrões de Código](#padrões-de-código)
-- [Convenções de Commit](#convenções-de-commit)
-- [Pull Requests](#pull-requests)
-- [Reportando Bugs](#reportando-bugs)
-- [Sugerindo Melhorias](#sugerindo-melhorias)
-- [Código de Conduta](#código-de-conduta)
+- [Como Posso Contribuir?](#-como-posso-contribuir)
+- [Configurando o Ambiente de Desenvolvimento](#-configurando-o-ambiente-de-desenvolvimento)
+- [Workflow de Contribuição](#-workflow-de-contribuição)
+- [Padrões de Código](#-padrões-de-código)
+- [Convenções de Commit](#-convenções-de-commit)
+- [Pull Requests](#-pull-requests)
+- [Reportando Bugs](#-reportando-bugs)
+- [Sugerindo Melhorias](#-sugerindo-melhorias)
+- [Código de Conduta](#-código-de-conduta)
 
 ---
 
@@ -165,7 +165,7 @@ Desenvolva sua feature ou correção. Lembre-se de:
 
 ### 4. Commit Suas Mudanças
 
-Faça commits atômicos e descritivos (veja [Convenções de Commit](#convenções-de-commit)):
+Faça commits atômicos e descritivos (veja [Convenções de Commit](#-convenções-de-commit)):
 
 ```bash
 git add .
@@ -193,12 +193,9 @@ git push origin feature/nome-da-feature
 
 - **Estilo**: [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html)
 - **Formatter**: IntelliJ IDEA / Eclipse default
-- **Lint**: Checkstyle configurado no Maven
+- **Testes**: `mvn test` (os de integração precisam do Docker). O CI roda a cada push.
 
 ```bash
-# Verificar estilo
-mvn checkstyle:check
-
 # Formatar código (IntelliJ)
 Ctrl+Alt+L (Windows/Linux)
 Cmd+Option+L (macOS)
@@ -311,7 +308,7 @@ Usamos [Conventional Commits](https://www.conventionalcommits.org/) para mensage
 | `feat` | Nova funcionalidade | `feat(auth): adiciona login com Google` |
 | `fix` | Correção de bug | `fix(cart): corrige cálculo de total` |
 | `docs` | Documentação | `docs(readme): atualiza instruções de setup` |
-| `style` | Formatação (sem mudança de lógica) | `style(backend): formata código com checkstyle` |
+| `style` | Formatação (sem mudança de lógica) | `style(frontend): aplica o dart format` |
 | `refactor` | Refatoração | `refactor(services): simplifica lógica de busca` |
 | `test` | Testes | `test(auth): adiciona testes de login` |
 | `chore` | Manutenção | `chore(deps): atualiza dependências` |
@@ -355,7 +352,10 @@ Closes #123"
 - [ ] Código segue os padrões de estilo
 - [ ] Todos os testes passam (`mvn test` e `flutter test`)
 - [ ] Novos testes foram adicionados para novas features
+- [ ] Mudança de entidade tem a migração do Flyway (`backend/src/main/resources/db/migration`)
+- [ ] Ação que cria algo ou mexe com dinheiro usa `Idempotency-Key` no app (veja a [arquitetura](docs/architecture/README.md#idempotência))
 - [ ] Documentação foi atualizada (se necessário)
+- [ ] A mudança entrou em **Não lançado** no [CHANGELOG](CHANGELOG.md)
 - [ ] Commits seguem Conventional Commits
 - [ ] Branch está atualizada com `main`
 

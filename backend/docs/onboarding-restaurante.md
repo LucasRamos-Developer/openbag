@@ -178,43 +178,38 @@ Realiza o cadastro completo de um restaurante, incluindo proprietário, endereç
 
 **Exemplos de Erros:**
 
-**400 Bad Request - E-mail duplicado:**
+Os erros seguem o formato padrão da API (veja [Erros](../../docs/api/README.md#erros)).
+
+**400 Bad Request (email, telefone ou CNPJ já cadastrado):**
 ```json
 {
-  "error": "Email já está em uso"
+  "status": 400,
+  "message": "Email já está em uso",
+  "timestamp": "2026-09-29T14:30:00",
+  "path": "uri=/api/auth/register/restaurant"
 }
 ```
 
-**400 Bad Request - Telefone duplicado:**
+**400 Bad Request (validação de campos):**
 ```json
 {
-  "error": "Telefone já está em uso"
-}
-```
-
-**400 Bad Request - CNPJ duplicado:**
-```json
-{
-  "error": "CNPJ já cadastrado"
-}
-```
-
-**400 Bad Request - Validação de campos:**
-```json
-{
-  "error": "Validation failed",
-  "errors": {
+  "status": 400,
+  "message": "Dados de entrada inválidos",
+  "timestamp": "2026-09-29T14:30:00",
+  "fieldErrors": {
     "owner.email": "Email deve ter um formato válido",
-    "layoutConfig.primaryColor": "Cor primária deve estar no formato hexadecimal (ex: #FF0000)",
     "openingHours": "Horários de funcionamento são obrigatórios"
   }
 }
 ```
 
-**404 Not Found - Categoria inexistente:**
+**404 Not Found (categoria inexistente):**
 ```json
 {
-  "error": "Uma ou mais categorias não foram encontradas"
+  "status": 404,
+  "message": "Uma ou mais categorias não foram encontradas",
+  "timestamp": "2026-09-29T14:30:00",
+  "path": "uri=/api/auth/register/restaurant"
 }
 ```
 
@@ -222,7 +217,8 @@ Realiza o cadastro completo de um restaurante, incluindo proprietário, endereç
 - `201 Created` - Restaurante cadastrado com sucesso
 - `400 Bad Request` - Erro de validação ou dados duplicados
 - `404 Not Found` - Categorias não encontradas
-- `500 Internal Server Error` - Erro interno do servidor
+- `429 Too Many Requests` - Mais de 10 cadastros por hora do mesmo IP (com `Retry-After`)
+- `500 Internal Server Error` - Erro interno do servidor, sem detalhes na resposta
 
 ---
 
