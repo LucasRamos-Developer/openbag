@@ -1,6 +1,7 @@
 package com.openbag.config;
 
 import com.openbag.modules.shared.idempotency.IdempotencyFilter;
+import com.openbag.modules.shared.ratelimit.RateLimitFilter;
 import com.openbag.security.CustomPermissionEvaluator;
 import com.openbag.security.CustomUserDetailsService;
 import com.openbag.security.JwtAuthenticationFilter;
@@ -47,14 +48,24 @@ public class SecurityConfig {
     @Autowired
     private IdempotencyFilter idempotencyFilter;
 
+    @Autowired
+    private RateLimitFilter rateLimitFilter;
+
     /** Origens do app web (padrões do Spring, ex.: https://openbag.app ou http://localhost:[*]) */
     @Value("${app.cors.allowed-origins}")
     private List<String> allowedOrigins;
 
-    /** O filtro de idempotência roda só dentro da cadeia do Spring Security, nunca como filtro solto do servlet */
+    /** Os filtros de idempotência e de limite rodam só dentro da cadeia do Spring Security, nunca soltos no servlet */
     @Bean
     public FilterRegistrationBean<IdempotencyFilter> idempotencyFilterRegistration(IdempotencyFilter filter) {
         FilterRegistrationBean<IdempotencyFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<RateLimitFilter> rateLimitFilterRegistration(RateLimitFilter filter) {
+        FilterRegistrationBean<RateLimitFilter> registration = new FilterRegistrationBean<>(filter);
         registration.setEnabled(false);
         return registration;
     }
@@ -114,8 +125,9 @@ public class SecurityConfig {
 
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        // Depois do JWT: a chave de idempotência é por usuário
-        http.addFilterAfter(idempotencyFilter, JwtAuthenticationFilter.class);
+        // Depois do JWT, que diz quem é o usuário: primeiro o limite de requisições, depois a idempotência
+        http.addFilterAfter(rateLimitFilter, JwtAuthenticationFilter.class);
+        http.addFilterAfter(idempotencyFilter, RateLimitFilter.class);
 
         return http.build();
     }

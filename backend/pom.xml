@@ -73,6 +73,18 @@
             <artifactId>hibernate-spatial</artifactId>
         </dependency>
 
+        <!-- Limite de requisições (rate limiting), com os contadores no Redis -->
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j_jdk17-core</artifactId>
+            <version>8.14.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j_jdk17-lettuce</artifactId>
+            <version>8.14.0</version>
+        </dependency>
+
         <!-- Migrações versionadas do banco (src/main/resources/db/migration) -->
         <dependency>
             <groupId>org.flywaydb</groupId>

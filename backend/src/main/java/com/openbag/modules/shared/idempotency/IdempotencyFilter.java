@@ -1,13 +1,11 @@
 package com.openbag.modules.shared.idempotency;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.openbag.modules.shared.web.CachedBodyRequest;
 import com.openbag.security.CustomUserDetailsService.CustomUserPrincipal;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,10 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -92,7 +87,8 @@ public class IdempotencyFilter extends OncePerRequestFilter {
             return;
         }
 
-        byte[] body = request.getInputStream().readAllBytes();
+        CachedBodyRequest cached = CachedBodyRequest.of(request);
+        byte[] body = cached.getBody();
         String path = truncate(request.getRequestURI() + (request.getQueryString() != null ? "?" + request.getQueryString() : ""), 300);
         String hash = sha256(request.getMethod(), path, body);
 
@@ -128,7 +124,7 @@ public class IdempotencyFilter extends OncePerRequestFilter {
         long id = reserved.get();
         ContentCachingResponseWrapper wrapped = new ContentCachingResponseWrapper(response);
         try {
-            chain.doFilter(new CachedBodyRequest(request, body), wrapped);
+            chain.doFilter(cached, wrapped);
         } catch (IOException | ServletException | RuntimeException e) {
             store.release(id);
             throw e;
@@ -194,63 +190,5 @@ public class IdempotencyFilter extends OncePerRequestFilter {
 
     private static String truncate(String text, int max) {
         return text.length() <= max ? text : text.substring(0, max);
-    }
-
-    /** Requisição com o corpo já lido (para o hash), que o controller lê de novo normalmente */
-    private static final class CachedBodyRequest extends HttpServletRequestWrapper {
-
-        private final byte[] body;
-
-        CachedBodyRequest(HttpServletRequest request, byte[] body) {
-            super(request);
-            this.body = body;
-        }
-
-        @Override
-        public ServletInputStream getInputStream() {
-            ByteArrayInputStream input = new ByteArrayInputStream(body);
-            return new ServletInputStream() {
-                @Override
-                public int read() {
-                    return input.read();
-                }
-
-                @Override
-                public int read(byte[] b, int off, int len) {
-                    return input.read(b, off, len);
-                }
-
-                @Override
-                public boolean isFinished() {
-                    return input.available() == 0;
-                }
-
-                @Override
-                public boolean isReady() {
-                    return true;
-                }
-
-                @Override
-                public void setReadListener(ReadListener listener) {
-                    throw new UnsupportedOperationException();
-                }
-            };
-        }
-
-        @Override
-        public BufferedReader getReader() {
-            String encoding = getCharacterEncoding() != null ? getCharacterEncoding() : StandardCharsets.UTF_8.name();
-            return new BufferedReader(new InputStreamReader(getInputStream(), java.nio.charset.Charset.forName(encoding)));
-        }
-
-        @Override
-        public int getContentLength() {
-            return body.length;
-        }
-
-        @Override
-        public long getContentLengthLong() {
-            return body.length;
-        }
     }
 }

@@ -54,6 +54,7 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 - A rota genérica `POST /files/upload/{folder}`, que qualquer usuário logado podia usar, saiu. Cada imagem continua sendo enviada pela rota do próprio recurso.
 - **CORS e WebSocket só das origens configuradas** (`OPENBAG_CORS_ORIGINS`), em vez de qualquer origem. O CORS passou a aceitar `PATCH`.
 - Uma conta desativada perde o acesso na hora, na API e no WebSocket, mesmo com um token ainda válido.
+- **Limite de requisições (rate limiting)** no login (por IP e por email), nos cadastros, na consulta de email, nas cotações de entrega, nos pedidos e nos envios de arquivo. Passou do limite, a resposta é 429 com `Retry-After`, e o app mostra quanto esperar. Os contadores ficam no Redis (Bucket4j) e valem para todas as instâncias. Sem Redis, cada instância conta sozinha. Os limites mudam por configuração (veja o README-DEVELOPER).
 
 ### Adicionado
 
@@ -90,6 +91,7 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - Dois cliques na baixa de uma fatura lançavam a mensalidade e a caixinha duas vezes. Dois auxílios ao mesmo tempo podiam deixar a caixinha negativa.
   - O aceite de oferta travava o entregador antes do pedido, e a atribuição pela loja fazia o contrário. Isso podia dar deadlock (500 no app). A ordem agora é única: pedido e depois entregador, e vários pedidos sempre em ordem de id.
 - A expiração de pedidos sem resposta e a geração mensal de faturas rodavam numa transação só: um erro desfazia todos. Agora é uma transação por pedido e por associação. O despacho em segundo plano tenta de novo quando encontra um conflito.
+- Uma enxurrada de endereços diferentes no checkout prendia as threads do servidor na fila da geocodificação (1 consulta por segundo, com a thread dormindo na vez). Agora cada consulta reserva uma vaga e desiste se ela passar de 3 segundos: o endereço fica sem coordenadas e a taxa usa o valor "a partir de".
 - A resposta da foto de perfil e o `GET /users/profile` entravam num laço entre papéis e permissões e quebravam no meio do JSON.
 - Método não permitido e rota inexistente respondiam 500. Agora respondem 405 e 404.
 

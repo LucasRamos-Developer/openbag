@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +37,8 @@ public class GeocodingService {
     private static final Duration TIMEOUT = Duration.ofSeconds(4);
     private static final Duration MIN_INTERVAL = Duration.ofMillis(1100);
     private static final Duration RETRY_AFTER_FAILURE = Duration.ofMinutes(1);
+    /** Espera máxima por uma vaga na fila de 1 consulta por segundo; passou disso, o endereço fica sem coordenadas */
+    private static final Duration MAX_WAIT = Duration.ofSeconds(3);
 
     /** Endereço para buscar; os campos vazios são ignorados */
     public record AddressQuery(String street, String number, String neighborhood, String city, String state,
@@ -56,7 +59,8 @@ public class GeocodingService {
             return size() > CACHE_SIZE;
         }
     };
-    private Instant lastRequestAt = Instant.MIN;
+    /** Próxima vaga livre na fila de 1 consulta por segundo */
+    private final AtomicReference<Instant> nextSlot = new AtomicReference<>(Instant.MIN);
     private volatile Instant pausedUntil = Instant.MIN;
 
     public GeocodingService(ObjectMapper objectMapper,
@@ -108,7 +112,10 @@ public class GeocodingService {
         }
 
         try {
-            waitForTurn();
+            if (!waitForTurn()) {
+                log.info("Geocodificação: fila cheia; o endereço fica sem coordenadas (vale o valor \"a partir de\")");
+                return Optional.empty();
+            }
             HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + "/search?" + query))
                     .timeout(TIMEOUT)
                     .header("User-Agent", "OpenBag (https://github.com/LucasRamos-Developer/openbag)")
@@ -135,13 +142,29 @@ public class GeocodingService {
         }
     }
 
-    /** O servidor público aceita 1 consulta por segundo */
-    private synchronized void waitForTurn() throws InterruptedException {
-        Duration since = Duration.between(lastRequestAt, Instant.now());
-        if (since.compareTo(MIN_INTERVAL) < 0) {
-            Thread.sleep(MIN_INTERVAL.minus(since).toMillis());
+    /**
+     * O servidor público aceita 1 consulta por segundo: reserva a próxima vaga e espera por ela. Se a vaga estiver a
+     * mais de {@link #MAX_WAIT}, desiste na hora. Antes, cada requisição esperava a vez com a thread presa, e uma
+     * enxurrada de endereços diferentes esgotava as threads do servidor.
+     */
+    boolean waitForTurn() throws InterruptedException {
+        Instant now = Instant.now();
+        Instant slot;
+        while (true) {
+            Instant current = nextSlot.get();
+            slot = current.isAfter(now) ? current : now;
+            if (Duration.between(now, slot).compareTo(MAX_WAIT) > 0) {
+                return false;
+            }
+            if (nextSlot.compareAndSet(current, slot.plus(MIN_INTERVAL))) {
+                break;
+            }
         }
-        lastRequestAt = Instant.now();
+        long wait = Duration.between(now, slot).toMillis();
+        if (wait > 0) {
+            Thread.sleep(wait);
+        }
+        return true;
     }
 
     Optional<Coordinates> parse(String body) throws java.io.IOException {

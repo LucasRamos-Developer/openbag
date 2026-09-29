@@ -633,6 +633,24 @@ export OPENBAG_ADMIN_PASSWORD=senha_forte_com_12_ou_mais # vazia: nenhum ADMIN �
 
 Em desenvolvimento, o CORS e o WebSocket aceitam qualquer porta de `localhost` e `127.0.0.1`. Para outras origens, use `OPENBAG_CORS_ORIGINS`.
 
+#### Limite de requisições (rate limiting)
+
+As rotas mais visadas respondem **429** com `Retry-After` quando passam do limite (`RateLimitFilter`). Os contadores ficam no Redis e valem para todas as instâncias. Sem Redis (é comum em desenvolvimento), cada instância conta sozinha e o log avisa.
+
+| Limite | Padrão | Conta por |
+|---|---|---|
+| `login-ip` e `login-ip-hourly` | 10 por minuto e 50 por hora | IP |
+| `login-email` | 10 a cada 15 minutos | email (protege a conta de vários IPs) |
+| `register-ip` | 10 por hora | IP (todos os cadastros públicos) |
+| `check-email-ip` | 20 por minuto | IP |
+| `public-quote-ip` | 30 por minuto | IP (cotação da página da loja) |
+| `order-user` | 10 por minuto | usuário (`POST /orders`) |
+| `store-order-user` | 30 por minuto | usuário (pedido do balcão) |
+| `quote-user` | 30 por minuto | usuário (cotação no checkout) |
+| `upload-user` | 30 por hora | usuário (qualquer envio de arquivo) |
+
+Para trocar um limite, use `app.rate-limit.limits.<nome>=<quantidade>/<período>` (por exemplo, `app.rate-limit.limits.login-ip=20/1m`). Para desligar tudo, use `app.rate-limit.enabled=false`. Atrás de um proxy reverso confiável, defina `OPENBAG_FORWARD_HEADERS_STRATEGY=native` para o limite ver o IP real do cliente.
+
 ### Frontend
 
 Edite `lib/constants/app_constants.dart`:
