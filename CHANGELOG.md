@@ -106,6 +106,7 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - Dois cliques na baixa de uma fatura lançavam a mensalidade e a caixinha duas vezes. Dois auxílios ao mesmo tempo podiam deixar a caixinha negativa.
   - O aceite de oferta travava o entregador antes do pedido, e a atribuição pela loja fazia o contrário. Isso podia dar deadlock (500 no app). A ordem agora é única: pedido e depois entregador, e vários pedidos sempre em ordem de id.
 - A expiração de pedidos sem resposta e a geração mensal de faturas rodavam numa transação só: um erro desfazia todos. Agora é uma transação por pedido e por associação. O despacho em segundo plano tenta de novo quando encontra um conflito.
+- No limite de tentativas, a tela de login dizia "Email ou senha incorretos". Agora ela mostra quanto esperar, e sem conexão diz que a internet caiu.
 - A imagem Docker do backend não era construída: o plugin do Spring Boot 3.3 não empacota classes do Java 25.
 - Uma enxurrada de endereços diferentes no checkout prendia as threads do servidor na fila da geocodificação (1 consulta por segundo, com a thread dormindo na vez). Agora cada consulta reserva uma vaga e desiste se ela passar de 3 segundos: o endereço fica sem coordenadas e a taxa usa o valor "a partir de".
 - A resposta da foto de perfil e o `GET /users/profile` entravam num laço entre papéis e permissões e quebravam no meio do JSON.

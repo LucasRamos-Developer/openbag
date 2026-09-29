@@ -64,8 +64,13 @@ class AuthService extends ChangeNotifier {
     }
   }
 
+  /// Mensagem do último login que falhou (senha errada, muitas tentativas, sem conexão)
+  String? get loginError => _loginError;
+  String? _loginError;
+
   Future<bool> login(String email, String password) async {
     _isLoading = true;
+    _loginError = null;
     notifyListeners();
 
     try {
@@ -92,15 +97,29 @@ class AuthService extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
+        _loginError = _loginErrorMessage(response);
         _isLoading = false;
         notifyListeners();
         return false;
       }
     } catch (e) {
+      _loginError = 'Erro de conexão. Verifique sua internet e tente novamente.';
       _isLoading = false;
       notifyListeners();
       return false;
     }
+  }
+
+  /// 429: o servidor diz quanto esperar ("Muitas tentativas... Tente de novo em 40 segundos")
+  static String _loginErrorMessage(http.Response response) {
+    if (response.statusCode == 429) {
+      try {
+        final message = json.decode(response.body)['message'];
+        if (message is String && message.isNotEmpty) return message;
+      } catch (_) {}
+      return 'Muitas tentativas em pouco tempo. Aguarde um pouco e tente de novo.';
+    }
+    return 'Email ou senha incorretos';
   }
 
   /// Cria a conta de cliente. Devolve null se deu certo ou a mensagem de erro do servidor

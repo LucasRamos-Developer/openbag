@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (success) {
         context.go(_next ?? authService.homeRoute);
       } else {
-        AppToast.show(context, message: 'Email ou senha incorretos', type: ToastType.error);
+        AppToast.show(context, message: authService.loginError ?? 'Email ou senha incorretos', type: ToastType.error);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
