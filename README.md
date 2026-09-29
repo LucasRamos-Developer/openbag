@@ -142,13 +142,13 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [x] Página da loja otimizada para buscadores e vitrine por avaliações e proximidade
 
 **0.4.0: Segurança e integridade dos dados** ([detalhes](docs/roadmap/0.4.0-seguranca.md))
-- [ ] Brechas críticas: segredos padrão, papel no cadastro, upload de arquivos e CORS
-- [ ] Integridade dos dados: migrações versionadas (Flyway) e testes de integração
-- [ ] Verificação de **race conditions** (ofertas, status do pedido, caixa e faturas) e restrições no banco
-- [ ] **Idempotência** em pedidos, aceite de oferta e acerto de caixa
-- [ ] **Rate limiting** no login, no cadastro, nos pedidos e nos envios de arquivo
-- [ ] **Throttling** de localização, de WebSocket e dos jobs agendados
-- [ ] Revisão de segurança (OWASP Top 10, dependências e CI)
+- [x] Brechas críticas: segredos padrão, papel no cadastro, upload de arquivos e CORS
+- [x] Integridade dos dados: migrações versionadas (Flyway) e testes de integração
+- [x] Verificação de **race conditions** (ofertas, status do pedido, caixa e faturas) e restrições no banco
+- [x] **Idempotência** em pedidos, aceite de oferta, acerto de caixa, faturas e livro-caixa
+- [x] **Rate limiting** no login, no cadastro, nos pedidos e nos envios de arquivo
+- [x] **Throttling** de localização, de WebSocket e dos jobs agendados
+- [x] Revisão de segurança (OWASP Top 10, dependências e CI)
 
 **0.5.0: Auditoria de dados**
 - [ ] Trilha de auditoria (quem, o quê, quando, antes e depois) pode ser um PGaudit

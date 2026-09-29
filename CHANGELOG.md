@@ -318,13 +318,14 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 - ~~Visibilidade: página da loja otimizada para buscadores (SEO) e vitrine ordenada por avaliações e proximidade, sem posição paga~~ (concluído).
 
 ### 0.4.0: Segurança e integridade dos dados
-O detalhe de cada item, com o estado atual no código e o que falta, está em [docs/roadmap/0.4.0-seguranca.md](docs/roadmap/0.4.0-seguranca.md). A ordem é "críticos primeiro": brechas graves, migrações versionadas, race conditions, idempotência, rate limiting, throttling e revisão de segurança.
-- **Race conditions:** dois entregadores aceitando a mesma oferta, pedido mudando de status ao mesmo tempo no painel e na cozinha, acerto de caixa em paralelo. Usar travas otimistas (`@Version`) e restrições no banco, com testes de concorrência.
-- **Rate limiting:** limite por IP e por usuário no login, no cadastro, na criação de pedidos e no envio de arquivos.
-- **Throttling:** controlar a frequência de atualizações de localização do entregador, de mensagens do WebSocket e dos jobs agendados.
-- **Idempotência:** chave de idempotência em `POST /orders`, no aceite de oferta, no acerto de caixa e nas re-tentativas do app, para que a mesma ação nunca seja aplicada duas vezes.
-- **Integridade:** migrações versionadas no lugar de `ddl-auto=update`, restrições de banco (chaves, únicos, checks) e validação de valores recalculados no servidor.
-- **Revisão de segurança:** permissões por papel em todas as rotas, OWASP Top 10, segredos fora do código e dependências atualizadas.
+O detalhe de cada item, com o que foi feito e o que ficou para depois, está em [docs/roadmap/0.4.0-seguranca.md](docs/roadmap/0.4.0-seguranca.md). Todos os itens foram entregues (veja "Não lançado"). Falta fechar a versão.
+- ~~**Brechas críticas:** segredos padrão, papel no cadastro, upload de arquivos e CORS~~: perfil `prod` obrigatório, cadastro sempre como cliente, imagens conferidas pelos bytes e CORS só das origens configuradas (concluído).
+- ~~**Integridade:** migrações versionadas no lugar de `ddl-auto=update`~~: Flyway com `validate` e testes de integração com Testcontainers (concluído).
+- ~~**Race conditions:** oferta, status do pedido, caixa e faturas~~: travas com ordem única, `@Version`, restrições no banco e testes de concorrência com duas threads (concluído).
+- ~~**Idempotência:** a mesma ação nunca é aplicada duas vezes~~: cabeçalho `Idempotency-Key` no pedido, no balcão, no acerto de caixa, na baixa de fatura, no livro-caixa e no aceite, com nova tentativa automática no app (concluído).
+- ~~**Rate limiting:** login, cadastro, pedidos e envio de arquivos~~: contadores no Redis, por IP e por usuário (concluído).
+- ~~**Throttling:** localização, WebSocket e jobs~~: ping a cada 10 s no máximo, limites no WebSocket e jobs com trava distribuída (ShedLock) (concluído).
+- ~~**Revisão de segurança:** OWASP Top 10, segredos e dependências~~: checklist preenchido, Spring Boot 3.5, CI, Dependabot e verificação semanal de dependências vulneráveis (concluído).
 
 ### 0.5.0: Auditoria de dados
 - Trilha de auditoria: quem mudou o quê e quando, com o valor anterior e o novo, para pedidos, cardápio e preços, caixa, ganhos e vínculos.
