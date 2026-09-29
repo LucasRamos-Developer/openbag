@@ -9,6 +9,7 @@ import '../../services/order_service.dart';
 import '../../services/realtime_service.dart';
 import '../../utils/feedback.dart';
 import '../../utils/formatters.dart';
+import '../../utils/maps.dart';
 import '../../widgets/order/order_items_list.dart';
 import '../../widgets/order/order_status_chip.dart';
 import '../../widgets/courier/order_courier_card.dart';
@@ -212,7 +213,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ],
                 if (order.restaurant.phoneNumber != null) ...[
                   const SizedBox(height: 24),
-                  Text('Dúvidas? Fale com o restaurante: ${order.restaurant.phoneNumber}', style: TextStyle(color: muted)),
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text('Dúvidas? Fale com o restaurante:', style: TextStyle(color: muted)),
+                      AppButton(
+                        text: PhoneFormatter.format(order.restaurant.phoneNumber!),
+                        icon: Icons.call_outlined,
+                        variant: ButtonVariant.text,
+                        onPressed: () => callPhone(order.restaurant.phoneNumber!),
+                      ),
+                    ],
+                  ),
                 ],
                 const SizedBox(height: 24),
               ],

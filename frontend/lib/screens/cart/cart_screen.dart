@@ -8,6 +8,7 @@ import '../../utils/formatters.dart';
 import '../../widgets/cart/cart_line_tile.dart';
 import '../../widgets/order/price_summary.dart';
 import '../../widgets/restaurant/restaurant_logo.dart';
+import '../../widgets/navigation/storefront_bottom_action.dart';
 import '../../widgets/navigation/storefront_scaffold.dart';
 
 /// Carrinho: itens com complementos, quantidades, totais e pedido mínimo
@@ -105,15 +106,12 @@ class CartScreen extends StatelessWidget {
       floatingBottomBar: false,
       bottomNavigationBar: cart.isEmpty
           ? null
-          : SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: AppButton(
-                  text: cart.missingForMinimum > 0 ? 'Pedido mínimo não atingido' : 'Continuar  ·  ${formatMoney(cart.total)}',
-                  size: ButtonSize.large,
-                  fullWidth: true,
-                  onPressed: cart.missingForMinimum > 0 ? null : () => _checkout(context),
-                ),
+          : StorefrontBottomAction(
+              child: AppButton(
+                text: cart.missingForMinimum > 0 ? 'Pedido mínimo não atingido' : 'Continuar  ·  ${formatMoney(cart.total)}',
+                size: ButtonSize.large,
+                fullWidth: true,
+                onPressed: cart.missingForMinimum > 0 ? null : () => _checkout(context),
               ),
             ),
     );

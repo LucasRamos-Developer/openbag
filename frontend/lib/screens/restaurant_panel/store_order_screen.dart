@@ -366,7 +366,7 @@ class _StoreOrderScreenState extends State<StoreOrderScreen> {
         hintText: '(XX) XXXXX-XXXX',
         variant: TextFieldVariant.filled,
         keyboardType: TextInputType.phone,
-        inputFormatters: [phoneFormatterShort],
+        inputFormatters: [PhoneFormatter()],
       ),
       const AppSectionHeader(title: 'Entrega ou retirada', padding: EdgeInsets.only(top: 28)),
       AppFilterChips<FulfillmentType>(

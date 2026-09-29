@@ -136,8 +136,8 @@ GoRouter buildRouter(AuthService authService) => GoRouter(
         .firstOrNull;
     if (protected == null) return null;
 
-    // Sessão ainda sendo restaurada: a splash decide o destino
-    if (!authService.isInitialized) return '/';
+    // Sessão ainda sendo restaurada: a splash espera e depois volta para o destino
+    if (!authService.isInitialized) return Uri(path: '/', queryParameters: {'next': state.uri.toString()}).toString();
     if (!authService.isAuthenticated) return Uri(path: '/login', queryParameters: {'next': state.uri.toString()}).toString();
     final requiredRole = protected.value;
     if (requiredRole != null && !authService.currentUser!.hasRole(requiredRole)) return authService.homeRoute;
@@ -146,7 +146,7 @@ GoRouter buildRouter(AuthService authService) => GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const SplashScreen(),
+      builder: (context, state) => SplashScreen(next: state.uri.queryParameters['next']),
     ),
     GoRoute(
       path: '/login',

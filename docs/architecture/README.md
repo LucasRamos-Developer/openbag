@@ -234,10 +234,10 @@ frontend/lib/
 
 | Rota | Tela | Status |
 |------|------|--------|
-| `/home` | Vitrine de restaurantes | Em testes |
-| `/r/:slug` | Página da loja com o tema dela | Em testes |
-| `/cart`, `/checkout` | Carrinho e checkout | Em testes |
-| `/pedidos`, `/pedidos/:id` | Meus pedidos e acompanhamento | Em testes |
+| `/home` | Vitrine de restaurantes (a raiz `/` leva o visitante para cá) | Pronto |
+| `/r/:slug` | Página da loja com o tema dela | Pronto |
+| `/cart`, `/checkout` | Carrinho e checkout | Pronto |
+| `/pedidos`, `/pedidos/:id` | Meus pedidos, acompanhamento e avaliação | Pronto |
 | `/restaurante/*` | Painel do restaurante (pedidos, cardápio, entregadores, rotas, caixa, avaliações, loja) | Pronto |
 | `/restaurante/cozinha` | Tela da cozinha | Pronto |
 | `/entregador/*` | Painel do entregador | Em desenvolvimento |

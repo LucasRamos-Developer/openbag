@@ -13,6 +13,7 @@ import '../../services/order_service.dart';
 import '../../utils/formatters.dart';
 import '../../widgets/address/address_form.dart';
 import '../../widgets/order/price_summary.dart';
+import '../../widgets/navigation/storefront_bottom_action.dart';
 import '../../widgets/navigation/storefront_scaffold.dart';
 
 /// Finalização do pedido: endereço, pagamento na entrega, observações e resumo
@@ -45,7 +46,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   void initState() {
     super.initState();
-    _phone.text = context.read<AuthService>().currentUser?.phoneNumber ?? '';
+    _phone.text = PhoneFormatter.format(context.read<AuthService>().currentUser?.phoneNumber ?? '');
     for (final field in [_address.street, _address.number, _address.city, _address.state]) {
       field.addListener(_scheduleQuote);
     }
@@ -183,7 +184,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   hintText: '(XX) XXXXX-XXXX',
                   variant: TextFieldVariant.filled,
                   keyboardType: TextInputType.phone,
-                  inputFormatters: [phoneFormatterShort],
+                  inputFormatters: [PhoneFormatter()],
                 ),
                 const SizedBox(height: 32),
                 const AppSectionHeader(
@@ -276,16 +277,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
       ),
       floatingBottomBar: false,
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: AppButton(
-            text: 'Fazer pedido  ·  ${formatMoney(_total(cart))}',
-            size: ButtonSize.large,
-            fullWidth: true,
-            isLoading: _isSubmitting,
-            onPressed: _isSubmitting ? null : _submit,
-          ),
+      bottomNavigationBar: StorefrontBottomAction(
+        child: AppButton(
+          text: 'Fazer pedido  ·  ${formatMoney(_total(cart))}',
+          size: ButtonSize.large,
+          fullWidth: true,
+          isLoading: _isSubmitting,
+          onPressed: _isSubmitting ? null : _submit,
         ),
       ),
     );

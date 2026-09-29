@@ -54,7 +54,7 @@ Cada restaurante escolhe um dos 8 temas ou usa a cor da marca. O painel de apar�
 |---|---|
 | ![Ordenação da vitrine](loja-e-vitrine/15-vitrine-ordenacao.png) | <img src="loja-e-vitrine/16-vitrine-celular.png" alt="Vitrine no celular" width="260"> |
 
-| Vitrine (cliente, em testes) | Página do restaurante (cliente, em testes) |
+| Vitrine (cliente) | Página do restaurante (cliente) |
 |---|---|
 | ![Vitrine](loja-e-vitrine/08-vitrine-grade.png) | ![Página do restaurante](loja-e-vitrine/09-restaurante-barra-vidro.png) |
 

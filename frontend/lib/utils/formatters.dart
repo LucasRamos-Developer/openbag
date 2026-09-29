@@ -54,20 +54,6 @@ class CNPJFormatter extends TextInputFormatter {
   }
 }
 
-/// Formatter para telefone brasileiro: +55 (XX) XXXXX-XXXX
-final phoneFormatter = MaskTextInputFormatter(
-  mask: '+55 (##) #####-####',
-  filter: {"#": RegExp(r'[0-9]')},
-  type: MaskAutoCompletionType.lazy,
-);
-
-/// Formatter para telefone brasileiro alternativo: (XX) XXXXX-XXXX
-final phoneFormatterShort = MaskTextInputFormatter(
-  mask: '(##) #####-####',
-  filter: {"#": RegExp(r'[0-9]')},
-  type: MaskAutoCompletionType.lazy,
-);
-
 /// Formatter para CPF: XXX.XXX.XXX-XX
 final cpfFormatter = MaskTextInputFormatter(
   mask: '###.###.###-##',

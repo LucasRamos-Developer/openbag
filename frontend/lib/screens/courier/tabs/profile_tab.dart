@@ -156,7 +156,7 @@ class _CourierProfileTabState extends State<CourierProfileTab> {
                         labelText: 'Telefone',
                         variant: TextFieldVariant.filled,
                         keyboardType: TextInputType.phone,
-                        inputFormatters: [phoneFormatterShort],
+                        inputFormatters: [PhoneFormatter()],
                         validator: (v) => validateRequired(v, 'Telefone'),
                       ),
                     ],

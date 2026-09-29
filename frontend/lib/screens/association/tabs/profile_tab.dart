@@ -189,7 +189,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   const SizedBox(height: 16),
                   _field('phoneNumber', 'Telefone',
                       validator: (v) => validateRequired(v, 'Telefone'),
-                      formatters: [phoneFormatterShort],
+                      formatters: [PhoneFormatter()],
                       keyboard: TextInputType.phone),
                   const SizedBox(height: 16),
                   _field('contactEmail', 'Email de contato (opcional)',

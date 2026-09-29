@@ -3,10 +3,14 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import '../services/auth_service.dart';
+import '../utils/redirects.dart';
 import '../utils/theme.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  /// Para onde ir depois de restaurar a sessão (link direto aberto antes de o app carregar)
+  final String? next;
+
+  const SplashScreen({super.key, this.next});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -52,13 +56,16 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _checkAuthStatus() async {
     final authService = Provider.of<AuthService>(context, listen: false);
+    final next = safeNextPath(widget.next);
+    // Tempo mínimo só para a marca não piscar na tela
     await Future.wait([
-      Future.delayed(const Duration(seconds: 3)),
+      Future.delayed(const Duration(milliseconds: 800)),
       authService.ready,
     ]);
-    
+
     if (mounted) {
-      context.go(authService.isAuthenticated ? authService.homeRoute : '/login');
+      // Link direto (ex: /pedidos/12) volta para onde ia; sem destino, o visitante vê a vitrine
+      context.go(next ?? (authService.isAuthenticated ? authService.homeRoute : '/home'));
     }
   }
 

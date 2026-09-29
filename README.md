@@ -71,9 +71,9 @@ Pedidos em tempo real, tela da cozinha, comanda impressa, cardápio com compleme
 |---|---|
 | ![Rotas de entrega](layout/caixa-e-rotas/01-rotas-montando.png) | ![Caixa e acerto com entregadores](layout/caixa-e-rotas/03-caixa.png) |
 
-### Cliente (em testes)
+### Cliente
 
-A vitrine, a página da loja, o carrinho, o checkout com pagamento na entrega e o acompanhamento do pedido já funcionam e estão **em fase de testes**.
+O cliente encontra as lojas na vitrine, monta o pedido com complementos, cria a conta no meio da compra sem perder o carrinho, paga na entrega e acompanha o entregador no mapa. Depois da entrega, avalia a loja e o entregador.
 
 | Vitrine | No celular |
 |---|---|
@@ -138,7 +138,7 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [x] Painel da cooperativa: parcerias com lojas, acordos e relatórios
 - [x] Gestão da associação: mensalidade, adicionais, caixinha, financeiro, convênios, enquetes e atas
 - [x] Taxa de entrega repassada ao cliente ("a partir de") e contraproposta de tabela
-- [ ] Fluxo do cliente fora da fase de testes, com avaliações
+- [x] Fluxo do cliente fora da fase de testes, com avaliações
 - [ ] Página da loja otimizada para buscadores e vitrine por avaliações e proximidade
 
 **0.4.0: Segurança e integridade dos dados**
@@ -150,7 +150,7 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [ ] Revisão de segurança (permissões, OWASP Top 10, segredos)
 
 **0.5.0: Auditoria de dados**
-- [ ] Trilha de auditoria (quem, o quê, quando, antes e depois)
+- [ ] Trilha de auditoria (quem, o quê, quando, antes e depois) pode ser um PGaudit
 - [ ] Histórico que não pode ser alterado para caixa e ganhos
 - [ ] Relatórios exportáveis para a loja e para a cooperativa
 - [ ] LGPD: exportação, exclusão e retenção de dados

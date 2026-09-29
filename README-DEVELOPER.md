@@ -192,7 +192,7 @@ frontend/
 │   ├── core/ui/                    # Design system: componentes App*, temas e tokens
 │   ├── models/                     # Modelos por domínio (order, menu, delivery, routes, cash...)
 │   ├── screens/
-│   │   ├── home/, restaurant/      # Vitrine e página da loja (cliente, em testes)
+│   │   ├── home/, restaurant/      # Vitrine e página da loja (cliente)
 │   │   ├── cart/, checkout/, orders/
 │   │   ├── restaurant_panel/       # Painel do restaurante (/restaurante)
 │   │   ├── kitchen/                # Tela da cozinha

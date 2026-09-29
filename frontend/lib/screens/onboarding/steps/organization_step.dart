@@ -163,7 +163,7 @@ class _OrganizationStepState extends State<OrganizationStep> {
                     hintText: '(XX) XXXXX-XXXX',
                     variant: TextFieldVariant.filled,
                     keyboardType: TextInputType.phone,
-                    inputFormatters: [phoneFormatterShort],
+                    inputFormatters: [PhoneFormatter()],
                     validator: (value) => validateRequired(value, 'Telefone'),
                     onChanged: (_) => _notifyChanges(),
                   ),

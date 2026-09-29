@@ -195,7 +195,7 @@ class _BenefitFormState extends State<_BenefitForm> {
                   labelText: 'Telefone (opcional)',
                   variant: TextFieldVariant.filled,
                   keyboardType: TextInputType.phone,
-                  inputFormatters: [phoneFormatterShort],
+                  inputFormatters: [PhoneFormatter()],
                 ),
                 AppTextField(
                   controller: _link,

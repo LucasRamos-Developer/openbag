@@ -121,6 +121,14 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ### Alterado
 
+- **Entrada do cliente revisada** (fluxo do cliente fora da fase de testes):
+  - Quem abre o endereço principal (`/`) vai direto para a vitrine, sem passar pelo login. A abertura também ficou mais rápida (a marca aparece por no mínimo 0,8 s, e não mais 3 s).
+  - O cadastro ganhou o mesmo visual do login (componente `AuthCard`, com "Voltar" para a loja). Depois de criar a conta, o cliente já entra e volta para onde estava, como o checkout, sem digitar a senha de novo.
+  - O cadastro mostra a mensagem do servidor, como "Email já está em uso", em vez de um erro genérico.
+  - "Esqueceu a senha?" agora explica como recuperar o acesso pelo contato do projeto. Antes o botão não fazia nada.
+  - O telefone do restaurante no acompanhamento do pedido aparece formatado e liga ao toque.
+  - O botão de rodapé do carrinho e do checkout acompanha a largura do conteúdo no desktop (componente `StorefrontBottomAction`).
+  - Os campos de telefone usam o `PhoneFormatter`, que não guarda estado entre os campos, no lugar da máscara global compartilhada.
 - **O caminho pelas ruas de cada rota fica salvo no banco.** Ele é gravado na própria rota (`delivery_routes.street_path`, uma `LineString` do PostGIS), junto com as paradas usadas no cálculo. O painel só pede um caminho novo ao OSRM quando as paradas mudam, e o caminho não se perde quando o backend reinicia. O pedido sozinho, sem rota, continua só no cache em memória.
   - O banco agora precisa do **PostGIS**: o `docker-compose.yml` monta a imagem `database/Dockerfile` (a `postgres:15` oficial com o pacote do PostGIS), e o backend cria a extensão na subida (`schema.sql`). A base continua a mesma da `postgres:15`, então o volume atual continua valendo, sem diferença de collation. Para trocar a imagem: `docker compose up -d --build postgres`.
 - **Mapa com estilo próprio**, claro e próximo das cores do Google Maps, sem relevo e com a vegetação discreta. O estilo fica em `frontend/assets/map/openbag_style.json`, no formato do MapLibre. O mapa é desenhado pelo MapLibre (`maplibre_gl`) com os dados do OpenFreeMap, sem chave e sem limite de uso. O componente `AppMap` (`core/ui`) substitui o `flutter_map` nos mapas de rotas e da página da loja. Uma base raster pode entrar no lugar com `--dart-define=MAP_TILE_URL=...`.
@@ -131,6 +139,8 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ### Corrigido
 
+- Um link direto para uma página que exige login, como `/pedidos/12`, podia perder o destino e cair na tela inicial do perfil quando a sessão salva demorava a ser restaurada. Agora a abertura guarda o destino (`/?next=`) e volta para ele.
+- A tela de cadastro tinha o botão "Criar conta" saindo do card no celular.
 - A diferença assumida no Caixa agrupava as entregas pela associação atual do entregador. Agora usa a associação dele no dia da entrega.
 - No perfil público do entregador, a nota aparecia com ponto ("4.0") e "1 avaliações" no plural.
 - O botão `large` tinha fonte menor que a do `medium`.
@@ -227,7 +237,7 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 - ~~Painel da cooperativa: parcerias com lojas, acordos e relatórios para os cooperados~~: parcerias com aceite, tabela especial por loja e relatórios para o gestor e para cada cooperado (concluído).
 - ~~Gestão da associação~~: mensalidade (fixa ou percentual com teto), seguro e outros adicionais, faturas com baixa manual, caixinha solidária, painel financeiro, convênios, enquetes, atas e exportação dos associados (concluído).
 - ~~Taxa repassada ao cliente~~: "a partir de" na vitrine, valor por distância no checkout e contraproposta na tabela entre loja e associação (concluído).
-- Fluxo do cliente fora da fase de testes, com coleta de avaliações.
+- ~~Fluxo do cliente fora da fase de testes, com coleta de avaliações~~: jornada revisada de ponta a ponta no desktop e no celular, com cadastro no meio da compra (concluído).
 - Visibilidade: página da loja otimizada para buscadores (SEO) e vitrine ordenada por avaliações e proximidade, sem posição paga.
 
 ### 0.4.0: Segurança e integridade dos dados

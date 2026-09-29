@@ -102,7 +102,9 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  Future<bool> register({
+  /// Cria a conta de cliente. Devolve null se deu certo ou a mensagem de erro do servidor
+  /// (ex: "Email já está em uso", campos inválidos)
+  Future<String?> register({
     required String fullName,
     required String email,
     required String phoneNumber,
@@ -111,33 +113,20 @@ class AuthService extends ChangeNotifier {
   }) async {
     _isLoading = true;
     notifyListeners();
-
     try {
-      final body = {
+      await apiClient.post('/auth/register', data: {
         'fullName': fullName,
         'email': email,
         'phoneNumber': phoneNumber,
         'password': password,
-      };
-
-      // Só adicionar userType se foi fornecido
-      if (userType != null) {
-        body['userType'] = userType.toString().split('.').last;
-      }
-
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(body),
-      );
-
+        if (userType != null) 'userType': userType.name,
+      });
+      return null;
+    } on ApiException catch (e) {
+      return e.message;
+    } finally {
       _isLoading = false;
       notifyListeners();
-      return response.statusCode == 200;
-    } catch (e) {
-      _isLoading = false;
-      notifyListeners();
-      return false;
     }
   }
 

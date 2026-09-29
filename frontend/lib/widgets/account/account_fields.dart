@@ -69,7 +69,7 @@ class _AccountFieldsState extends State<AccountFields> {
               hintText: '(XX) XXXXX-XXXX',
               variant: TextFieldVariant.filled,
               keyboardType: TextInputType.phone,
-              inputFormatters: [phoneFormatterShort],
+              inputFormatters: [PhoneFormatter()],
               validator: (v) => validateRequired(v, 'Telefone'),
             ),
           ],
