@@ -2,7 +2,7 @@ package com.openbag.modules.delivery.entity;
 
 import com.openbag.modules.user.entity.User;
 import com.openbag.modules.organization.entity.Organization;
-import com.openbag.modules.order.entity.Order;
+import com.openbag.order.core.entity.Order;
 import com.openbag.enums.CourierWorkStatus;
 import com.openbag.enums.VehicleType;
 import jakarta.persistence.*;

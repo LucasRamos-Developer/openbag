@@ -5,7 +5,7 @@ import com.openbag.modules.user.entity.Address;
 import com.openbag.modules.organization.entity.Organization;
 import com.openbag.restaurant.catalog.entity.Product;
 import com.openbag.restaurant.catalog.entity.Category;
-import com.openbag.modules.order.entity.Order;
+import com.openbag.order.core.entity.Order;
 import com.openbag.enums.AcceptanceMode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

@@ -3,7 +3,7 @@ package com.openbag.modules.delivery.tracking;
 import com.openbag.enums.OrderStatus;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
 import com.openbag.modules.delivery.entity.StaffCourier;
-import com.openbag.modules.order.entity.Order;
+import com.openbag.order.core.entity.Order;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

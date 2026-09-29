@@ -17,7 +17,7 @@ import com.openbag.restaurant.catalog.entity.CustomizationGroup;
 import com.openbag.restaurant.catalog.entity.CustomizationOption;
 import com.openbag.restaurant.catalog.entity.Product;
 import com.openbag.restaurant.catalog.repository.CustomizationGroupRepository;
-import com.openbag.modules.product.repository.OrderItemCustomizationRepository;
+import com.openbag.order.core.repository.OrderItemCustomizationRepository;
 import com.openbag.restaurant.catalog.repository.ProductRepository;
 import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.restaurant.store.repository.RestaurantRepository;

@@ -1,7 +1,7 @@
 package com.openbag.modules.delivery.entity;
 
 import com.openbag.enums.DeliveryOfferStatus;
-import com.openbag.modules.order.entity.Order;
+import com.openbag.order.core.entity.Order;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

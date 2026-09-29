@@ -15,7 +15,7 @@ import com.openbag.modules.cooperative.entity.AddonPlan;
 import com.openbag.modules.cooperative.entity.MemberInvoice;
 import com.openbag.modules.cooperative.entity.MemberInvoiceLine;
 import com.openbag.modules.cooperative.repository.MemberInvoiceRepository;
-import com.openbag.modules.order.repository.OrderRepository;
+import com.openbag.order.core.repository.OrderRepository;
 import com.openbag.modules.organization.entity.AssociationMembership;
 import com.openbag.modules.organization.entity.MembershipFeePolicy;
 import com.openbag.modules.organization.entity.Organization;

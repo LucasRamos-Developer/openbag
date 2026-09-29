@@ -2,7 +2,7 @@ package com.openbag.restaurant.store.dto;
 
 import com.openbag.enums.DeliveryFeeMode;
 import com.openbag.enums.RestaurantThemePreset;
-import com.openbag.modules.order.entity.Order;
+import com.openbag.order.core.entity.Order;
 import com.openbag.restaurant.catalog.entity.Category;
 import com.openbag.restaurant.store.entity.LayoutConfig;
 import com.openbag.restaurant.store.entity.OpeningHour;

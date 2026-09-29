@@ -1,7 +1,7 @@
 package com.openbag.modules.delivery.tracking;
 
 import com.openbag.enums.OrderStatus;
-import com.openbag.modules.order.entity.Order;
+import com.openbag.order.core.entity.Order;
 
 import java.util.Collection;
 import java.util.Comparator;

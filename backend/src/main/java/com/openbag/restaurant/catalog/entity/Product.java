@@ -1,7 +1,7 @@
 package com.openbag.restaurant.catalog.entity;
 
 import com.openbag.restaurant.store.entity.Restaurant;
-import com.openbag.modules.order.entity.OrderItem;
+import com.openbag.order.core.entity.OrderItem;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.openbag.restaurant.menu.entity.MenuSection;

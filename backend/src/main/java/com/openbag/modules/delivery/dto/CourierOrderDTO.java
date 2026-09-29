@@ -1,8 +1,8 @@
 package com.openbag.modules.delivery.dto;
 
 import com.openbag.enums.OrderStatus;
-import com.openbag.modules.order.entity.Order;
-import com.openbag.modules.order.entity.OrderItem;
+import com.openbag.order.core.entity.Order;
+import com.openbag.order.core.entity.OrderItem;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

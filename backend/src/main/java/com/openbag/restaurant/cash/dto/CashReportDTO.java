@@ -1,7 +1,7 @@
 package com.openbag.restaurant.cash.dto;
 
 import com.openbag.modules.delivery.dispatch.ReassignPolicy.CourierKind;
-import com.openbag.modules.order.entity.Order;
+import com.openbag.order.core.entity.Order;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

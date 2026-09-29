@@ -1,7 +1,7 @@
 package com.openbag.modules.delivery.dto;
 
 import com.openbag.modules.delivery.entity.DeliveryOffer;
-import com.openbag.modules.order.entity.Order;
+import com.openbag.order.core.entity.Order;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

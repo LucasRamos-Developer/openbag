@@ -1,6 +1,6 @@
 package com.openbag.modules.user.entity;
 
-import com.openbag.modules.order.entity.Order;
+import com.openbag.order.core.entity.Order;
 import com.openbag.enums.UserType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;

@@ -2,7 +2,7 @@ package com.openbag.modules.delivery.entity;
 
 import com.openbag.enums.RouteOrigin;
 import com.openbag.enums.RouteStatus;
-import com.openbag.modules.order.entity.Order;
+import com.openbag.order.core.entity.Order;
 import com.openbag.restaurant.store.entity.Restaurant;
 import jakarta.persistence.*;
 import lombok.Getter;

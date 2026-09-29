@@ -7,7 +7,7 @@ import com.openbag.modules.delivery.dispatch.ReassignPolicy.Decision;
 import com.openbag.modules.delivery.entity.CourierShift;
 import com.openbag.modules.delivery.entity.DeliveryPerson;
 import com.openbag.modules.delivery.entity.StaffCourier;
-import com.openbag.modules.order.entity.Order;
+import com.openbag.order.core.entity.Order;
 import com.openbag.restaurant.store.entity.Restaurant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
