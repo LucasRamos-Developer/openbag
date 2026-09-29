@@ -139,7 +139,7 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [x] Gestão da associação: mensalidade, adicionais, caixinha, financeiro, convênios, enquetes e atas
 - [x] Taxa de entrega repassada ao cliente ("a partir de") e contraproposta de tabela
 - [x] Fluxo do cliente fora da fase de testes, com avaliações
-- [ ] Página da loja otimizada para buscadores e vitrine por avaliações e proximidade
+- [x] Página da loja otimizada para buscadores e vitrine por avaliações e proximidade
 
 **0.4.0: Segurança e integridade dos dados**
 - [ ] Verificação de **race conditions** (ofertas, status do pedido, caixa)

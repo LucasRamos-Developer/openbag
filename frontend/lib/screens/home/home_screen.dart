@@ -6,11 +6,13 @@ import '../../models/restaurant.dart';
 import '../../services/customer_location_service.dart';
 import '../../services/restaurant_service.dart';
 import '../../utils/search.dart';
+import '../../utils/seo.dart';
 import '../../widgets/cart/cart_bar.dart';
 import '../../widgets/navigation/storefront_footer.dart';
 import '../../widgets/navigation/storefront_scaffold.dart';
 import '../../widgets/restaurant/restaurant_sort.dart';
 import '../../widgets/restaurant_card.dart';
+import '../../widgets/seo/page_meta.dart';
 
 /// Vitrine: restaurantes em grade (até 4 por linha), com busca e ordenação
 class HomeScreen extends StatefulWidget {
@@ -50,7 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) setState(() => _sort = sort);
     } else if (mounted) {
       AppToast.show(context,
-          message: 'Não conseguimos sua localização. Libere o acesso no navegador ou faça um pedido para usarmos o endereço.',
+          message:
+              'Não conseguimos sua localização. Libere o acesso no navegador ou faça um pedido para usarmos o endereço.',
           type: ToastType.warning,
           duration: const Duration(seconds: 6));
     }
@@ -71,43 +74,54 @@ class _HomeScreenState extends State<HomeScreen> {
     final service = context.watch<RestaurantService>();
     context.watch<CustomerLocationService>();
 
-    return StorefrontScaffold(
-      current: StorefrontLink.restaurants,
-      bottomNavigationBar: const CartBar(),
-      body: LayoutBuilder(builder: (context, constraints) {
-        final padding = AppLayout.contentPadding(
-          constraints.maxWidth,
-          top: StorefrontScaffold.topInset(context) + 28,
-          bottom: 48,
-        );
+    return PageMeta(
+      meta: _pageMeta,
+      child: StorefrontScaffold(
+        current: StorefrontLink.restaurants,
+        bottomNavigationBar: const CartBar(),
+        body: LayoutBuilder(builder: (context, constraints) {
+          final padding = AppLayout.contentPadding(
+            constraints.maxWidth,
+            top: StorefrontScaffold.topInset(context) + 28,
+            bottom: 48,
+          );
 
-        return RefreshIndicator(
-          onRefresh: service.fetchRestaurants,
-          child: CustomScrollView(
-            slivers: [
-              SliverPadding(
-                padding: padding,
-                sliver: SliverList.list(
-                  children: [
-                    AppSectionTitle(
-                      title: 'Restaurantes',
-                      trailing: service.restaurants.isEmpty
-                          ? null
-                          : Text('${service.restaurants.length} ${service.restaurants.length == 1 ? 'loja' : 'lojas'}'),
-                    ),
-                    _buildToolbar(constraints.maxWidth < AppLayout.compactWidth),
-                    const SizedBox(height: 24),
-                    _buildContent(context, service),
-                  ],
+          return RefreshIndicator(
+            onRefresh: service.fetchRestaurants,
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: padding,
+                  sliver: SliverList.list(
+                    children: [
+                      AppSectionTitle(
+                        title: 'Restaurantes',
+                        trailing: service.restaurants.isEmpty
+                            ? null
+                            : Text(
+                                '${service.restaurants.length} ${service.restaurants.length == 1 ? 'loja' : 'lojas'}'),
+                      ),
+                      _buildToolbar(constraints.maxWidth < AppLayout.compactWidth),
+                      const SizedBox(height: 24),
+                      _buildContent(context, service),
+                    ],
+                  ),
                 ),
-              ),
-              StorefrontFooter.sliver(),
-            ],
-          ),
-        );
-      }),
+                StorefrontFooter.sliver(),
+              ],
+            ),
+          );
+        }),
+      ),
     );
   }
+
+  static const _pageMeta = PageMetaData(
+    title: 'Restaurantes perto de você',
+    description: 'Restaurantes e pequenos negócios da sua cidade, com cardápio, taxa de entrega e horário. '
+        'Peça direto da loja, com entregadores locais e cooperativas.',
+    path: '/home',
+  );
 
   /// Busca e ordenação: lado a lado no desktop, uma embaixo da outra no celular
   Widget _buildToolbar(bool compact) {
@@ -150,7 +164,8 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
     if (service.restaurants.isEmpty) {
-      return const AppEmptyState(icon: Icons.storefront_outlined, message: 'Nenhum restaurante disponível por aqui ainda.');
+      return const AppEmptyState(
+          icon: Icons.storefront_outlined, message: 'Nenhum restaurante disponível por aqui ainda.');
     }
 
     final visible = _visible(service.restaurants);

@@ -12,7 +12,7 @@ class AppConstants {
   static String appUrl(String path) => '${Uri.base.origin}$path';
   
   // App Configuration
-  static const String appName = 'Open Bag';
+  static const String appName = 'OpenBag';
   // Acompanha a versão do pubspec.yaml (ver CHANGELOG.md)
   static const String appVersion = '0.2.0';
   

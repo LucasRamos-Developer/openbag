@@ -28,6 +28,7 @@ import 'services/association_service.dart';
 import 'services/restaurant_panel_service.dart';
 import 'services/restaurant_service.dart';
 import 'services/cart_service.dart';
+import 'utils/page_meta_data.dart';
 import 'services/customer_location_service.dart';
 import 'services/cooperative_service.dart';
 import 'services/member_area_service.dart';
@@ -37,7 +38,6 @@ import 'services/realtime_service.dart';
 import 'services/restaurant_orders_service.dart';
 import 'core/ui/ui.dart';
 import 'core/ui/showcase/ui_components_showcase.dart';
-import 'constants/app_constants.dart';
 
 import 'screens/courier/courier_panel_screen.dart';
 import 'screens/courier/public_courier_screen.dart';
@@ -97,7 +97,8 @@ class _OpenBagAppState extends State<OpenBagApp> {
         ChangeNotifierProvider(create: (_) => CustomerLocationService(_authService.apiClient, _authService)),
       ],
       child: MaterialApp.router(
-        title: AppConstants.appName,
+        // Título da aba das páginas sem título próprio; vitrine e loja definem o seu (PageMeta)
+        title: PageMetaData.defaults.fullTitle,
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         themeMode: ThemeMode.light,

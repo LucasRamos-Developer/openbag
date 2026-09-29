@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -18,7 +18,21 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="Open Bag - Plataforma de delivery open source">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#00A878">
+
+  <!-- SEO: o app troca título, descrição e canônico em cada página (lib/utils/seo.dart).
+       tools/seo/build_seo.py completa as URLs absolutas no build publicado. -->
+  <meta name="description" content="Peça direto dos restaurantes e pequenos negócios da sua cidade, com entregadores locais e cooperativas. Cardápio, pedido e acompanhamento da entrega em um só lugar.">
+  <link rel="canonical" href="/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="OpenBag">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:title" content="OpenBag · Restaurantes e pequenos negócios da sua cidade">
+  <meta property="og:description" content="Peça direto dos restaurantes da sua cidade, com entregadores locais e cooperativas.">
+  <meta property="og:url" content="/">
+  <meta property="og:image" content="og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -29,7 +43,7 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>Open Food - Delivery Open Source</title>
+  <title>OpenBag · Restaurantes e pequenos negócios da sua cidade</title>
   <link rel="manifest" href="manifest.json">
 
   <style>
@@ -91,9 +105,14 @@
 <body>
   <div id="loading">
     <div class="loading-logo">Open<span>Bag</span></div>
-    <div class="loading-text">Carregando sua experiência de delivery...</div>
+    <div class="loading-text">Carregando os restaurantes da sua cidade...</div>
     <div class="spinner"></div>
   </div>
+  <noscript>
+    <h1>OpenBag</h1>
+    <p>Peça direto dos restaurantes e pequenos negócios da sua cidade, com entregadores locais e cooperativas.
+      Para ver os restaurantes e fazer o pedido, ative o JavaScript no navegador.</p>
+  </noscript>
 
   <script>
     window.addEventListener('flutter-first-frame', function () {

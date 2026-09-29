@@ -1,11 +1,11 @@
 {
-    "name": "Open Bag",
+    "name": "OpenBag",
     "short_name": "OpenBag",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#F7FAF8",
     "theme_color": "#00A878",
-    "description": "Plataforma de delivery open source",
+    "description": "Restaurantes e pequenos negócios da sua cidade, com entregadores locais e cooperativas",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
@@ -31,5 +31,6 @@
             "type": "image/png",
             "purpose": "maskable"
         }
-    ]
+    ],
+    "lang": "pt-BR"
 }

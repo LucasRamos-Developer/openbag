@@ -20,6 +20,9 @@ import '../../widgets/restaurant/restaurant_theme_scope.dart';
 import '../../widgets/navigation/storefront_footer.dart';
 import '../../widgets/navigation/storefront_scaffold.dart';
 import '../../widgets/restaurant/open_in_maps_button.dart';
+import '../../utils/seo.dart';
+import '../../widgets/restaurant/restaurant_seo.dart';
+import '../../widgets/seo/page_meta.dart';
 
 /// Página pública do restaurante (padrão visual: layout/restaurante-padrão.png)
 ///
@@ -49,6 +52,9 @@ class _RestaurantPageScreenState extends State<RestaurantPageScreen> {
 
   Restaurant? _restaurant;
   Menu? _menu;
+
+  /// Título, descrição e dados estruturados da loja para buscadores (montados uma vez por carga)
+  PageMetaData? _pageMeta;
   String? _error;
   String _query = '';
   int? _activeSectionId;
@@ -80,6 +86,7 @@ class _RestaurantPageScreenState extends State<RestaurantPageScreen> {
           ..clear()
           ..addEntries(_menu!.sections.map((s) => MapEntry(s.id, GlobalKey())));
         _activeSectionId = _menu!.sections.isNotEmpty ? _menu!.sections.first.id : null;
+        _pageMeta = restaurantPageMeta(_restaurant!, _menu!, origin: Uri.base.origin);
       });
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
@@ -212,11 +219,13 @@ class _RestaurantPageScreenState extends State<RestaurantPageScreen> {
     }
 
     final restaurant = _restaurant!;
-    return RestaurantThemeScope(
+    final page = RestaurantThemeScope(
       themePreset: widget.previewTheme ?? restaurant.themePreset,
       brandColor: _previewing ? widget.previewColor : restaurant.brandColor,
       child: Builder(builder: (themedContext) => _buildPage(themedContext, restaurant)),
     );
+    // A prévia do tema no painel do dono não mexe no título da aba
+    return _previewing || _pageMeta == null ? page : PageMeta(meta: _pageMeta!, child: page);
   }
 
   Widget _buildPage(BuildContext context, Restaurant restaurant) {

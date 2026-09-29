@@ -417,6 +417,24 @@ Consumer<CartService>(
 - Image picker requer `image_picker_for_web`
 - Geolocation funciona com `geolocator_web`
 
+### Buscadores (SEO) e prévia de links
+
+O app continua Flutter web: o backend não gera HTML. O SEO vem de três partes:
+
+1. **`web/index.html`**: idioma, título, descrição, Open Graph e um texto em `<noscript>`. É o que os robôs sem JavaScript leem, inclusive a prévia do WhatsApp e do Facebook, que por isso mostra a prévia padrão do OpenBag e não a de cada loja.
+2. **Por página**: a vitrine e a página da loja trocam o título, a descrição e o canônico com o widget `PageMeta` (`lib/widgets/seo/`). A loja também publica os dados estruturados do schema.org (`Restaurant`, com endereço, horários, nota e o cardápio), montados em `lib/widgets/restaurant/restaurant_seo.dart`. O Google executa o JavaScript e lê essas tags.
+3. **No deploy**, depois do `flutter build web`:
+
+   ```bash
+   python3 tools/seo/build_seo.py --site-url https://seu-dominio --api https://sua-api/api
+   ```
+
+   O script gera o `robots.txt` (bloqueia painéis, checkout e pedidos) e o `sitemap.xml` com a vitrine e as lojas ativas, e troca os endereços relativos do `index.html` pelos absolutos. Rode de novo quando entrar loja nova, ou agende.
+
+A árvore de acessibilidade do Flutter fica desligada por padrão. Ligada, ela colocaria no HTML o texto da parte visível da página, mas custou de 5% a 10% a mais de CPU ao rolar a loja, e o cardápio inteiro já vai no JSON-LD.
+
+Os ícones do app (`web/favicon.png` e `web/icons/`) são gerados por `tools/brand/generate_web_icons.py`, com a sacola do logo.
+
 ---
 
 ## 🗄️ Banco de Dados

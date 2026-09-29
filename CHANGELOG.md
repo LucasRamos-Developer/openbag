@@ -48,6 +48,11 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ### Adicionado
 
+- **SEO sem mudar a arquitetura** (o app continua Flutter web):
+  - `web/index.html` com idioma, título, descrição, Open Graph, cor do tema e texto em `<noscript>`.
+  - A vitrine e a página da loja trocam o título, a descrição e o canônico (widget `PageMeta`). A loja publica os dados estruturados do schema.org `Restaurant`, com endereço, horários, nota (só com avaliações) e cardápio.
+  - `tools/seo/build_seo.py`, rodado no deploy, gera o `robots.txt` e o `sitemap.xml` com as lojas ativas e deixa absolutas as URLs do Open Graph.
+  - A prévia de links no WhatsApp e no Facebook mostra a imagem padrão do OpenBag. A prévia por loja precisaria de HTML gerado no servidor ou na hospedagem.
 - **Vitrine por proximidade**: a ordenação "Mais perto" usa o GPS do navegador e, se ele for negado, o ponto do último endereço de entrega (guardado no aparelho ao fazer um pedido ou, com login, o do último pedido). O card mostra a distância em linha reta, e a vitrine diz de onde ela foi medida. A opção só some quando o GPS foi bloqueado de vez e não há endereço. A posição fica só no aparelho; nada é enviado ao servidor. Distâncias abaixo de 1 km aparecem em metros.
 - **Roadmap da 0.6.0 (Operação do dia a dia)** em [docs/roadmap/0.6.0-operacao.md](docs/roadmap/0.6.0-operacao.md). O documento compara as sugestões de produto por papel com o código atual e lista oito itens para antes do piloto, cada um com o estado atual, o código relacionado, o que falta e quando fica pronto.
 - **Gestão da associação** no painel da cooperativa:
@@ -140,6 +145,7 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ### Corrigido
 
+- O app web pedia `favicon.png` e os ícones do `manifest.json`, que não existiam (erro 404). Agora eles são gerados com a sacola do logo (`tools/brand/generate_web_icons.py`). O título da aba era "Open Food - Delivery Open Source".
 - Um link direto para uma página que exige login, como `/pedidos/12`, podia perder o destino e cair na tela inicial do perfil quando a sessão salva demorava a ser restaurada. Agora a abertura guarda o destino (`/?next=`) e volta para ele.
 - A tela de cadastro tinha o botão "Criar conta" saindo do card no celular.
 - A diferença assumida no Caixa agrupava as entregas pela associação atual do entregador. Agora usa a associação dele no dia da entrega.
@@ -239,7 +245,7 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 - ~~Gestão da associação~~: mensalidade (fixa ou percentual com teto), seguro e outros adicionais, faturas com baixa manual, caixinha solidária, painel financeiro, convênios, enquetes, atas e exportação dos associados (concluído).
 - ~~Taxa repassada ao cliente~~: "a partir de" na vitrine, valor por distância no checkout e contraproposta na tabela entre loja e associação (concluído).
 - ~~Fluxo do cliente fora da fase de testes, com coleta de avaliações~~: jornada revisada de ponta a ponta no desktop e no celular, com cadastro no meio da compra (concluído).
-- Visibilidade: página da loja otimizada para buscadores (SEO) e ~~vitrine ordenada por avaliações e proximidade~~ (concluído), sem posição paga.
+- ~~Visibilidade: página da loja otimizada para buscadores (SEO) e vitrine ordenada por avaliações e proximidade, sem posição paga~~ (concluído).
 
 ### 0.4.0: Segurança e integridade dos dados
 - **Race conditions:** dois entregadores aceitando a mesma oferta, pedido mudando de status ao mesmo tempo no painel e na cozinha, acerto de caixa em paralelo. Usar travas otimistas (`@Version`) e restrições no banco, com testes de concorrência.
