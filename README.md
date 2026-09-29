@@ -128,7 +128,7 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 | 0.1.0 | MVP: cadastro, onboarding, carrinho, pedidos, mapas | Lançada |
 | 0.2.0 | Operação do restaurante, associações e personalização da loja | Lançada |
 | **0.3.0** | **Entregador, cooperativa e cliente** | **Atual** |
-| 0.4.0 | Segurança e integridade dos dados | Planejada |
+| 0.4.0 | Segurança e integridade dos dados | Em andamento |
 | 0.5.0 | Auditoria de dados | Planejada |
 | 0.6.0 | Operação do dia a dia | Planejada |
 | 1.0.0 | Primeira versão estável, com piloto real | Planejada |
@@ -141,13 +141,14 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [x] Fluxo do cliente fora da fase de testes, com avaliações
 - [x] Página da loja otimizada para buscadores e vitrine por avaliações e proximidade
 
-**0.4.0: Segurança e integridade dos dados**
-- [ ] Verificação de **race conditions** (ofertas, status do pedido, caixa)
+**0.4.0: Segurança e integridade dos dados** ([detalhes](docs/roadmap/0.4.0-seguranca.md))
+- [ ] Brechas críticas: segredos padrão, papel no cadastro, upload de arquivos e CORS
+- [ ] Integridade dos dados: migrações versionadas (Flyway) e testes de integração
+- [ ] Verificação de **race conditions** (ofertas, status do pedido, caixa e faturas) e restrições no banco
+- [ ] **Idempotência** em pedidos, aceite de oferta e acerto de caixa
 - [ ] **Rate limiting** no login, no cadastro, nos pedidos e nos envios de arquivo
 - [ ] **Throttling** de localização, de WebSocket e dos jobs agendados
-- [ ] **Idempotência** em pedidos, aceite de oferta e acerto de caixa
-- [ ] Integridade dos dados: migrações versionadas e restrições no banco
-- [ ] Revisão de segurança (permissões, OWASP Top 10, segredos)
+- [ ] Revisão de segurança (OWASP Top 10, dependências e CI)
 
 **0.5.0: Auditoria de dados**
 - [ ] Trilha de auditoria (quem, o quê, quando, antes e depois) pode ser um PGaudit

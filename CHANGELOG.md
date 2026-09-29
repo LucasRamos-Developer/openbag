@@ -46,6 +46,10 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Roadmap da 0.4.0 (Segurança e integridade dos dados)** em [docs/roadmap/0.4.0-seguranca.md](docs/roadmap/0.4.0-seguranca.md). O documento compara cada item com o código atual e lista os casos encontrados: brechas no cadastro, no upload e nos segredos padrão, ações simultâneas que corrompem pedidos e faturas, e a falta de idempotência, limites de requisição e migrações versionadas.
+
 ---
 
 ## [0.3.0] - 2026-09-29
@@ -238,7 +242,7 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 | 0.1.0 | MVP | Lançada |
 | 0.2.0 | Operação do restaurante, associações e personalização | Lançada |
 | 0.3.0 | Entregador, cooperativa e cliente | **Atual** |
-| 0.4.0 | Segurança e integridade dos dados | Planejada |
+| 0.4.0 | Segurança e integridade dos dados | Em andamento |
 | 0.5.0 | Auditoria de dados | Planejada |
 | 0.6.0 | Operação do dia a dia | Planejada |
 | 1.0.0 | Primeira versão estável (piloto real) | Planejada |
@@ -252,6 +256,7 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 - ~~Visibilidade: página da loja otimizada para buscadores (SEO) e vitrine ordenada por avaliações e proximidade, sem posição paga~~ (concluído).
 
 ### 0.4.0: Segurança e integridade dos dados
+O detalhe de cada item, com o estado atual no código e o que falta, está em [docs/roadmap/0.4.0-seguranca.md](docs/roadmap/0.4.0-seguranca.md). A ordem é "críticos primeiro": brechas graves, migrações versionadas, race conditions, idempotência, rate limiting, throttling e revisão de segurança.
 - **Race conditions:** dois entregadores aceitando a mesma oferta, pedido mudando de status ao mesmo tempo no painel e na cozinha, acerto de caixa em paralelo. Usar travas otimistas (`@Version`) e restrições no banco, com testes de concorrência.
 - **Rate limiting:** limite por IP e por usuário no login, no cadastro, na criação de pedidos e no envio de arquivos.
 - **Throttling:** controlar a frequência de atualizações de localização do entregador, de mensagens do WebSocket e dos jobs agendados.
