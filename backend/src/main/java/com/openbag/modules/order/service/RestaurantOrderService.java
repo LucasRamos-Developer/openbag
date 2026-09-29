@@ -1,5 +1,6 @@
 package com.openbag.modules.order.service;
 
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import com.openbag.enums.CancelledBy;
 import com.openbag.enums.OrderStatus;
 import com.openbag.exception.BadRequestException;
@@ -148,6 +149,7 @@ public class RestaurantOrderService {
     @Scheduled(fixedDelayString = "${app.orders.expiration-check-ms:30000}",
             initialDelayString = "${app.orders.expiration-initial-delay-ms:30000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @SchedulerLock(name = "orders.expireUnanswered", lockAtMostFor = "PT5M", lockAtLeastFor = "PT10S")
     public void expireUnansweredOrders() {
         LocalDateTime now = LocalDateTime.now(clock);
         for (Long orderId : orderRepository.findIdsByStatusAndAcceptDeadlineBefore(OrderStatus.PENDING, now)) {

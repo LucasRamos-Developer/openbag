@@ -8,6 +8,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 
 /**
  * WebSocket STOMP em /api/ws. Tópicos:
@@ -21,6 +22,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Autowired
     private StompAuthInterceptor stompAuthInterceptor;
+
+    @Autowired
+    private StompSessionRegistry sessionRegistry;
 
     /** As mesmas origens do CORS (app.cors.allowed-origins) */
     @Value("${app.cors.allowed-origins}")
@@ -43,6 +47,25 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(stompAuthInterceptor);
+        // Os clientes só conectam e se inscrevem: poucas threads bastam, e uma enxurrada de frames não cresce sem fim
+        registration.taskExecutor().corePoolSize(2).maxPoolSize(8).queueCapacity(1000);
+    }
+
+    @Override
+    public void configureClientOutboundChannel(ChannelRegistration registration) {
+        registration.taskExecutor().corePoolSize(4).maxPoolSize(16).queueCapacity(10_000);
+    }
+
+    /**
+     * Limites por sessão. O cliente só manda CONNECT e SUBSCRIBE (frames pequenos). Um cliente lento que não lê as
+     * mensagens é desconectado quando o buffer enche ou o envio demora, em vez de segurar memória do servidor.
+     */
+    @Override
+    public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
+        registration.setMessageSizeLimit(8 * 1024)
+                .setSendBufferSizeLimit(512 * 1024)
+                .setSendTimeLimit(15_000)
+                .addDecoratorFactory(sessionRegistry);
     }
 
     private org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler heartbeatScheduler() {

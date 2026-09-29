@@ -192,17 +192,22 @@ Em `/restaurante/caixa` (`CashReportService` e `CourierSettlement`):
 
 ## Jobs agendados
 
-O agendamento é ativado por `@EnableScheduling` no `AppConfig`.
+O agendamento fica no `SchedulingConfig`, com um agendador próprio (`jobs-*`, 4 threads, `app.jobs.pool-size`).
 
-| Job | Intervalo padrão | Propriedade |
-|-----|------------------|-------------|
-| Expirar pedidos sem aceite | 30 s | `app.orders.expiration-check-ms` |
-| Expirar ofertas e passar ao próximo | 5 s | `app.delivery.offer-check-ms` |
-| Tentar de novo pedidos sem entregador | 15 s | `app.delivery.retry-ms` |
-| Encerrar turnos livres sem sinal | 60 s | `app.delivery.stale-shift-check-ms` |
-| Planejar rotas | 10 s | `app.delivery.route-planning-ms` |
+| Job | Intervalo padrão | Propriedade | Trava (ShedLock) |
+|-----|------------------|-------------|------------------|
+| Expirar pedidos sem aceite | 30 s | `app.orders.expiration-check-ms` | `orders.expireUnanswered` |
+| Expirar ofertas e passar ao próximo | 5 s | `app.delivery.offer-check-ms` | `dispatch.expireOffers` |
+| Tentar de novo pedidos sem entregador | 15 s | `app.delivery.retry-ms` | `dispatch.retryWaitingOrders` |
+| Encerrar turnos livres sem sinal | 60 s | `app.delivery.stale-shift-check-ms` | `dispatch.closeStaleShifts` |
+| Planejar rotas | 10 s | `app.delivery.route-planning-ms` | `dispatch.planRoutes` |
+| Gerar as faturas do mês | dia 1, às 3h | `app.cooperative.invoice-cron` | `cooperative.generateInvoices` |
+| Apagar chaves de idempotência vencidas | 1 h | `app.idempotency.cleanup-ms` | `idempotency.deleteExpired` |
+| Fechar WebSocket com token vencido | 1 min | `app.websocket.expiry-check-ms` | não (cada instância cuida das suas sessões) |
 
-> Os jobs rodam em cada instância do backend. Para rodar mais de uma instância, será preciso uma trava distribuída. Isso faz parte da etapa de segurança e integridade (0.4.0).
+Com várias instâncias do backend, cada job com trava roda em uma instância por vez: a trava fica na tabela `shedlock` e usa o relógio do banco. O atraso da primeira execução de cada job também é configurável (`*-initial-delay-ms`); os testes o usam para desligar os jobs.
+
+> O broker do WebSocket ainda é o simples, em memória: com várias instâncias, um cliente só recebe as mensagens da instância em que está conectado. Um broker externo fica para depois da 0.4.0.
 
 ---
 

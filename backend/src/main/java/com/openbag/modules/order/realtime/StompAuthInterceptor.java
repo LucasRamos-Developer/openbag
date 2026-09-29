@@ -42,6 +42,9 @@ public class StompAuthInterceptor implements ChannelInterceptor {
     @Autowired
     private AuthorizationService authorizationService;
 
+    @Autowired
+    private StompSessionRegistry sessions;
+
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
@@ -50,7 +53,10 @@ public class StompAuthInterceptor implements ChannelInterceptor {
         }
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-            accessor.setUser(authenticate(accessor.getFirstNativeHeader("Authorization")));
+            String header = accessor.getFirstNativeHeader("Authorization");
+            accessor.setUser(authenticate(header));
+            // A sessão vale até o token vencer; depois disso ela é fechada e o app reconecta com o token atual
+            sessions.expireAt(accessor.getSessionId(), tokenProvider.getExpirationFromJWT(header.substring(7)));
         } else if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             authorizeSubscription(accessor.getUser(), accessor.getDestination());
         } else if (StompCommand.SEND.equals(accessor.getCommand())) {

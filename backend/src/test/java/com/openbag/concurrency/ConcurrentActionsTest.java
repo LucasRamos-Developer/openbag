@@ -126,6 +126,8 @@ class ConcurrentActionsTest extends IntegrationTest {
         LocationRequest here = new LocationRequest();
         here.setLatitude(-26.9195);
         here.setLongitude(-49.0662);
+        // Último ping há dois minutos: o primeiro deste teste vale (os seguintes caem no throttling)
+        jdbc.update("UPDATE delivery_persons SET last_seen_at = now() - interval '2 minutes' WHERE id = ?", courierId);
 
         List<Throwable> results = race(
                 () -> courierWorkService.acceptOffer(demo, offerId),

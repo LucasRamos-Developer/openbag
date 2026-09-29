@@ -85,6 +85,18 @@
             <version>8.14.0</version>
         </dependency>
 
+        <!-- Trava distribuída dos jobs agendados: com várias instâncias, cada job roda em uma só -->
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-spring</artifactId>
+            <version>5.16.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc-template</artifactId>
+            <version>5.16.0</version>
+        </dependency>
+
         <!-- Migrações versionadas do banco (src/main/resources/db/migration) -->
         <dependency>
             <groupId>org.flywaydb</groupId>

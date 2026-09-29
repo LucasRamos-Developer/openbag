@@ -1,5 +1,6 @@
 package com.openbag.modules.delivery.dispatch;
 
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import com.openbag.enums.CourierPolicy;
 import com.openbag.enums.CourierWorkStatus;
 import com.openbag.enums.DeliveryOfferStatus;
@@ -182,6 +183,7 @@ public class DispatchService {
      */
     @Scheduled(fixedDelayString = "${app.delivery.offer-check-ms:5000}",
             initialDelayString = "${app.delivery.offer-check-initial-delay-ms:15000}")
+    @SchedulerLock(name = "dispatch.expireOffers", lockAtMostFor = "PT2M", lockAtLeastFor = "PT2S")
     public void expireOffers() {
         LocalDateTime now = LocalDateTime.now(clock);
         for (DeliveryOffer expired : offerRepository.findExpired(now)) {
@@ -206,6 +208,7 @@ public class DispatchService {
      */
     @Scheduled(fixedDelayString = "${app.delivery.retry-ms:15000}",
             initialDelayString = "${app.delivery.retry-initial-delay-ms:20000}")
+    @SchedulerLock(name = "dispatch.retryWaitingOrders", lockAtMostFor = "PT5M", lockAtLeastFor = "PT5S")
     public void retryWaitingOrders() {
         for (Long orderId : orderRepository.findIdsAwaitingCourier(DISPATCHABLE)) {
             inNewTransaction(orderId, this::dispatchLocked);
@@ -217,6 +220,7 @@ public class DispatchService {
      */
     @Scheduled(fixedDelayString = "${app.delivery.stale-shift-check-ms:60000}",
             initialDelayString = "${app.delivery.stale-shift-initial-delay-ms:60000}")
+    @SchedulerLock(name = "dispatch.closeStaleShifts", lockAtMostFor = "PT5M", lockAtLeastFor = "PT20S")
     public void closeStaleShifts() {
         LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime before = now.minusMinutes(properties.getShiftTimeoutMinutes());

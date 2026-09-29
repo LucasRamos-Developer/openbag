@@ -134,11 +134,41 @@ public class CourierWorkService {
     public void updateLocation(User user, LocationRequest location) {
         DeliveryPerson courier = findCourier(user);
         LocalDateTime now = LocalDateTime.now(clock);
+        if (!acceptsLocation(courier, location, now)) {
+            return;
+        }
         // Só a posição: salvar o entregador inteiro desfaria um aceite gravado ao mesmo tempo
         deliveryPersonRepository.updateLocation(courier.getId(), location.getLatitude(), location.getLongitude(), now);
         CourierTracking.currentStop(ordersOnTheWay(courier)).ifPresent(order ->
                 events.publishEvent(new CourierLocationEvent(order.getId(), location.getLatitude(),
                         location.getLongitude(), now)));
+    }
+
+    /**
+     * Throttling do ping: no máximo um a cada {@code app.delivery.location-min-interval-s} por entregador (o app manda
+     * a cada 20 s e também a cada 30 m andados, o que numa avenida vira um ping a cada 2 s) e sem saltos impossíveis
+     * (acima de {@code location-max-speed-kmh} em menos de um minuto, sinal de GPS ruim). Depois de um minuto, a
+     * posição nova vale mesmo longe: um salto errado nunca prende o entregador numa posição antiga.
+     */
+    boolean acceptsLocation(DeliveryPerson courier, LocationRequest location, LocalDateTime now) {
+        LocalDateTime last = courier.getLastSeenAt();
+        if (last == null || courier.getLastLatitude() == null || courier.getLastLongitude() == null) {
+            return true;
+        }
+        java.time.Duration since = java.time.Duration.between(last, now);
+        if (since.getSeconds() < properties.getLocationMinIntervalSeconds()) {
+            return false;
+        }
+        if (since.compareTo(java.time.Duration.ofMinutes(1)) < 0) {
+            double km = GeoUtils.haversineKm(courier.getLastLatitude(), courier.getLastLongitude(),
+                    location.getLatitude(), location.getLongitude());
+            double kmh = km / (since.toMillis() / 3_600_000.0);
+            if (kmh > properties.getLocationMaxSpeedKmh()) {
+                log.debug("Entregador {}: posição descartada ({} km/h desde a última)", courier.getId(), Math.round(kmh));
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

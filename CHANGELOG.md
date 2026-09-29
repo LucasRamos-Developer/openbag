@@ -54,6 +54,12 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 - A rota genérica `POST /files/upload/{folder}`, que qualquer usuário logado podia usar, saiu. Cada imagem continua sendo enviada pela rota do próprio recurso.
 - **CORS e WebSocket só das origens configuradas** (`OPENBAG_CORS_ORIGINS`), em vez de qualquer origem. O CORS passou a aceitar `PATCH`.
 - Uma conta desativada perde o acesso na hora, na API e no WebSocket, mesmo com um token ainda válido.
+- **Throttling:**
+  - O servidor aceita no máximo um ping de localização a cada 10 segundos por entregador. O app manda a cada 20 segundos e também a cada 30 metros andados, o que numa avenida vira um ping a cada 2 segundos.
+  - Saltos impossíveis de GPS (acima de 150 km/h em menos de um minuto) são descartados.
+  - O WebSocket ganhou limites de tamanho de mensagem, de buffer e de tempo de envio, e pools de threads definidos.
+  - A sessão do WebSocket é fechada quando o token vence. Antes, uma sessão aberta continuava recebendo atualizações.
+- **Jobs com trava distribuída (ShedLock, V5):** com várias instâncias do backend, cada job roda em uma só por vez. Os jobs ganharam um agendador próprio, de tamanho definido. Antes, eles usavam o agendador do broker do WebSocket.
 - **Limite de requisições (rate limiting)** no login (por IP e por email), nos cadastros, na consulta de email, nas cotações de entrega, nos pedidos e nos envios de arquivo. Passou do limite, a resposta é 429 com `Retry-After`, e o app mostra quanto esperar. Os contadores ficam no Redis (Bucket4j) e valem para todas as instâncias. Sem Redis, cada instância conta sozinha. Os limites mudam por configuração (veja o README-DEVELOPER).
 
 ### Adicionado

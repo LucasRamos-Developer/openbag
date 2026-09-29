@@ -46,6 +46,17 @@ public class JwtTokenProvider {
         return Long.parseLong(claims.getSubject());
     }
 
+    /** Quando o token vence (a sessão do WebSocket é fechada nessa hora) */
+    public java.time.Instant getExpirationFromJWT(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getExpiration()
+                .toInstant();
+    }
+
     public boolean validateToken(String authToken) {
         try {
             Jwts.parser()

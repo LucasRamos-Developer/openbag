@@ -1,5 +1,6 @@
 package com.openbag.modules.shared.idempotency;
 
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -76,6 +77,7 @@ public class IdempotencyStore {
     /** As chaves valem por um dia: depois disso, a mesma chave é uma ação nova */
     @Scheduled(fixedDelayString = "${app.idempotency.cleanup-ms:3600000}",
             initialDelayString = "${app.idempotency.cleanup-initial-delay-ms:300000}")
+    @SchedulerLock(name = "idempotency.deleteExpired", lockAtMostFor = "PT10M", lockAtLeastFor = "PT1M")
     public void deleteExpired() {
         int deleted = jdbc.update("DELETE FROM idempotency_keys WHERE created_at < now() - make_interval(hours => ?)",
                 retentionHours);

@@ -1,5 +1,6 @@
 package com.openbag.modules.cooperative.service;
 
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import com.openbag.enums.InvoiceStatus;
 import com.openbag.enums.MembershipFeeMode;
 import com.openbag.enums.MembershipStatus;
@@ -258,6 +259,7 @@ public class MemberInvoiceService {
     /** Dia 1, de madrugada: gera as faturas do mês que terminou em todas as associações com cobrança definida */
     @Scheduled(cron = "${app.cooperative.invoice-cron:0 0 3 1 * *}", zone = "America/Sao_Paulo")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @SchedulerLock(name = "cooperative.generateInvoices", lockAtMostFor = "PT1H", lockAtLeastFor = "PT5M")
     public void generatePreviousMonthForAll() {
         YearMonth previous = YearMonth.now(clock).minusMonths(1);
         for (Organization active : organizationRepository.findByStatusOrderByTradingNameAsc(OrganizationStatus.ACTIVE)) {

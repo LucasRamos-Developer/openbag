@@ -1,5 +1,6 @@
 package com.openbag.modules.delivery.dispatch;
 
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import com.openbag.enums.RouteOrigin;
 import com.openbag.enums.RouteStatus;
 import com.openbag.modules.delivery.dispatch.RoutePlanner.Group;
@@ -55,6 +56,7 @@ public class RoutePlanningService {
 
     @Scheduled(fixedDelayString = "${app.delivery.route-planning-ms:10000}",
             initialDelayString = "${app.delivery.route-planning-initial-delay-ms:20000}")
+    @SchedulerLock(name = "dispatch.planRoutes", lockAtMostFor = "PT5M", lockAtLeastFor = "PT3S")
     public void planRoutes() {
         for (Long restaurantId : orderRepository.findRestaurantIdsAwaitingRelease(DispatchService.DISPATCHABLE)) {
             DispatchService.withRetry("rotas do restaurante " + restaurantId,

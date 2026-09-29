@@ -28,6 +28,14 @@ public class DispatchProperties {
     @Value("${app.delivery.shift-timeout-min:15}")
     private int shiftTimeoutMinutes;
 
+    // Throttling do ping de localização: no máximo um a cada tantos segundos por entregador
+    @Value("${app.delivery.location-min-interval-s:10}")
+    private int locationMinIntervalSeconds;
+
+    // Salto maior que esta velocidade, em menos de um minuto, é GPS ruim e fica de fora
+    @Value("${app.delivery.location-max-speed-kmh:150}")
+    private double locationMaxSpeedKmh;
+
     @Value("${app.delivery.weight-distance:0.5}")
     private double weightDistance;
 
