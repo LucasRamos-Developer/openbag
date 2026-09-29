@@ -52,48 +52,68 @@ O Elasticsearch continua no `docker-compose.yml` para a busca que virá, mas o c
 
 ## Backend
 
-O código fica em `backend/src/main/java/com/openbag` e é **organizado por módulo de domínio**. Cada módulo tem `controller`, `dto`, `entity`, `repository` e `service`.
+O código fica em `backend/src/main/java/com/openbag` e é **organizado por domínio e, dentro dele, por funcionalidade**: `com.openbag.<domínio>.<funcionalidade>.<camada>`. As camadas são `controller`, `dto`, `entity`, `repository` e `service` (só as que a funcionalidade usa). Cada enum fica em `entity/` da funcionalidade dona dela.
 
 ```
 com/openbag/
-├── annotation/      # @IsRestaurantOwner e @IsAssociationManager (dono do recurso)
-├── config/          # Segurança, agendamento (SchedulingConfig), segredos de produção, dados iniciais e demo
-├── security/        # JWT (filtro e provider), UserDetails
-├── enums/           # Status e tipos compartilhados (OrderStatus, CourierPolicy...)
-├── exception/       # GlobalExceptionHandler (400, 404, 409, 429...)
-└── modules/
-    ├── user/          # Cadastro, login, perfil, endereços
-    ├── restaurant/    # Restaurante, loja (horários, pausa, aparência), página pública
-    ├── menu/          # Seções e itens do cardápio do dono
-    ├── product/       # Produtos, categorias, complementos, catálogo global (rotas antigas)
-    ├── combo/         # Combos (rotas antigas; o cardápio usa menu/)
-    ├── order/         # Pedidos do cliente, do balcão e gestão pela loja, tempo real
-    ├── review/        # Avaliações da loja e do entregador
-    ├── delivery/      # Entregadores, vínculos, despacho, rotas, caixa, ganhos
-    ├── organization/  # Associações e cooperativas, membros, convites, tabela
-    ├── cooperative/   # Gestão da associação: mensalidade, faturas, livro-caixa, caixinha, convênios, enquetes, atas
-    ├── admin/         # Painel da plataforma (só leitura)
-    └── shared/        # Arquivos, idempotência, limite de requisições, health check e utilitários
+├── platform/          # Infraestrutura, sem regra de negócio
+│   ├── config/        #   Redis, Elasticsearch, OpenAPI, agendamento, segredos de produção
+│   ├── security/      #   SecurityConfig, JWT, UserDetails, AuthorizationService, @IsRestaurantOwner e @IsAssociationManager
+│   ├── web/           #   GlobalExceptionHandler e exceções (400, 404, 409...), idempotência, limite de requisições, health
+│   ├── realtime/      #   WebSocket/STOMP (autenticação e sessões)
+│   ├── files/         #   Arquivos enviados
+│   ├── geo/           #   Geocodificação e distâncias
+│   ├── util/          #   CPF/CNPJ, CSV, conversores
+│   └── seed/          #   Papéis iniciais e dados de demonstração
+├── account/           # Cadastro, login, perfil, papéis, endereços
+├── restaurant/
+│   ├── store/         #   Loja (horários, pausa, aparência), página pública, onboarding
+│   ├── catalog/       #   Produtos, categorias, complementos, catálogo global
+│   ├── menu/          #   Seções e itens do cardápio do dono
+│   ├── combo/         #   Combos
+│   └── cash/          #   Caixa da loja e acerto com os entregadores
+├── order/
+│   ├── core/          #   Pedidos do cliente e do balcão, gestão pela loja
+│   ├── realtime/      #   Eventos de pedido e de localização enviados por WebSocket
+│   └── review/        #   Avaliações da loja e do entregador
+├── delivery/
+│   ├── courier/       #   Perfil, veículos, turno, ganhos e rastreio do entregador
+│   ├── dispatch/      #   Despacho, ofertas, frete e configurações de entrega da loja
+│   ├── route/         #   Rotas com mais de um pedido
+│   └── link/          #   Vínculo loja-entregador e equipe própria
+├── association/
+│   ├── core/          #   Associações e cooperativas, membros, convites, tabela de entrega
+│   ├── finance/       #   Mensalidade, adicionais, faturas, livro-caixa, caixinha
+│   ├── community/     #   Convênios, enquetes, atas e documentos
+│   ├── member/        #   O que o cooperado vê em /me/association
+│   └── partnership/   #   Parcerias com as lojas (tabela especial) e relatórios
+└── admin/             # Painel da plataforma (só leitura)
 ```
 
 ### Módulos e rotas principais
 
 Todas as rotas ficam sob o prefixo `/api`. A lista completa está no Swagger: `http://localhost:8080/api/swagger-ui.html`.
 
-| Módulo | Rotas base | O que faz |
+| Pacote | Rotas base | O que faz |
 |--------|------------|-----------|
-| `user` | `/auth`, `/users` | Cadastro (cliente, restaurante, entregador, associação), login JWT, perfil e endereços |
-| `restaurant` | `/restaurants`, `/public/restaurants` | Dados da loja, aparência (tema, logo, destaque), endereço, horários, abrir, fechar e pausar; página pública por `slug` |
-| `menu` | `/restaurants/{id}/menu` | Seções (com ícone) e itens do cardápio, disponibilidade |
-| `product` | `/products`, `/customizations`, `/public/categories`, `/global-products` | Produtos, grupos de complementos, categorias |
-| `combo` | `/combos` | Combos da loja |
-| `order` | `/orders`, `/restaurants/{id}/orders` | Checkout do cliente, pedido do balcão e ciclo do pedido na loja (aceitar, preparar, pronto, despachar, entregar) |
-| `review` | `/orders/{id}/review`, `/restaurants/{id}/reviews` | Avaliações e respostas da loja |
+| `account` | `/auth`, `/users` | Cadastro (cliente, restaurante, entregador, associação), login JWT, perfil e endereços |
+| `restaurant.store` | `/restaurants`, `/public/restaurants` | Dados da loja, aparência (tema, logo, destaque), endereço, horários, abrir, fechar e pausar; página pública por `slug` |
+| `restaurant.catalog` | `/products`, `/customizations`, `/public/categories`, `/global-products` | Produtos, grupos de complementos, categorias |
+| `restaurant.menu` | `/restaurants/{id}/menu` | Seções (com ícone) e itens do cardápio, disponibilidade |
+| `restaurant.combo` | `/combos` | Combos da loja |
+| `restaurant.cash` | `/restaurants/{id}/cash` | Caixa da loja e acerto com os entregadores |
+| `order.core` | `/orders`, `/restaurants/{id}/orders` | Checkout do cliente, pedido do balcão e ciclo do pedido na loja (aceitar, preparar, pronto, despachar, entregar) |
+| `order.review` | `/orders/{id}/review`, `/restaurants/{id}/reviews` | Avaliações e respostas da loja |
+| `delivery.courier` | `/me/courier`, `/me/courier/work`, `/public/couriers` | Perfil e veículos do entregador, turno, ofertas e ganhos |
+| `delivery.dispatch` | `/restaurants/{id}/delivery` | Configurações de entrega da loja, entregadores disponíveis e despacho |
+| `delivery.route` | `/restaurants/{id}/routes` | Rotas da loja |
+| `association.core` | `/associations`, `/public/associations`, `/admin/associations` | Associações: cadastro, aprovação, membros, convites e tabela de entrega |
+| `association.finance` | `/associations/{id}/fee-policy`, `/addon-plans`, `/invoices`, `/ledger`, `/finance/summary` | Cobrança da mensalidade (fixa ou percentual com teto), adicionais, faturas com baixa manual, livro-caixa e caixinha solidária |
+| `association.community` | `/associations/{id}/benefits`, `/polls`, `/documents` | Convênios, enquetes e atas |
+| `association.member` | `/me/association` | Área do cooperado: vínculo, resumo (`/report`), faturas, adicionais, caixinha, convênios, enquetes e documentos |
+| `association.partnership` | `/associations/{id}/partnerships`, `/associations/{id}/reports` | Parcerias entre loja e associação (com tabela especial) e relatórios da associação |
 | `admin` | `/admin/**` | Números da plataforma e moderação de associações |
-| `delivery` | `/me/courier`, `/me/courier/work`, `/public/couriers`, `/restaurants/{id}/delivery`, `/associations/{id}/partnerships`, `/associations/{id}/reports`, `/routes`, `/cash` | Perfil e veículos do entregador, turno e ofertas, configurações de entrega da loja, parcerias entre loja e associação (com tabela especial), relatórios da associação, rotas e caixa |
-| `cooperative` | `/associations/{id}/fee-policy`, `/addon-plans`, `/invoices`, `/ledger`, `/finance/summary`, `/benefits`, `/polls`, `/documents`; `/me/association/invoices`, `/addons`, `/solidarity-fund`, `/benefits`, `/polls`, `/documents` | Gestão da associação: cobrança da mensalidade (fixa ou percentual com teto), adicionais, faturas com baixa manual, livro-caixa e caixinha solidária, convênios, enquetes e atas; e a área do cooperado |
-| `organization` | `/associations`, `/me/association`, `/public/associations`, `/admin/associations` | Associações: cadastro, aprovação, membros, convites, tabela de entrega e o resumo da associação para o cooperado (`/me/association/report`) |
-| `shared` | `/files`, `/health` | Imagens enviadas (só leitura: cada upload é feito pela rota do próprio recurso), health check, filtros de idempotência e de limite |
+| `platform` | `/files`, `/health` | Imagens enviadas (só leitura: cada upload é feito pela rota do próprio recurso), health check, filtros de idempotência e de limite |
 
 ### Papéis
 
@@ -168,7 +188,7 @@ Ordem dos filtros no Spring Security: JWT → limite de requisições → idempo
 
 ## Despacho de entregas
 
-O despacho fica em `modules/delivery/dispatch`.
+O despacho fica em `delivery/dispatch`.
 
 ### Com quem a loja trabalha
 

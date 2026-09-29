@@ -160,24 +160,13 @@ backend/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/openbag/
-│   │   │   ├── annotation/         # @IsRestaurantOwner e @IsAssociationManager
-│   │   │   ├── config/             # Security, agendamento, segredos de produção, dados iniciais e demo
-│   │   │   ├── enums/              # Status e tipos compartilhados
-│   │   │   ├── exception/          # GlobalExceptionHandler
-│   │   │   ├── security/           # JWT, UserDetails, PermissionEvaluator
-│   │   │   └── modules/
-│   │   │       ├── user/           # Cadastro, login, perfil
-│   │   │       ├── restaurant/     # Loja, aparência, horários, página pública
-│   │   │       ├── menu/           # Cardápio do dono
-│   │   │       ├── product/        # Produtos, categorias, complementos
-│   │   │       ├── combo/          # Combos
-│   │   │       ├── order/          # Pedidos (app e balcão) e tempo real (WebSocket)
-│   │   │       ├── review/         # Avaliações
-│   │   │       ├── delivery/       # Entregadores, despacho, rotas, caixa
-│   │   │       ├── organization/   # Associações e cooperativas
-│   │   │       ├── cooperative/    # Gestão da associação (faturas, caixinha, convênios, enquetes)
-│   │   │       ├── admin/          # Painel da plataforma
-│   │   │       └── shared/         # Arquivos, idempotência, limite de requisições, health
+│   │   │   ├── platform/           # Infraestrutura: config, security, web, realtime, files, geo, util, seed
+│   │   │   ├── account/            # Cadastro, login, perfil
+│   │   │   ├── restaurant/         # store, catalog, menu, combo, cash
+│   │   │   ├── order/              # core (pedidos do app e do balcão), realtime (WebSocket), review
+│   │   │   ├── delivery/           # courier, dispatch, route, link
+│   │   │   ├── association/        # core, finance, community, member, partnership
+│   │   │   └── admin/              # Painel da plataforma
 │   │   └── resources/
 │   │       ├── application.properties           # Config padrão (desenvolvimento)
 │   │       ├── application-local.properties     # Config local (com SQL e DEBUG no log)
@@ -773,7 +762,7 @@ mvn -Psecurity verify -DskipTests
 
 #### Estrutura de Testes
 
-- A maioria é de unidade, com JUnit 5 e Mockito, ao lado do pacote testado (`modules/<módulo>/service/...Test`).
+- A maioria é de unidade, com JUnit 5 e Mockito, ao lado do pacote testado (`<domínio>/<funcionalidade>/service/...Test`).
 - Os testes de integração estendem `support/IntegrationTest`: sobem o backend inteiro contra um Postgres + PostGIS em container (Testcontainers, com a imagem de `database/Dockerfile`), com o esquema criado pelas migrações e a conta de demonstração ligada. A primeira execução constrói a imagem e demora cerca de um minuto.
 - Os casos de ações simultâneas ficam em `concurrency/ConcurrentActionsTest`: duas threads disputando o mesmo pedido, a mesma fatura ou a mesma caixinha.
 - Os jobs agendados ficam desligados nos testes (`application-test.properties`). Um teste que precisa de um job chama o método direto.
