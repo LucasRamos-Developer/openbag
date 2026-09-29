@@ -156,13 +156,7 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [x] **Throttling** de localização, de WebSocket e dos jobs agendados
 - [x] Revisão de segurança (OWASP Top 10, dependências e CI)
 
-**0.5.0: Auditoria de dados**
-- [ ] Trilha de auditoria (quem, o quê, quando, antes e depois) pode ser um PGaudit
-- [ ] Histórico que não pode ser alterado para caixa e ganhos
-- [ ] Relatórios exportáveis para a loja e para a cooperativa
-- [ ] LGPD: exportação, exclusão e retenção de dados
-
-**0.6.0: Operação do dia a dia** ([detalhes](docs/roadmap/0.6.0-operacao.md))
+**0.5.0: Operação do dia a dia** ([detalhes](docs/roadmap/0.6.0-operacao.md))
 - [ ] Pedido feito no balcão ou por telefone, no mesmo fluxo dos pedidos online (implementado; falta o teste de ponta a ponta)
 - [ ] Ocorrências ligadas ao pedido
 - [ ] Chegada na loja e no cliente, tempos do pedido e espera média por loja
@@ -171,6 +165,12 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [ ] Comunicados da cooperativa
 - [ ] Composição do valor na oferta e lembrete de pausa
 - [ ] PIN de entrega
+
+**0.6.0: Auditoria de dados**
+- [ ] Trilha de auditoria (quem, o quê, quando, antes e depois) pode ser um PGaudit
+- [ ] Histórico que não pode ser alterado para caixa e ganhos
+- [ ] Relatórios exportáveis para a loja e para a cooperativa
+- [ ] LGPD: exportação, exclusão e retenção de dados
 
 ---
 
