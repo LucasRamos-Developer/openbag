@@ -1,6 +1,6 @@
 # Arquitetura do OpenBag
 
-> Versão da documentação: **0.2.0**, atualizada em 2026-09-27. O que mudou está no [CHANGELOG](../../CHANGELOG.md).
+> Versão da documentação: **0.3.0**, atualizada em 2026-09-29. O que mudou está no [CHANGELOG](../../CHANGELOG.md).
 
 Este documento explica como o sistema está organizado hoje: módulos do backend, tempo real, despacho de entregas, rotas, caixa e a estrutura do app Flutter. Para rodar o projeto, veja o [guia de desenvolvimento](../../README-DEVELOPER.md).
 
@@ -240,9 +240,9 @@ frontend/lib/
 | `/pedidos`, `/pedidos/:id` | Meus pedidos, acompanhamento e avaliação | Pronto |
 | `/restaurante/*` | Painel do restaurante (pedidos, cardápio, entregadores, rotas, caixa, avaliações, loja) | Pronto |
 | `/restaurante/cozinha` | Tela da cozinha | Pronto |
-| `/entregador/*` | Painel do entregador | Em desenvolvimento |
+| `/entregador/*` | Painel do entregador | Pronto |
 | `/e/:slug` | Perfil público do entregador (placa QR) | Pronto |
-| `/associacao/*` | Painel da associação ou cooperativa (membros, convites, lojas parceiras, tabela, relatórios) | Em testes |
+| `/associacao/*` | Painel da associação ou cooperativa (membros, convites, lojas parceiras, tabela, relatórios) | Pronto |
 | `/admin/associacoes` | Moderação de associações | Pronto |
 
 ### Padrões

@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/vers%C3%A3o-0.2.0-16a34a" alt="Versão 0.2.0"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/vers%C3%A3o-0.3.0-16a34a" alt="Versão 0.3.0"></a>
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/licen%C3%A7a-AGPL--3.0-blue" alt="Licença AGPL-3.0"></a>
   <a href="layout/"><img src="https://img.shields.io/badge/layout-ver%20telas-0f766e" alt="Ver o layout"></a>
 </p>
@@ -18,7 +18,7 @@
   <img src="layout/temas/01-fresh-green.png" alt="Página de um restaurante no OpenBag" width="860">
 </p>
 
-> Esta documentação descreve a versão **0.2.0**. Veja o que mudou no [CHANGELOG](CHANGELOG.md).
+> Esta documentação descreve a versão **0.3.0**. Veja o que mudou no [CHANGELOG](CHANGELOG.md).
 
 ---
 
@@ -47,7 +47,7 @@ Ao mesmo tempo, queremos **ajudar as associações e cooperativas de entregadore
 
 ---
 
-## Telas da versão 0.2.0
+## Telas da versão 0.3.0
 
 As capturas abaixo mostram o estado atual. Todas estão na pasta **[`layout/`](layout/)**.
 
@@ -79,15 +79,15 @@ O cliente encontra as lojas na vitrine, monta o pedido com complementos, cria a 
 |---|---|
 | ![Vitrine de restaurantes](layout/loja-e-vitrine/08-vitrine-grade.png) | <img src="layout/temas/mobile-fresh-green.png" alt="Loja no celular" width="260"> |
 
-### Entregador (em desenvolvimento)
+### Entregador
 
-O painel do entregador **está sendo construído**. Hoje ele já permite ficar online, receber ofertas em tempo real, seguir a rota, ver os ganhos e mostrar o perfil público com a placa QR.
+O entregador fica online, recebe ofertas em tempo real, segue a rota com várias entregas no mapa, acompanha os ganhos por dia, semana e mês, vê as avaliações e mostra o perfil público com a placa QR.
 
 <p align="center">
   <img src="layout/caixa-e-rotas/05-entregador-rota.png" alt="Entregador em rota" width="260">
 </p>
 
-### Associação e cooperativa (em testes)
+### Associação e cooperativa
 
 O painel da associação tem cadastro com aprovação, gestão de membros, convites e tabela de entrega. Também tem:
 
@@ -126,8 +126,8 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 | Versão | Etapa | Status |
 |--------|-------|--------|
 | 0.1.0 | MVP: cadastro, onboarding, carrinho, pedidos, mapas | Lançada |
-| **0.2.0** | **Operação do restaurante, associações e personalização da loja** | **Atual** |
-| 0.3.0 | Entregador, cooperativa e cliente | Em andamento |
+| 0.2.0 | Operação do restaurante, associações e personalização da loja | Lançada |
+| **0.3.0** | **Entregador, cooperativa e cliente** | **Atual** |
 | 0.4.0 | Segurança e integridade dos dados | Planejada |
 | 0.5.0 | Auditoria de dados | Planejada |
 | 0.6.0 | Operação do dia a dia | Planejada |

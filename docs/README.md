@@ -1,6 +1,6 @@
 # 📚 Documentação do OpenBag
 
-> Versão da documentação: **0.2.0**, atualizada em 2026-09-27. Veja o que mudou no [CHANGELOG](../CHANGELOG.md).
+> Versão da documentação: **0.3.0**, atualizada em 2026-09-29. Veja o que mudou no [CHANGELOG](../CHANGELOG.md).
 
 ## 📖 Estrutura da documentação
 

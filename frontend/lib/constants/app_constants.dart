@@ -14,7 +14,7 @@ class AppConstants {
   // App Configuration
   static const String appName = 'OpenBag';
   // Acompanha a versão do pubspec.yaml (ver CHANGELOG.md)
-  static const String appVersion = '0.2.0';
+  static const String appVersion = '0.3.0';
   
   // Web Configuration
   static const double webMaxWidth = 1200.0;

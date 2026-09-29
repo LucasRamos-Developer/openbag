@@ -4,7 +4,7 @@ Todas as mudanças relevantes do OpenBag ficam registradas aqui.
 
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e as versões seguem o [Versionamento Semântico (SemVer)](https://semver.org/lang/pt-BR/).
 
-**Versão atual: 0.2.0**
+**Versão atual: 0.3.0**
 
 ---
 
@@ -45,6 +45,10 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 ---
 
 ## [Não lançado]
+
+---
+
+## [0.3.0] - 2026-09-29
 
 ### Adicionado
 
@@ -232,8 +236,8 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 | Versão | Etapa | Status |
 |--------|-------|--------|
 | 0.1.0 | MVP | Lançada |
-| 0.2.0 | Operação do restaurante, associações e personalização | **Atual** |
-| 0.3.0 | Entregador, cooperativa e cliente | Em andamento |
+| 0.2.0 | Operação do restaurante, associações e personalização | Lançada |
+| 0.3.0 | Entregador, cooperativa e cliente | **Atual** |
 | 0.4.0 | Segurança e integridade dos dados | Planejada |
 | 0.5.0 | Auditoria de dados | Planejada |
 | 0.6.0 | Operação do dia a dia | Planejada |

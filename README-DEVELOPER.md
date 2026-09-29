@@ -2,7 +2,7 @@
 
 Documentação técnica completa para desenvolvedores que desejam contribuir com o projeto OpenBag.
 
-> Versão da documentação: **0.2.0**, atualizada em 2026-09-27. Veja o [CHANGELOG](CHANGELOG.md) e a [arquitetura](docs/architecture/README.md).
+> Versão da documentação: **0.3.0**, atualizada em 2026-09-29. Veja o [CHANGELOG](CHANGELOG.md) e a [arquitetura](docs/architecture/README.md).
 
 ## 📋 Índice
 
@@ -196,7 +196,7 @@ frontend/
 │   │   ├── cart/, checkout/, orders/
 │   │   ├── restaurant_panel/       # Painel do restaurante (/restaurante)
 │   │   ├── kitchen/                # Tela da cozinha
-│   │   ├── courier/                # Painel do entregador (/entregador, em desenvolvimento)
+│   │   ├── courier/                # Painel do entregador (/entregador)
 │   │   ├── association/            # Painel da associação (/associacao)
 │   │   ├── admin/                  # Painel do super admin (/admin, somente leitura)
 │   │   ├── auth/, onboarding/, profile/
@@ -259,7 +259,7 @@ mvn spring-boot:run
 mvn spring-boot:run -Dspring-boot.run.profiles=docker
 
 # Rodar JAR diretamente
-java -jar target/openbag-backend-0.2.0.jar
+java -jar target/openbag-backend-0.3.0.jar
 ```
 
 ### Conta de demonstração
