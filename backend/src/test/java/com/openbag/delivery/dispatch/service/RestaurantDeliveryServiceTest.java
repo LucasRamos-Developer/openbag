@@ -1,8 +1,8 @@
 package com.openbag.delivery.dispatch.service;
 
-import com.openbag.enums.CourierPolicy;
-import com.openbag.enums.DeliveryFeeMode;
-import com.openbag.enums.OrganizationStatus;
+import com.openbag.restaurant.store.entity.CourierPolicy;
+import com.openbag.restaurant.store.entity.DeliveryFeeMode;
+import com.openbag.association.core.entity.OrganizationStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ConflictException;
 import com.openbag.delivery.dispatch.dto.RestaurantDeliverySettingsRequest;

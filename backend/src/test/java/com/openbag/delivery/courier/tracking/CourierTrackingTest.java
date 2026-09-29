@@ -1,6 +1,6 @@
 package com.openbag.delivery.courier.tracking;
 
-import com.openbag.enums.OrderStatus;
+import com.openbag.order.core.entity.OrderStatus;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.delivery.link.entity.StaffCourier;
 import com.openbag.order.core.entity.Order;

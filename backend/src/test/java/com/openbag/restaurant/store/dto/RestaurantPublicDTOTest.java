@@ -1,6 +1,6 @@
 package com.openbag.restaurant.store.dto;
 
-import com.openbag.enums.RestaurantThemePreset;
+import com.openbag.restaurant.store.entity.RestaurantThemePreset;
 import com.openbag.restaurant.store.entity.LayoutConfig;
 import com.openbag.restaurant.store.entity.Restaurant;
 import org.junit.jupiter.api.Test;

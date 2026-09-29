@@ -1,6 +1,6 @@
 package com.openbag.association.finance.repository;
 
-import com.openbag.enums.InvoiceStatus;
+import com.openbag.association.finance.entity.InvoiceStatus;
 import com.openbag.association.finance.entity.MemberInvoice;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -46,12 +46,12 @@ public interface MemberInvoiceRepository extends JpaRepository<MemberInvoice, Lo
 
     /** Em atraso: faturas em aberto que já venceram */
     @Query("SELECT COALESCE(SUM(i.total), 0) FROM MemberInvoice i WHERE i.organization.id = :organizationId "
-            + "AND i.status = com.openbag.enums.InvoiceStatus.OPEN AND i.dueDate < :today")
+            + "AND i.status = com.openbag.association.finance.entity.InvoiceStatus.OPEN AND i.dueDate < :today")
     BigDecimal sumOverdue(@Param("organizationId") Long organizationId, @Param("today") LocalDate today);
 
     /** Cooperados com fatura em aberto (e quanto devem), para a lista e a exportação */
     @Query("SELECT i.membership.id, COUNT(i), COALESCE(SUM(i.total), 0) FROM MemberInvoice i "
-            + "WHERE i.organization.id = :organizationId AND i.status = com.openbag.enums.InvoiceStatus.OPEN "
+            + "WHERE i.organization.id = :organizationId AND i.status = com.openbag.association.finance.entity.InvoiceStatus.OPEN "
             + "GROUP BY i.membership.id")
     List<Object[]> openByMembership(@Param("organizationId") Long organizationId);
 }

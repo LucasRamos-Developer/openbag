@@ -14,8 +14,8 @@ import java.util.Optional;
 public interface RestaurantPartnershipRepository extends JpaRepository<RestaurantPartnership, Long> {
 
     // Parcerias anteriores ao aceite têm status nulo e valem enquanto não forem encerradas
-    String ACTIVE = "(p.status = com.openbag.enums.PartnershipStatus.ACTIVE OR (p.status IS NULL AND p.endedAt IS NULL))";
-    String OPEN = "(p.status = com.openbag.enums.PartnershipStatus.PENDING OR " + ACTIVE + ")";
+    String ACTIVE = "(p.status = com.openbag.association.partnership.entity.PartnershipStatus.ACTIVE OR (p.status IS NULL AND p.endedAt IS NULL))";
+    String OPEN = "(p.status = com.openbag.association.partnership.entity.PartnershipStatus.PENDING OR " + ACTIVE + ")";
 
     @Query("SELECT p FROM RestaurantPartnership p JOIN FETCH p.organization "
             + "WHERE p.restaurant.id = :restaurantId AND " + ACTIVE + " ORDER BY p.createdAt")

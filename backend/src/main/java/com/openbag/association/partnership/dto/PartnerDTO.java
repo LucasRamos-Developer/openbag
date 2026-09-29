@@ -1,7 +1,7 @@
 package com.openbag.association.partnership.dto;
 
-import com.openbag.enums.PartnershipSide;
-import com.openbag.enums.PartnershipStatus;
+import com.openbag.association.partnership.entity.PartnershipSide;
+import com.openbag.association.partnership.entity.PartnershipStatus;
 import com.openbag.association.partnership.entity.RestaurantPartnership;
 import com.openbag.association.core.dto.DeliveryRateDTO;
 import com.openbag.association.core.entity.DeliveryRate;

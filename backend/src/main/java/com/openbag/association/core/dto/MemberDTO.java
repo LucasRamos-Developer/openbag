@@ -1,13 +1,13 @@
 package com.openbag.association.core.dto;
 
-import com.openbag.enums.MembershipOrigin;
-import com.openbag.enums.MembershipStatus;
-import com.openbag.enums.VehicleType;
+import com.openbag.association.core.entity.MembershipOrigin;
+import com.openbag.association.core.entity.MembershipStatus;
+import com.openbag.delivery.courier.entity.VehicleType;
 import com.openbag.delivery.courier.dto.VehicleDTO;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.delivery.courier.entity.Vehicle;
 import com.openbag.association.core.entity.AssociationMembership;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

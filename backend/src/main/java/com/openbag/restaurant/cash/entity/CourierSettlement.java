@@ -1,7 +1,7 @@
 package com.openbag.restaurant.cash.entity;
 
 import com.openbag.restaurant.store.entity.Restaurant;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

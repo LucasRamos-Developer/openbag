@@ -1,6 +1,6 @@
 package com.openbag.association.core.dto;
 
-import com.openbag.modules.user.dto.AddressDTO;
+import com.openbag.account.dto.AddressDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

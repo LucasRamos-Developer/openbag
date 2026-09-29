@@ -1,6 +1,5 @@
 package com.openbag.association.core.entity;
 
-import com.openbag.enums.MembershipFeeMode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;

@@ -3,7 +3,7 @@ package com.openbag.delivery.courier.controller;
 import com.openbag.delivery.courier.dto.CourierWorkStateDTO;
 import com.openbag.delivery.courier.dto.LocationRequest;
 import com.openbag.delivery.courier.service.CourierWorkService;
-import com.openbag.modules.user.service.UserService;
+import com.openbag.account.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

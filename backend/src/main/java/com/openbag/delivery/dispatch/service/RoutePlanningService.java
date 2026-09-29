@@ -1,8 +1,8 @@
 package com.openbag.delivery.dispatch.service;
 
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import com.openbag.enums.RouteOrigin;
-import com.openbag.enums.RouteStatus;
+import com.openbag.delivery.route.entity.RouteOrigin;
+import com.openbag.delivery.route.entity.RouteStatus;
 import com.openbag.delivery.dispatch.service.RoutePlanner.Group;
 import com.openbag.delivery.route.entity.DeliveryRoute;
 import com.openbag.delivery.route.repository.DeliveryRouteRepository;

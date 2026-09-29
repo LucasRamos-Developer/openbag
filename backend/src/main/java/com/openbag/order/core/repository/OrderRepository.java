@@ -3,8 +3,8 @@ package com.openbag.order.core.repository;
 import com.openbag.order.core.entity.Order;
 import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
-import com.openbag.enums.OrderStatus;
-import com.openbag.modules.user.entity.User;
+import com.openbag.order.core.entity.OrderStatus;
+import com.openbag.account.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,7 +23,7 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
     /** Retirada na loja não passa pelo despacho nem pelas rotas (nulo = pedido antigo, de entrega) */
-    String NOT_PICKUP = "AND (o.fulfillment IS NULL OR o.fulfillment <> com.openbag.enums.FulfillmentType.PICKUP)";
+    String NOT_PICKUP = "AND (o.fulfillment IS NULL OR o.fulfillment <> com.openbag.order.core.entity.FulfillmentType.PICKUP)";
 
     Optional<Order> findByOrderNumber(String orderNumber);
     
@@ -117,13 +117,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * Soma do valor das entregas concluídas por entregador no período: [deliveryPersonId, soma]
      */
     @Query("SELECT o.deliveryPerson.id, COALESCE(SUM(o.courierFee), 0) FROM Order o "
-            + "WHERE o.deliveryPerson.id IN :ids AND o.status = com.openbag.enums.OrderStatus.DELIVERED "
+            + "WHERE o.deliveryPerson.id IN :ids AND o.status = com.openbag.order.core.entity.OrderStatus.DELIVERED "
             + "AND o.deliveredAt >= :start AND o.deliveredAt < :end GROUP BY o.deliveryPerson.id")
     List<Object[]> sumCourierFeesBetween(@Param("ids") java.util.Collection<Long> ids,
                                          @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.deliveryPerson.id = :deliveryPersonId "
-            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end")
+            + "AND o.status = com.openbag.order.core.entity.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end")
     long countDeliveredBetween(@Param("deliveryPersonId") Long deliveryPersonId,
                                @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
@@ -131,7 +131,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * Entregas concluídas pelo entregador no período (mais recentes primeiro)
      */
     @Query("SELECT o FROM Order o JOIN FETCH o.restaurant WHERE o.deliveryPerson.id = :deliveryPersonId "
-            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end "
+            + "AND o.status = com.openbag.order.core.entity.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end "
             + "ORDER BY o.deliveredAt DESC")
     List<Order> findDeliveredByCourierBetween(@Param("deliveryPersonId") Long deliveryPersonId,
                                               @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
@@ -140,7 +140,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * Restaurantes em que o entregador fez entregas: [restaurantId, quantidade, primeira, última]
      */
     @Query("SELECT o.restaurant.id, COUNT(o), MIN(o.deliveredAt), MAX(o.deliveredAt) FROM Order o "
-            + "WHERE o.deliveryPerson.id = :deliveryPersonId AND o.status = com.openbag.enums.OrderStatus.DELIVERED "
+            + "WHERE o.deliveryPerson.id = :deliveryPersonId AND o.status = com.openbag.order.core.entity.OrderStatus.DELIVERED "
             + "GROUP BY o.restaurant.id ORDER BY MAX(o.deliveredAt) DESC")
     List<Object[]> summarizeRestaurantsByCourier(@Param("deliveryPersonId") Long deliveryPersonId);
 
@@ -152,14 +152,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.deliveryPerson dp LEFT JOIN FETCH dp.user "
             + "LEFT JOIN FETCH dp.organization LEFT JOIN FETCH o.courierOrganization LEFT JOIN FETCH o.staffCourier "
             + "WHERE o.restaurant.id = :restaurantId "
-            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end")
+            + "AND o.status = com.openbag.order.core.entity.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end")
     List<Order> findDeliveredByRestaurantBetween(@Param("restaurantId") Long restaurantId,
                                                 @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     /** Entregas feitas pelos cooperados da associação no período (pela associação registrada no pedido) */
     @Query("SELECT o FROM Order o JOIN FETCH o.restaurant JOIN FETCH o.deliveryPerson dp JOIN FETCH dp.user "
             + "WHERE o.courierOrganization.id = :organizationId "
-            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end "
+            + "AND o.status = com.openbag.order.core.entity.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end "
             + "ORDER BY o.deliveredAt")
     List<Order> findDeliveredByOrganizationBetween(@Param("organizationId") Long organizationId,
                                                    @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
@@ -167,13 +167,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /** Ganhos e entregas de cada cooperado no período: [deliveryPersonId, soma do courierFee, entregas] */
     @Query("SELECT o.deliveryPerson.id, COALESCE(SUM(o.courierFee), 0), COUNT(o) FROM Order o "
             + "WHERE o.courierOrganization.id = :organizationId "
-            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end "
+            + "AND o.status = com.openbag.order.core.entity.OrderStatus.DELIVERED AND o.deliveredAt >= :start AND o.deliveredAt < :end "
             + "GROUP BY o.deliveryPerson.id")
     List<Object[]> sumCourierEarningsByCourier(@Param("organizationId") Long organizationId,
                                                @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.restaurant.id = :restaurantId "
-            + "AND o.status = com.openbag.enums.OrderStatus.CANCELLED AND o.cancelledAt >= :start AND o.cancelledAt < :end")
+            + "AND o.status = com.openbag.order.core.entity.OrderStatus.CANCELLED AND o.cancelledAt >= :start AND o.cancelledAt < :end")
     long countCancelledByRestaurantBetween(@Param("restaurantId") Long restaurantId,
                                            @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
@@ -182,19 +182,19 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      */
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.deliveryPerson dp LEFT JOIN FETCH dp.user "
             + "LEFT JOIN FETCH o.staffCourier WHERE o.restaurant.id = :restaurantId "
-            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.settlement IS NULL "
+            + "AND o.status = com.openbag.order.core.entity.OrderStatus.DELIVERED AND o.settlement IS NULL "
             + "AND (o.deliveryPerson IS NOT NULL OR o.staffCourier IS NOT NULL)")
     List<Order> findUnsettledByRestaurant(@Param("restaurantId") Long restaurantId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT o FROM Order o WHERE o.restaurant.id = :restaurantId AND o.deliveryPerson.id = :deliveryPersonId "
-            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.settlement IS NULL")
+            + "AND o.status = com.openbag.order.core.entity.OrderStatus.DELIVERED AND o.settlement IS NULL")
     List<Order> findUnsettledForAppCourierForUpdate(@Param("restaurantId") Long restaurantId,
                                                     @Param("deliveryPersonId") Long deliveryPersonId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT o FROM Order o WHERE o.restaurant.id = :restaurantId AND o.staffCourier.id = :staffCourierId "
-            + "AND o.status = com.openbag.enums.OrderStatus.DELIVERED AND o.settlement IS NULL")
+            + "AND o.status = com.openbag.order.core.entity.OrderStatus.DELIVERED AND o.settlement IS NULL")
     List<Order> findUnsettledForStaffForUpdate(@Param("restaurantId") Long restaurantId,
                                                @Param("staffCourierId") Long staffCourierId);
 

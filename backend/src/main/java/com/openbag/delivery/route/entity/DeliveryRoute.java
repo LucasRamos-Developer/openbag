@@ -1,7 +1,5 @@
 package com.openbag.delivery.route.entity;
 
-import com.openbag.enums.RouteOrigin;
-import com.openbag.enums.RouteStatus;
 import com.openbag.order.core.entity.Order;
 import com.openbag.restaurant.store.entity.Restaurant;
 import jakarta.persistence.*;

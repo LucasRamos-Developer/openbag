@@ -1,11 +1,11 @@
 package com.openbag.restaurant.store.service;
 
 import com.openbag.restaurant.store.dto.RestaurantOnboardingRequest;
-import com.openbag.modules.user.dto.AddressDTO;
+import com.openbag.account.dto.AddressDTO;
 import com.openbag.restaurant.store.dto.LayoutConfigDTO;
 import com.openbag.restaurant.store.dto.OpeningHourDTO;
-import com.openbag.modules.user.entity.User;
-import com.openbag.modules.user.entity.Address;
+import com.openbag.account.entity.User;
+import com.openbag.account.entity.Address;
 import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.restaurant.store.entity.LayoutConfig;
 import com.openbag.restaurant.store.entity.OpeningHour;
@@ -13,9 +13,9 @@ import com.openbag.restaurant.catalog.entity.Category;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.restaurant.store.repository.RestaurantRepository;
-import com.openbag.modules.user.repository.UserRepository;
+import com.openbag.account.repository.UserRepository;
 import com.openbag.restaurant.catalog.repository.CategoryRepository;
-import com.openbag.modules.user.service.RoleService;
+import com.openbag.account.service.RoleService;
 import com.openbag.platform.files.FileStorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

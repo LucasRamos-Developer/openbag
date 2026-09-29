@@ -1,8 +1,8 @@
 package com.openbag.association.finance.service;
 
-import com.openbag.enums.AddonPricing;
-import com.openbag.enums.MemberAddonStatus;
-import com.openbag.enums.MembershipStatus;
+import com.openbag.association.finance.entity.AddonPricing;
+import com.openbag.association.finance.entity.MemberAddonStatus;
+import com.openbag.association.core.entity.MembershipStatus;
 import com.openbag.association.finance.entity.AddonPlan;
 import com.openbag.association.finance.entity.MemberAddon;
 import com.openbag.association.finance.repository.AddonPlanRepository;
@@ -11,7 +11,7 @@ import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.association.core.entity.AssociationMembership;
 import com.openbag.association.core.repository.AssociationMembershipRepository;
 import com.openbag.association.core.service.AssociationService;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

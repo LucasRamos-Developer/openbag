@@ -1,6 +1,5 @@
 package com.openbag.delivery.courier.entity;
 
-import com.openbag.enums.SocialPlatform;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;

@@ -1,7 +1,7 @@
 package com.openbag.delivery.courier.service;
 
-import com.openbag.enums.MembershipStatus;
-import com.openbag.enums.SocialPlatform;
+import com.openbag.association.core.entity.MembershipStatus;
+import com.openbag.delivery.courier.entity.SocialPlatform;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.delivery.courier.dto.CourierAssociationDTO;
@@ -20,8 +20,8 @@ import com.openbag.association.core.entity.AssociationMembership;
 import com.openbag.association.core.repository.AssociationMembershipRepository;
 import com.openbag.platform.files.FileStorageService;
 import com.openbag.platform.util.BrazilianDocuments;
-import com.openbag.modules.user.entity.User;
-import com.openbag.modules.user.repository.UserRepository;
+import com.openbag.account.entity.User;
+import com.openbag.account.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,6 +1,6 @@
 package com.openbag.delivery.dispatch.repository;
 
-import com.openbag.enums.DeliveryOfferStatus;
+import com.openbag.delivery.dispatch.entity.DeliveryOfferStatus;
 import com.openbag.delivery.dispatch.entity.DeliveryOffer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,7 +22,7 @@ public interface DeliveryOfferRepository extends JpaRepository<DeliveryOffer, Lo
     boolean existsByDeliveryPersonIdAndStatus(Long deliveryPersonId, DeliveryOfferStatus status);
 
     @Query("SELECT o FROM DeliveryOffer o JOIN FETCH o.order WHERE o.deliveryPerson.id = :deliveryPersonId "
-            + "AND o.status = com.openbag.enums.DeliveryOfferStatus.PENDING")
+            + "AND o.status = com.openbag.delivery.dispatch.entity.DeliveryOfferStatus.PENDING")
     Optional<DeliveryOffer> findPendingByCourier(@Param("deliveryPersonId") Long deliveryPersonId);
 
     Optional<DeliveryOffer> findByIdAndDeliveryPersonId(Long id, Long deliveryPersonId);
@@ -35,7 +35,7 @@ public interface DeliveryOfferRepository extends JpaRepository<DeliveryOffer, Lo
             + "WHERE o.id = :offerId AND o.deliveryPerson.user.id = :userId")
     List<Object[]> findOrderAndRouteOfCourierOffer(@Param("offerId") Long offerId, @Param("userId") Long userId);
 
-    @Query("SELECT o FROM DeliveryOffer o WHERE o.status = com.openbag.enums.DeliveryOfferStatus.PENDING "
+    @Query("SELECT o FROM DeliveryOffer o WHERE o.status = com.openbag.delivery.dispatch.entity.DeliveryOfferStatus.PENDING "
             + "AND o.expiresAt < :now")
     List<DeliveryOffer> findExpired(@Param("now") LocalDateTime now);
 
@@ -48,6 +48,6 @@ public interface DeliveryOfferRepository extends JpaRepository<DeliveryOffer, Lo
     /**
      * Entregadores com oferta pendente (não recebem outra ao mesmo tempo)
      */
-    @Query("SELECT o.deliveryPerson.id FROM DeliveryOffer o WHERE o.status = com.openbag.enums.DeliveryOfferStatus.PENDING")
+    @Query("SELECT o.deliveryPerson.id FROM DeliveryOffer o WHERE o.status = com.openbag.delivery.dispatch.entity.DeliveryOfferStatus.PENDING")
     Set<Long> findCourierIdsWithPendingOffer();
 }

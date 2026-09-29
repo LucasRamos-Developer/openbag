@@ -1,20 +1,17 @@
 package com.openbag.restaurant.store.entity;
 
-import com.openbag.modules.user.entity.User;
-import com.openbag.modules.user.entity.Address;
+import com.openbag.account.entity.User;
+import com.openbag.account.entity.Address;
 import com.openbag.association.core.entity.Organization;
 import com.openbag.restaurant.catalog.entity.Product;
 import com.openbag.restaurant.catalog.entity.Category;
 import com.openbag.order.core.entity.Order;
-import com.openbag.enums.AcceptanceMode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import com.openbag.enums.CourierPolicy;
-import com.openbag.enums.DeliveryFeeMode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

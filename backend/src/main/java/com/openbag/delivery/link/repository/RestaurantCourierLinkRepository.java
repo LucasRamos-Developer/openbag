@@ -1,6 +1,6 @@
 package com.openbag.delivery.link.repository;
 
-import com.openbag.enums.CourierLinkStatus;
+import com.openbag.delivery.link.entity.CourierLinkStatus;
 import com.openbag.delivery.link.entity.RestaurantCourierLink;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

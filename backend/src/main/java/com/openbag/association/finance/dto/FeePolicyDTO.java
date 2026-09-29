@@ -1,6 +1,6 @@
 package com.openbag.association.finance.dto;
 
-import com.openbag.enums.MembershipFeeMode;
+import com.openbag.association.core.entity.MembershipFeeMode;
 import com.openbag.association.core.entity.MembershipFeePolicy;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;

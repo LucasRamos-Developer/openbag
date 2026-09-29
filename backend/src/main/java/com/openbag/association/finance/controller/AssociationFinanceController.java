@@ -1,7 +1,7 @@
 package com.openbag.association.finance.controller;
 
 import com.openbag.platform.security.annotation.IsAssociationManager;
-import com.openbag.enums.LedgerAccount;
+import com.openbag.association.finance.entity.LedgerAccount;
 import com.openbag.association.finance.dto.AddonPlanDTO;
 import com.openbag.association.finance.dto.AddonPlanRequest;
 import com.openbag.association.finance.dto.FeePolicyDTO;
@@ -17,7 +17,7 @@ import com.openbag.association.finance.service.AddonService;
 import com.openbag.association.finance.service.LedgerService;
 import com.openbag.association.finance.service.MemberInvoiceService;
 import com.openbag.association.core.dto.ReasonRequest;
-import com.openbag.modules.user.service.UserService;
+import com.openbag.account.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

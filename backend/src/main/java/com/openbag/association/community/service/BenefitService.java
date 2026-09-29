@@ -7,7 +7,7 @@ import com.openbag.association.community.entity.Benefit;
 import com.openbag.association.community.repository.BenefitRepository;
 import com.openbag.association.core.service.AssociationService;
 import com.openbag.platform.files.FileStorageService;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

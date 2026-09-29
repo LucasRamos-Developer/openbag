@@ -1,8 +1,8 @@
 package com.openbag.order.core.service;
 
-import com.openbag.enums.FulfillmentType;
-import com.openbag.enums.OrderChannel;
-import com.openbag.enums.OrderStatus;
+import com.openbag.order.core.entity.FulfillmentType;
+import com.openbag.order.core.entity.OrderChannel;
+import com.openbag.order.core.entity.OrderStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.restaurant.combo.repository.ComboRepository;
 import com.openbag.delivery.dispatch.service.DeliveryFeeQuoteService;

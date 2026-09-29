@@ -1,6 +1,6 @@
 package com.openbag.delivery.courier.dto;
 
-import com.openbag.enums.SocialPlatform;
+import com.openbag.delivery.courier.entity.SocialPlatform;
 import com.openbag.delivery.courier.entity.CourierSocialLink;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

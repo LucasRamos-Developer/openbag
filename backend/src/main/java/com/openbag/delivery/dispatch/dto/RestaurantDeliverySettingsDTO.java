@@ -1,7 +1,7 @@
 package com.openbag.delivery.dispatch.dto;
 
-import com.openbag.enums.CourierPolicy;
-import com.openbag.enums.DeliveryFeeMode;
+import com.openbag.restaurant.store.entity.CourierPolicy;
+import com.openbag.restaurant.store.entity.DeliveryFeeMode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

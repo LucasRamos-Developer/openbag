@@ -1,10 +1,10 @@
 package com.openbag.order.core.service;
 
-import com.openbag.enums.AcceptanceMode;
-import com.openbag.enums.CancelledBy;
-import com.openbag.enums.FulfillmentType;
-import com.openbag.enums.OrderChannel;
-import com.openbag.enums.OrderStatus;
+import com.openbag.restaurant.store.entity.AcceptanceMode;
+import com.openbag.order.core.entity.CancelledBy;
+import com.openbag.order.core.entity.FulfillmentType;
+import com.openbag.order.core.entity.OrderChannel;
+import com.openbag.order.core.entity.OrderStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.restaurant.combo.entity.Combo;
@@ -26,7 +26,7 @@ import com.openbag.restaurant.catalog.repository.ProductRepository;
 import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.restaurant.store.repository.RestaurantRepository;
 import com.openbag.platform.geo.GeocodingService;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;

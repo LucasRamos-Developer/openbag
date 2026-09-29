@@ -1,8 +1,8 @@
 package com.openbag.association.finance.service;
 
-import com.openbag.enums.AddonPricing;
-import com.openbag.enums.InvoiceLineType;
-import com.openbag.enums.MembershipFeeMode;
+import com.openbag.association.finance.entity.AddonPricing;
+import com.openbag.association.finance.entity.InvoiceLineType;
+import com.openbag.association.core.entity.MembershipFeeMode;
 import com.openbag.association.finance.entity.AddonPlan;
 import com.openbag.association.finance.entity.MemberInvoiceLine;
 import com.openbag.association.core.entity.MembershipFeePolicy;

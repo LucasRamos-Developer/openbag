@@ -1,6 +1,6 @@
 package com.openbag.association.finance.repository;
 
-import com.openbag.enums.MemberAddonStatus;
+import com.openbag.association.finance.entity.MemberAddonStatus;
 import com.openbag.association.finance.entity.MemberAddon;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -28,6 +28,6 @@ public interface MemberAddonRepository extends JpaRepository<MemberAddon, Long> 
 
     /** Proposto ou ativo: um por cooperado e por plano */
     @Query("SELECT COUNT(a) > 0 FROM MemberAddon a WHERE a.membership.id = :membershipId AND a.plan.id = :planId "
-            + "AND a.status IN (com.openbag.enums.MemberAddonStatus.PROPOSED, com.openbag.enums.MemberAddonStatus.ACTIVE)")
+            + "AND a.status IN (com.openbag.association.finance.entity.MemberAddonStatus.PROPOSED, com.openbag.association.finance.entity.MemberAddonStatus.ACTIVE)")
     boolean existsOpen(@Param("membershipId") Long membershipId, @Param("planId") Long planId);
 }

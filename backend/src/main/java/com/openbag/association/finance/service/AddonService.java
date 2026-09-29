@@ -1,7 +1,7 @@
 package com.openbag.association.finance.service;
 
-import com.openbag.enums.MemberAddonStatus;
-import com.openbag.enums.MembershipStatus;
+import com.openbag.association.finance.entity.MemberAddonStatus;
+import com.openbag.association.core.entity.MembershipStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.association.finance.dto.AddonPlanDTO;
@@ -15,7 +15,7 @@ import com.openbag.association.core.entity.AssociationMembership;
 import com.openbag.association.core.entity.Organization;
 import com.openbag.association.core.repository.AssociationMembershipRepository;
 import com.openbag.association.core.service.AssociationService;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

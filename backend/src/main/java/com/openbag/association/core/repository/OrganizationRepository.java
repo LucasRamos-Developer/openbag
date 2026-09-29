@@ -1,6 +1,6 @@
 package com.openbag.association.core.repository;
 
-import com.openbag.enums.OrganizationStatus;
+import com.openbag.association.core.entity.OrganizationStatus;
 import com.openbag.association.core.entity.Organization;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

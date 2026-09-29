@@ -1,13 +1,13 @@
 package com.openbag.restaurant.store.dto;
 
-import com.openbag.enums.DeliveryFeeMode;
-import com.openbag.enums.RestaurantThemePreset;
+import com.openbag.restaurant.store.entity.DeliveryFeeMode;
+import com.openbag.restaurant.store.entity.RestaurantThemePreset;
 import com.openbag.order.core.entity.Order;
 import com.openbag.restaurant.catalog.entity.Category;
 import com.openbag.restaurant.store.entity.LayoutConfig;
 import com.openbag.restaurant.store.entity.OpeningHour;
 import com.openbag.restaurant.store.entity.Restaurant;
-import com.openbag.modules.user.entity.Address;
+import com.openbag.account.entity.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

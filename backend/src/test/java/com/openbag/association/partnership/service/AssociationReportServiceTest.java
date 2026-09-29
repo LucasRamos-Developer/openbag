@@ -1,7 +1,7 @@
 package com.openbag.association.partnership.service;
 
-import com.openbag.enums.MembershipStatus;
-import com.openbag.enums.PartnershipStatus;
+import com.openbag.association.core.entity.MembershipStatus;
+import com.openbag.association.partnership.entity.PartnershipStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.association.partnership.dto.AssociationReportDTO;
@@ -17,7 +17,7 @@ import com.openbag.association.core.entity.Organization;
 import com.openbag.association.core.repository.AssociationMembershipRepository;
 import com.openbag.association.core.repository.OrganizationRepository;
 import com.openbag.restaurant.store.entity.Restaurant;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

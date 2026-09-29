@@ -1,7 +1,7 @@
 package com.openbag.order.core.dto;
 
-import com.openbag.enums.FulfillmentType;
-import com.openbag.enums.OrderChannel;
+import com.openbag.order.core.entity.FulfillmentType;
+import com.openbag.order.core.entity.OrderChannel;
 import com.openbag.order.core.entity.Order;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;

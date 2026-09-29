@@ -1,6 +1,5 @@
 package com.openbag.order.core.entity;
 
-import com.openbag.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

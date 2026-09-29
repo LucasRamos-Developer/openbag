@@ -1,7 +1,7 @@
 package com.openbag.delivery.dispatch.service;
 
-import com.openbag.enums.OrderStatus;
-import com.openbag.enums.ShiftMode;
+import com.openbag.order.core.entity.OrderStatus;
+import com.openbag.delivery.courier.entity.ShiftMode;
 import com.openbag.delivery.dispatch.service.ReassignPolicy.CourierKind;
 import com.openbag.delivery.dispatch.service.ReassignPolicy.Decision;
 import com.openbag.delivery.courier.entity.CourierShift;

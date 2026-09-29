@@ -6,7 +6,7 @@ import com.openbag.association.core.dto.JoinAssociationRequest;
 import com.openbag.association.core.dto.MemberDTO;
 import com.openbag.association.core.dto.ReasonRequest;
 import com.openbag.association.core.service.MembershipService;
-import com.openbag.modules.user.service.UserService;
+import com.openbag.account.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

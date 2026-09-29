@@ -1,6 +1,6 @@
 package com.openbag.delivery.courier.service;
 
-import com.openbag.enums.CourierLinkStatus;
+import com.openbag.delivery.link.entity.CourierLinkStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.delivery.courier.dto.CourierEarningsDTO;
@@ -13,7 +13,7 @@ import com.openbag.order.core.entity.Order;
 import com.openbag.order.core.repository.OrderRepository;
 import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.restaurant.store.repository.RestaurantRepository;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;

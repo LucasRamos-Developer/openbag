@@ -1,11 +1,11 @@
 package com.openbag.delivery.dispatch.service;
 
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import com.openbag.enums.CourierPolicy;
-import com.openbag.enums.CourierWorkStatus;
-import com.openbag.enums.DeliveryOfferStatus;
-import com.openbag.enums.OrderStatus;
-import com.openbag.enums.RouteStatus;
+import com.openbag.restaurant.store.entity.CourierPolicy;
+import com.openbag.delivery.courier.entity.CourierWorkStatus;
+import com.openbag.delivery.dispatch.entity.DeliveryOfferStatus;
+import com.openbag.order.core.entity.OrderStatus;
+import com.openbag.delivery.route.entity.RouteStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.delivery.dispatch.service.CourierSelector.Candidate;

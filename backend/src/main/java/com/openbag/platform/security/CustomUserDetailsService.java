@@ -1,7 +1,7 @@
 package com.openbag.platform.security;
 
-import com.openbag.modules.user.entity.User;
-import com.openbag.modules.user.repository.UserRepository;
+import com.openbag.account.entity.User;
+import com.openbag.account.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

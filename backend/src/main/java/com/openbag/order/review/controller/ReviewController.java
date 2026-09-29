@@ -7,7 +7,7 @@ import com.openbag.order.review.dto.ReplyRequest;
 import com.openbag.order.review.dto.RestaurantReviewDTO;
 import com.openbag.order.review.dto.ReviewSummaryDTO;
 import com.openbag.order.review.service.ReviewService;
-import com.openbag.modules.user.service.UserService;
+import com.openbag.account.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

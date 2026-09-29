@@ -14,7 +14,7 @@ import com.openbag.order.core.entity.Order;
 import com.openbag.order.core.repository.OrderRepository;
 import com.openbag.association.core.entity.Organization;
 import com.openbag.restaurant.store.repository.RestaurantRepository;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

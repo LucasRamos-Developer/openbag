@@ -1,7 +1,5 @@
 package com.openbag.association.partnership.entity;
 
-import com.openbag.enums.PartnershipSide;
-import com.openbag.enums.PartnershipStatus;
 import com.openbag.association.core.entity.DeliveryRate;
 import com.openbag.association.core.entity.Organization;
 import com.openbag.restaurant.store.entity.Restaurant;

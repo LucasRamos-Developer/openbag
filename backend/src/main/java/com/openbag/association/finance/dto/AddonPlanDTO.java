@@ -1,6 +1,6 @@
 package com.openbag.association.finance.dto;
 
-import com.openbag.enums.AddonPricing;
+import com.openbag.association.finance.entity.AddonPricing;
 import com.openbag.association.finance.entity.AddonPlan;
 
 import java.math.BigDecimal;

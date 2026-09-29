@@ -1,6 +1,5 @@
 package com.openbag.association.finance.entity;
 
-import com.openbag.enums.InvoiceLineType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,9 +1,9 @@
 package com.openbag.association.core.controller;
 
 import com.openbag.platform.security.annotation.IsAssociationManager;
-import com.openbag.enums.MemberBillingFilter;
-import com.openbag.enums.MembershipStatus;
-import com.openbag.enums.VehicleType;
+import com.openbag.association.core.dto.MemberBillingFilter;
+import com.openbag.association.core.entity.MembershipStatus;
+import com.openbag.delivery.courier.entity.VehicleType;
 import com.openbag.association.core.dto.AssociationDTO;
 import com.openbag.association.core.dto.AssociationStatsDTO;
 import com.openbag.association.core.dto.AssociationUpdateRequest;
@@ -18,7 +18,7 @@ import com.openbag.association.core.service.InviteService;
 import com.openbag.association.core.service.MemberExportService;
 import com.openbag.association.core.service.MembershipService;
 import com.openbag.platform.util.CsvWriter;
-import com.openbag.modules.user.service.UserService;
+import com.openbag.account.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

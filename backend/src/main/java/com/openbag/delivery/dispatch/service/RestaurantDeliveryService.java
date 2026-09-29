@@ -1,10 +1,10 @@
 package com.openbag.delivery.dispatch.service;
 
-import com.openbag.enums.CourierLinkStatus;
-import com.openbag.enums.CourierPolicy;
-import com.openbag.enums.DeliveryFeeMode;
-import com.openbag.enums.PartnershipSide;
-import com.openbag.enums.PartnershipStatus;
+import com.openbag.delivery.link.entity.CourierLinkStatus;
+import com.openbag.restaurant.store.entity.CourierPolicy;
+import com.openbag.restaurant.store.entity.DeliveryFeeMode;
+import com.openbag.association.partnership.entity.PartnershipSide;
+import com.openbag.association.partnership.entity.PartnershipStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ConflictException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;

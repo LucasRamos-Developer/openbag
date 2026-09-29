@@ -1,6 +1,6 @@
 package com.openbag.association.core.entity;
 
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

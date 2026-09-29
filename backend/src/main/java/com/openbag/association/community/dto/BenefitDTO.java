@@ -1,6 +1,6 @@
 package com.openbag.association.community.dto;
 
-import com.openbag.enums.BenefitCategory;
+import com.openbag.association.community.entity.BenefitCategory;
 import com.openbag.association.community.entity.Benefit;
 
 import java.time.LocalDate;

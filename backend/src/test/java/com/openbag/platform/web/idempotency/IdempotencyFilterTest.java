@@ -2,7 +2,7 @@ package com.openbag.platform.web.idempotency;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openbag.platform.seed.DemoDataInitializer;
-import com.openbag.modules.user.repository.UserRepository;
+import com.openbag.account.repository.UserRepository;
 import com.openbag.platform.security.CustomUserDetailsService.CustomUserPrincipal;
 import com.openbag.platform.security.JwtTokenProvider;
 import com.openbag.support.IntegrationTest;

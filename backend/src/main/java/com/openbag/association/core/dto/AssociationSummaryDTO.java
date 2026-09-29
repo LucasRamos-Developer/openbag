@@ -1,6 +1,6 @@
 package com.openbag.association.core.dto;
 
-import com.openbag.enums.OrganizationType;
+import com.openbag.association.core.entity.OrganizationType;
 import com.openbag.association.core.entity.Organization;
 import lombok.AllArgsConstructor;
 import lombok.Data;

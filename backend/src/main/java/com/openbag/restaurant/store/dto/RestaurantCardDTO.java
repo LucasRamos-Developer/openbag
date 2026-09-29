@@ -1,8 +1,8 @@
 package com.openbag.restaurant.store.dto;
 
-import com.openbag.enums.DeliveryFeeMode;
+import com.openbag.restaurant.store.entity.DeliveryFeeMode;
 import com.openbag.restaurant.catalog.entity.Category;
-import com.openbag.enums.RestaurantThemePreset;
+import com.openbag.restaurant.store.entity.RestaurantThemePreset;
 import com.openbag.restaurant.store.entity.LayoutConfig;
 import com.openbag.restaurant.store.entity.Restaurant;
 import lombok.AllArgsConstructor;

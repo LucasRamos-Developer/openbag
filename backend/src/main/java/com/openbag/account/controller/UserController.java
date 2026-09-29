@@ -1,0 +1,264 @@
+package com.openbag.account.controller;
+
+import com.openbag.account.dto.AddressDTO;
+import com.openbag.account.dto.JwtAuthenticationResponse;
+import com.openbag.account.dto.RoleDTO;
+import com.openbag.account.dto.UserPermissionsResponse;
+import com.openbag.account.entity.Permission;
+import com.openbag.account.entity.Role;
+import com.openbag.account.entity.User;
+import com.openbag.account.repository.UserRepository;
+import com.openbag.account.service.PermissionService;
+import com.openbag.account.service.RoleService;
+import com.openbag.account.service.UserService;
+import com.openbag.platform.files.FileStorageService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/users")
+@Tag(name = "User", description = "API de gerenciamento de usuários")
+@SecurityRequirement(name = "bearerAuth")
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private RoleService roleService;
+
+    @Autowired
+    private PermissionService permissionService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
+
+    @GetMapping("/profile")
+    @Operation(summary = "Buscar perfil do usuário atual")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<JwtAuthenticationResponse.UserDto> getCurrentUserProfile() {
+        return ResponseEntity.ok(new JwtAuthenticationResponse.UserDto(userService.getCurrentUser()));
+    }
+
+    @PutMapping("/profile")
+    @Operation(summary = "Atualizar perfil do usuário")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<JwtAuthenticationResponse.UserDto> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        // Só nome e telefone: a entidade inteira no corpo deixaria o cliente tentar mudar email, papéis ou senha
+        User updatedUser = userService.updateProfile(request.fullName(), request.phoneNumber());
+        return ResponseEntity.ok(new JwtAuthenticationResponse.UserDto(updatedUser));
+    }
+
+    public record UpdateProfileRequest(
+            @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres") String fullName,
+            @Size(min = 8, max = 15, message = "Telefone deve ter entre 8 e 15 caracteres") String phoneNumber) {
+    }
+
+    @GetMapping("/addresses")
+    @Operation(summary = "Listar endereços do usuário")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<AddressDTO>> getUserAddresses() {
+        List<AddressDTO> addresses = userService.getUserAddresses();
+        return ResponseEntity.ok(addresses);
+    }
+
+    @PostMapping("/addresses")
+    @Operation(summary = "Adicionar novo endereço")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<AddressDTO> addAddress(@Valid @RequestBody AddressDTO addressDTO) {
+        AddressDTO savedAddress = userService.addAddress(addressDTO);
+        return ResponseEntity.ok(savedAddress);
+    }
+
+    @PutMapping("/addresses/{addressId}")
+    @Operation(summary = "Atualizar endereço")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<AddressDTO> updateAddress(
+            @PathVariable Long addressId,
+            @Valid @RequestBody AddressDTO addressDTO) {
+        AddressDTO updatedAddress = userService.updateAddress(addressId, addressDTO);
+        return ResponseEntity.ok(updatedAddress);
+    }
+
+    @DeleteMapping("/addresses/{addressId}")
+    @Operation(summary = "Remover endereço")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteAddress(@PathVariable Long addressId) {
+        userService.deleteAddress(addressId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/profile")
+    @Operation(summary = "Desativar conta do usuário")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deactivateAccount() {
+        userService.deactivateUser();
+        return ResponseEntity.noContent().build();
+    }
+
+    // ============= Endpoints de Gerenciamento de Roles/Permissões =============
+
+    @PostMapping("/{id}/roles")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Adicionar role a usuário", description = "Adiciona uma role a um usuário (somente ADMIN)")
+    public ResponseEntity<?> addRoleToUser(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        String roleName = request.get("roleName");
+        if (roleName == null || roleName.isBlank()) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Nome da role é obrigatório"));
+        }
+
+        roleService.addRoleToUser(id, roleName.toUpperCase());
+
+        return ResponseEntity.ok(Map.of(
+            "message", "Role adicionada com sucesso",
+            "userId", id,
+            "roleName", roleName
+        ));
+    }
+
+    @DeleteMapping("/{id}/roles/{roleName}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Remover role de usuário", description = "Remove uma role de um usuário (somente ADMIN)")
+    public ResponseEntity<?> removeRoleFromUser(@PathVariable Long id, @PathVariable String roleName) {
+        roleService.removeRoleFromUser(id, roleName.toUpperCase());
+
+        return ResponseEntity.ok(Map.of(
+            "message", "Role removida com sucesso",
+            "userId", id,
+            "roleName", roleName
+        ));
+    }
+
+    @GetMapping("/{id}/roles")
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
+    @Operation(summary = "Listar roles de usuário", description = "Lista todas as roles de um usuário")
+    public ResponseEntity<?> getUserRoles(@PathVariable Long id) {
+        List<Role> roles = roleService.getUserRoles(id);
+        List<RoleDTO> roleDTOs = roles.stream()
+                .map(RoleDTO::simple)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(Map.of(
+            "userId", id,
+            "roles", roleDTOs
+        ));
+    }
+
+    @GetMapping("/{id}/permissions")
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
+    @Operation(summary = "Listar permissões de usuário", description = "Lista todas as permissões de um usuário")
+    public ResponseEntity<?> getUserPermissions(@PathVariable Long id) {
+        List<Permission> permissions = roleService.getUserPermissions(id);
+        List<String> permissionNames = permissions.stream()
+                .map(Permission::getName)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(Map.of(
+            "userId", id,
+            "permissions", permissionNames
+        ));
+    }
+
+    @GetMapping("/me/permissions")
+    @Operation(summary = "Minhas permissões", description = "Retorna roles e permissões do usuário logado")
+    public ResponseEntity<?> getMyPermissions(Authentication authentication) {
+        var principal = (com.openbag.platform.security.CustomUserDetailsService.CustomUserPrincipal) authentication.getPrincipal();
+        Long userId = principal.getId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        UserPermissionsResponse response = UserPermissionsResponse.fromUser(user);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}/roles")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Substituir roles de usuário", description = "Substitui todas as roles de um usuário (somente ADMIN)")
+    public ResponseEntity<?> setUserRoles(@PathVariable Long id, @RequestBody Map<String, List<String>> request) {
+        List<String> roleNames = request.get("roleNames");
+        if (roleNames == null || roleNames.isEmpty()) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Lista de roles é obrigatória"));
+        }
+
+        // Converte para uppercase
+        List<String> upperRoleNames = roleNames.stream()
+                .map(String::toUpperCase)
+                .collect(Collectors.toList());
+
+        roleService.setUserRoles(id, upperRoleNames);
+
+        return ResponseEntity.ok(Map.of(
+            "message", "Roles atualizadas com sucesso",
+            "userId", id,
+            "roleNames", upperRoleNames
+        ));
+    }
+
+    @PostMapping("/{id}/upload-profile-image")
+    @Operation(summary = "Upload da imagem de perfil do usuário")
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
+    public ResponseEntity<?> uploadProfileImage(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication) {
+        
+        String imageUrl = fileStorageService.storeImage(file, "users/profiles");
+        User user = userService.getUserById(id);
+        
+        // Deletar imagem antiga se existir
+        if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
+            fileStorageService.deleteFile(user.getProfileImageUrl());
+        }
+        
+        user.setProfileImageUrl(imageUrl);
+        User updatedUser = userRepository.save(user);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("profileImageUrl", imageUrl);
+        response.put("fullUrl", "/api/files/" + imageUrl);
+        response.put("user", new JwtAuthenticationResponse.UserDto(updatedUser));
+        
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}/profile-image")
+    @Operation(summary = "Remover imagem de perfil do usuário")
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
+    public ResponseEntity<?> deleteProfileImage(
+            @PathVariable Long id,
+            Authentication authentication) {
+        
+        User user = userService.getUserById(id);
+        
+        if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
+            fileStorageService.deleteFile(user.getProfileImageUrl());
+            user.setProfileImageUrl(null);
+            userRepository.save(user);
+        }
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Imagem de perfil removida com sucesso");
+        return ResponseEntity.ok(response);
+    }
+}

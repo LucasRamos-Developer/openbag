@@ -1,6 +1,6 @@
 package com.openbag.delivery.dispatch.dto;
 
-import com.openbag.enums.VehicleType;
+import com.openbag.delivery.courier.entity.VehicleType;
 import com.openbag.delivery.dispatch.service.ReassignPolicy.CourierKind;
 
 import java.math.BigDecimal;

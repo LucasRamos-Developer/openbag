@@ -1,11 +1,11 @@
 package com.openbag.association.core.dto;
 
-import com.openbag.enums.OrganizationStatus;
-import com.openbag.enums.OrganizationType;
+import com.openbag.association.core.entity.OrganizationStatus;
+import com.openbag.association.core.entity.OrganizationType;
 import com.openbag.association.core.entity.Organization;
-import com.openbag.modules.user.dto.AddressDTO;
-import com.openbag.modules.user.entity.Address;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.dto.AddressDTO;
+import com.openbag.account.entity.Address;
+import com.openbag.account.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

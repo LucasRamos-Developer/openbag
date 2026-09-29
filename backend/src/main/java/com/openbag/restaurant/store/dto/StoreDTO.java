@@ -1,9 +1,9 @@
 package com.openbag.restaurant.store.dto;
 
-import com.openbag.enums.DeliveryFeeMode;
-import com.openbag.enums.AcceptanceMode;
-import com.openbag.enums.RestaurantThemePreset;
-import com.openbag.modules.user.dto.AddressDTO;
+import com.openbag.restaurant.store.entity.DeliveryFeeMode;
+import com.openbag.restaurant.store.entity.AcceptanceMode;
+import com.openbag.restaurant.store.entity.RestaurantThemePreset;
+import com.openbag.account.dto.AddressDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

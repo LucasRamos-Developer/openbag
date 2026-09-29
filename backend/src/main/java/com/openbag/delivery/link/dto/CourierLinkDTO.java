@@ -1,11 +1,11 @@
 package com.openbag.delivery.link.dto;
 
-import com.openbag.enums.CourierLinkStatus;
-import com.openbag.enums.LinkRequester;
+import com.openbag.delivery.link.entity.CourierLinkStatus;
+import com.openbag.delivery.link.entity.LinkRequester;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.delivery.link.entity.RestaurantCourierLink;
 import com.openbag.restaurant.store.entity.Restaurant;
-import com.openbag.modules.user.entity.Address;
+import com.openbag.account.entity.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

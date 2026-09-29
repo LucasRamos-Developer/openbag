@@ -1,12 +1,12 @@
 package com.openbag.platform.seed;
 
-import com.openbag.enums.UserType;
-import com.openbag.modules.user.entity.Permission;
-import com.openbag.modules.user.entity.Role;
-import com.openbag.modules.user.entity.User;
-import com.openbag.modules.user.repository.PermissionRepository;
-import com.openbag.modules.user.repository.RoleRepository;
-import com.openbag.modules.user.repository.UserRepository;
+import com.openbag.account.entity.UserType;
+import com.openbag.account.entity.Permission;
+import com.openbag.account.entity.Role;
+import com.openbag.account.entity.User;
+import com.openbag.account.repository.PermissionRepository;
+import com.openbag.account.repository.RoleRepository;
+import com.openbag.account.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

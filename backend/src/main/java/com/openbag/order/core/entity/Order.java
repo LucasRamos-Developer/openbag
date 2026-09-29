@@ -1,16 +1,12 @@
 package com.openbag.order.core.entity;
 
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.restaurant.cash.entity.CourierSettlement;
 import com.openbag.delivery.route.entity.DeliveryRoute;
 import com.openbag.delivery.link.entity.StaffCourier;
 import com.openbag.association.core.entity.Organization;
-import com.openbag.enums.CancelledBy;
-import com.openbag.enums.FulfillmentType;
-import com.openbag.enums.OrderChannel;
-import com.openbag.enums.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

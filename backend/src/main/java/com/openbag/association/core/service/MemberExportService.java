@@ -1,15 +1,15 @@
 package com.openbag.association.core.service;
 
-import com.openbag.enums.MemberBillingFilter;
-import com.openbag.enums.MembershipStatus;
-import com.openbag.enums.VehicleType;
+import com.openbag.association.core.dto.MemberBillingFilter;
+import com.openbag.association.core.entity.MembershipStatus;
+import com.openbag.delivery.courier.entity.VehicleType;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.delivery.courier.entity.Vehicle;
 import com.openbag.delivery.courier.repository.VehicleRepository;
 import com.openbag.association.core.entity.AssociationMembership;
 import com.openbag.association.core.repository.AssociationMembershipRepository;
 import com.openbag.platform.util.CsvWriter;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;

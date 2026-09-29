@@ -1,7 +1,7 @@
 package com.openbag.delivery.courier.service;
 
-import com.openbag.enums.SocialPlatform;
-import com.openbag.enums.VehicleType;
+import com.openbag.delivery.courier.entity.SocialPlatform;
+import com.openbag.delivery.courier.entity.VehicleType;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.delivery.courier.dto.VehicleDTO;
 import com.openbag.delivery.courier.dto.VehicleRequest;
@@ -10,7 +10,7 @@ import com.openbag.delivery.courier.entity.Vehicle;
 import com.openbag.delivery.courier.repository.DeliveryPersonRepository;
 import com.openbag.delivery.courier.repository.VehicleRepository;
 import com.openbag.association.core.repository.AssociationMembershipRepository;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

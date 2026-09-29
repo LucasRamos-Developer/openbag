@@ -1,7 +1,7 @@
 package com.openbag.restaurant.store.repository;
 
 import com.openbag.restaurant.store.entity.Restaurant;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import jakarta.persistence.LockModeType;

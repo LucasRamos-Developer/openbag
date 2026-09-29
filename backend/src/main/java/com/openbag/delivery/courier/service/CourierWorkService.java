@@ -1,10 +1,10 @@
 package com.openbag.delivery.courier.service;
 
-import com.openbag.enums.CourierLinkStatus;
-import com.openbag.enums.CourierWorkStatus;
-import com.openbag.enums.DeliveryOfferStatus;
-import com.openbag.enums.OrderStatus;
-import com.openbag.enums.ShiftMode;
+import com.openbag.delivery.link.entity.CourierLinkStatus;
+import com.openbag.delivery.courier.entity.CourierWorkStatus;
+import com.openbag.delivery.dispatch.entity.DeliveryOfferStatus;
+import com.openbag.order.core.entity.OrderStatus;
+import com.openbag.delivery.courier.entity.ShiftMode;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.delivery.dispatch.service.DispatchProperties;
@@ -34,7 +34,7 @@ import com.openbag.association.core.entity.Organization;
 import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.restaurant.store.repository.RestaurantRepository;
 import com.openbag.platform.geo.GeoUtils;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;

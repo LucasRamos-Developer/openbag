@@ -1,7 +1,7 @@
 package com.openbag.delivery.courier.dto;
 
-import com.openbag.enums.CourierWorkStatus;
-import com.openbag.enums.ShiftMode;
+import com.openbag.delivery.courier.entity.CourierWorkStatus;
+import com.openbag.delivery.courier.entity.ShiftMode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

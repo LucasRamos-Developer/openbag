@@ -1,9 +1,7 @@
 package com.openbag.association.core.entity;
 
-import com.openbag.enums.MembershipOrigin;
-import com.openbag.enums.MembershipStatus;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;

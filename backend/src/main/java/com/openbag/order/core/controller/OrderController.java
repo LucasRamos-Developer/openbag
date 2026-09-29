@@ -5,7 +5,7 @@ import com.openbag.order.core.dto.CreateOrderRequest;
 import com.openbag.order.core.dto.DeliveryQuoteRequest;
 import com.openbag.order.core.dto.OrderDTO;
 import com.openbag.order.core.service.OrderService;
-import com.openbag.modules.user.service.UserService;
+import com.openbag.account.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

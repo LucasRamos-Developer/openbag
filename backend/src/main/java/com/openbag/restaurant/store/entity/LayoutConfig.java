@@ -1,6 +1,5 @@
 package com.openbag.restaurant.store.entity;
 
-import com.openbag.enums.RestaurantThemePreset;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

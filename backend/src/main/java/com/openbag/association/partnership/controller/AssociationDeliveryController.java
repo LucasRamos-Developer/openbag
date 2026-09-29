@@ -1,7 +1,7 @@
 package com.openbag.association.partnership.controller;
 
 import com.openbag.platform.security.annotation.IsAssociationManager;
-import com.openbag.enums.PartnershipSide;
+import com.openbag.association.partnership.entity.PartnershipSide;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.association.partnership.dto.AssociationPartnershipDTO;
 import com.openbag.association.partnership.dto.AssociationReportDTO;

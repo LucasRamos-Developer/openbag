@@ -1,7 +1,7 @@
 package com.openbag.association.community.controller;
 
 import com.openbag.platform.security.annotation.IsAssociationManager;
-import com.openbag.enums.AssociationDocumentType;
+import com.openbag.association.community.entity.AssociationDocumentType;
 import com.openbag.association.community.dto.AssociationDocumentDTO;
 import com.openbag.association.community.dto.BenefitDTO;
 import com.openbag.association.community.dto.BenefitRequest;
@@ -10,7 +10,7 @@ import com.openbag.association.community.dto.PollRequest;
 import com.openbag.association.community.service.AssociationDocumentService;
 import com.openbag.association.community.service.BenefitService;
 import com.openbag.association.community.service.PollService;
-import com.openbag.modules.user.service.UserService;
+import com.openbag.account.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

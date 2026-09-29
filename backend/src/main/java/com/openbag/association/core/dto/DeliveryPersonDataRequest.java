@@ -1,6 +1,6 @@
 package com.openbag.association.core.dto;
 
-import com.openbag.enums.VehicleType;
+import com.openbag.delivery.courier.entity.VehicleType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

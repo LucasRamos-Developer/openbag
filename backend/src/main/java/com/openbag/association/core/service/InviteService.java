@@ -8,7 +8,7 @@ import com.openbag.association.core.dto.InviteDTO;
 import com.openbag.association.core.entity.AssociationInvite;
 import com.openbag.association.core.entity.Organization;
 import com.openbag.association.core.repository.AssociationInviteRepository;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

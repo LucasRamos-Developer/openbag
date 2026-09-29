@@ -1,8 +1,8 @@
 package com.openbag.association.core.service;
 
-import com.openbag.enums.MembershipOrigin;
-import com.openbag.enums.MembershipStatus;
-import com.openbag.enums.OrganizationStatus;
+import com.openbag.association.core.entity.MembershipOrigin;
+import com.openbag.association.core.entity.MembershipStatus;
+import com.openbag.association.core.entity.OrganizationStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
@@ -14,7 +14,7 @@ import com.openbag.association.core.entity.AssociationInvite;
 import com.openbag.association.core.entity.AssociationMembership;
 import com.openbag.association.core.entity.Organization;
 import com.openbag.association.core.repository.AssociationMembershipRepository;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

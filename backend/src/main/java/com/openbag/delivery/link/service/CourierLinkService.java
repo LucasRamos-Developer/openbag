@@ -1,7 +1,7 @@
 package com.openbag.delivery.link.service;
 
-import com.openbag.enums.CourierLinkStatus;
-import com.openbag.enums.LinkRequester;
+import com.openbag.delivery.link.entity.CourierLinkStatus;
+import com.openbag.delivery.link.entity.LinkRequester;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.delivery.link.dto.CourierLinkDTO;
@@ -11,7 +11,7 @@ import com.openbag.delivery.courier.repository.DeliveryPersonRepository;
 import com.openbag.delivery.link.repository.RestaurantCourierLinkRepository;
 import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.restaurant.store.repository.RestaurantRepository;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;

@@ -3,7 +3,7 @@ package com.openbag.order.review.entity;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.order.core.entity.Order;
 import com.openbag.restaurant.store.entity.Restaurant;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

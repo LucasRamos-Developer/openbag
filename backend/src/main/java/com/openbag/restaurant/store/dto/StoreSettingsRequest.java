@@ -1,6 +1,6 @@
 package com.openbag.restaurant.store.dto;
 
-import com.openbag.enums.AcceptanceMode;
+import com.openbag.restaurant.store.entity.AcceptanceMode;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

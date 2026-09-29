@@ -1,10 +1,8 @@
 package com.openbag.association.core.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.openbag.enums.OrganizationStatus;
-import com.openbag.enums.OrganizationType;
-import com.openbag.modules.user.entity.User;
-import com.openbag.modules.user.entity.Address;
+import com.openbag.account.entity.User;
+import com.openbag.account.entity.Address;
 import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
 import jakarta.persistence.*;

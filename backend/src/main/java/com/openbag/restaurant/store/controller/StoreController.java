@@ -11,7 +11,7 @@ import com.openbag.restaurant.store.dto.StoreAddressRequest;
 import com.openbag.restaurant.store.dto.StoreDTO;
 import com.openbag.restaurant.store.dto.StoreSettingsRequest;
 import com.openbag.restaurant.store.service.StoreService;
-import com.openbag.modules.user.service.UserService;
+import com.openbag.account.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,6 +1,6 @@
 package com.openbag.restaurant.store.dto;
 
-import com.openbag.modules.user.dto.AddressDTO;
+import com.openbag.account.dto.AddressDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;

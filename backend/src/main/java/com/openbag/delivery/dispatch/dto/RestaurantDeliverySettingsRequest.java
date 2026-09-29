@@ -1,7 +1,7 @@
 package com.openbag.delivery.dispatch.dto;
 
-import com.openbag.enums.CourierPolicy;
-import com.openbag.enums.DeliveryFeeMode;
+import com.openbag.restaurant.store.entity.CourierPolicy;
+import com.openbag.restaurant.store.entity.DeliveryFeeMode;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

@@ -1,8 +1,8 @@
 package com.openbag.order.core.service;
 
-import com.openbag.enums.CancelledBy;
-import com.openbag.enums.FulfillmentType;
-import com.openbag.enums.OrderStatus;
+import com.openbag.order.core.entity.CancelledBy;
+import com.openbag.order.core.entity.FulfillmentType;
+import com.openbag.order.core.entity.OrderStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.order.core.entity.Order;

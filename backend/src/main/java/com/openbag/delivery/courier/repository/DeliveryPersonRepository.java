@@ -56,8 +56,8 @@ public interface DeliveryPersonRepository extends JpaRepository<DeliveryPerson, 
      */
     @Query("SELECT dp FROM DeliveryPerson dp JOIN FETCH dp.user JOIN FETCH dp.organization org "
             + "JOIN dp.currentShift s "
-            + "WHERE dp.workStatus = com.openbag.enums.CourierWorkStatus.ONLINE AND dp.isActive = true "
-            + "AND s.mode = com.openbag.enums.ShiftMode.FREE AND s.endedAt IS NULL "
+            + "WHERE dp.workStatus = com.openbag.delivery.courier.entity.CourierWorkStatus.ONLINE AND dp.isActive = true "
+            + "AND s.mode = com.openbag.delivery.courier.entity.ShiftMode.FREE AND s.endedAt IS NULL "
             + "AND dp.lastSeenAt >= :seenSince AND dp.lastLatitude IS NOT NULL AND dp.lastLongitude IS NOT NULL")
     List<DeliveryPerson> findFreeOnlineCouriers(@Param("seenSince") java.time.LocalDateTime seenSince);
 
@@ -86,5 +86,5 @@ public interface DeliveryPersonRepository extends JpaRepository<DeliveryPerson, 
     @Query("select d from DeliveryPerson d join d.user u where lower(u.fullName) like :q or lower(u.email) like :q")
     Page<DeliveryPerson> searchForAdmin(@Param("q") String q, Pageable pageable);
 
-    long countByWorkStatusIn(java.util.Collection<com.openbag.enums.CourierWorkStatus> statuses);
+    long countByWorkStatusIn(java.util.Collection<com.openbag.delivery.courier.entity.CourierWorkStatus> statuses);
 }

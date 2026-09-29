@@ -1,6 +1,6 @@
 package com.openbag.association.finance.repository;
 
-import com.openbag.enums.LedgerAccount;
+import com.openbag.association.finance.entity.LedgerAccount;
 import com.openbag.association.finance.entity.LedgerEntry;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,14 +33,14 @@ public interface LedgerEntryRepository extends JpaRepository<LedgerEntry, Long> 
                                   @Param("to") LocalDate to);
 
     /** Saldo de uma conta desde o início (entradas menos saídas) */
-    @Query("SELECT COALESCE(SUM(CASE WHEN e.direction = com.openbag.enums.LedgerDirection.IN THEN e.amount "
+    @Query("SELECT COALESCE(SUM(CASE WHEN e.direction = com.openbag.association.finance.entity.LedgerDirection.IN THEN e.amount "
             + "ELSE -e.amount END), 0) FROM LedgerEntry e WHERE e.organization.id = :organizationId AND e.account = :account")
     BigDecimal balance(@Param("organizationId") Long organizationId, @Param("account") LedgerAccount account);
 
     /** Quanto o cooperado já deu à caixinha */
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM LedgerEntry e WHERE e.membership.id = :membershipId "
-            + "AND e.account = com.openbag.enums.LedgerAccount.SOLIDARITY_FUND "
-            + "AND e.direction = com.openbag.enums.LedgerDirection.IN")
+            + "AND e.account = com.openbag.association.finance.entity.LedgerAccount.SOLIDARITY_FUND "
+            + "AND e.direction = com.openbag.association.finance.entity.LedgerDirection.IN")
     BigDecimal contributedBy(@Param("membershipId") Long membershipId);
 
     /** Movimentações de uma conta, mais recentes primeiro */

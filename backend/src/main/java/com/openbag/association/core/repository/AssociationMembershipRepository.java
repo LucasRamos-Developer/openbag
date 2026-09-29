@@ -1,7 +1,7 @@
 package com.openbag.association.core.repository;
 
-import com.openbag.enums.MembershipStatus;
-import com.openbag.enums.VehicleType;
+import com.openbag.association.core.entity.MembershipStatus;
+import com.openbag.delivery.courier.entity.VehicleType;
 import com.openbag.association.core.entity.AssociationMembership;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,9 +38,9 @@ public interface AssociationMembershipRepository extends JpaRepository<Associati
               AND (:anyVehicle = true OR dp.vehicleType = :vehicleType)
               AND (:billing = 'ALL'
                    OR (:billing = 'OPEN' AND EXISTS (SELECT i.id FROM MemberInvoice i WHERE i.membership = m
-                           AND i.status = com.openbag.enums.InvoiceStatus.OPEN))
+                           AND i.status = com.openbag.association.finance.entity.InvoiceStatus.OPEN))
                    OR (:billing = 'UP_TO_DATE' AND NOT EXISTS (SELECT i.id FROM MemberInvoice i WHERE i.membership = m
-                           AND i.status = com.openbag.enums.InvoiceStatus.OPEN)))
+                           AND i.status = com.openbag.association.finance.entity.InvoiceStatus.OPEN)))
               AND (:q = '' OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :q, '%'))
                            OR LOWER(u.email) LIKE LOWER(CONCAT('%', :q, '%'))
                            OR dp.documentNumber LIKE CONCAT('%', :q, '%'))
@@ -54,9 +54,9 @@ public interface AssociationMembershipRepository extends JpaRepository<Associati
               AND (:anyVehicle = true OR dp.vehicleType = :vehicleType)
               AND (:billing = 'ALL'
                    OR (:billing = 'OPEN' AND EXISTS (SELECT i.id FROM MemberInvoice i WHERE i.membership = m
-                           AND i.status = com.openbag.enums.InvoiceStatus.OPEN))
+                           AND i.status = com.openbag.association.finance.entity.InvoiceStatus.OPEN))
                    OR (:billing = 'UP_TO_DATE' AND NOT EXISTS (SELECT i.id FROM MemberInvoice i WHERE i.membership = m
-                           AND i.status = com.openbag.enums.InvoiceStatus.OPEN)))
+                           AND i.status = com.openbag.association.finance.entity.InvoiceStatus.OPEN)))
               AND (:q = '' OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :q, '%'))
                            OR LOWER(u.email) LIKE LOWER(CONCAT('%', :q, '%'))
                            OR dp.documentNumber LIKE CONCAT('%', :q, '%'))
@@ -71,13 +71,13 @@ public interface AssociationMembershipRepository extends JpaRepository<Associati
 
     /** Faturas em aberto por associado: [membershipId, quantidade, total] */
     @Query("SELECT i.membership.id, COUNT(i), COALESCE(SUM(i.total), 0) FROM MemberInvoice i "
-            + "WHERE i.organization.id = :organizationId AND i.status = com.openbag.enums.InvoiceStatus.OPEN "
+            + "WHERE i.organization.id = :organizationId AND i.status = com.openbag.association.finance.entity.InvoiceStatus.OPEN "
             + "GROUP BY i.membership.id")
     List<Object[]> openInvoicesByMembership(@Param("organizationId") Long organizationId);
 
     /** Adicionais ativos por associado: [membershipId, nome do adicional] */
     @Query("SELECT a.membership.id, a.plan.name FROM MemberAddon a WHERE a.membership.organization.id = :organizationId "
-            + "AND a.status = com.openbag.enums.MemberAddonStatus.ACTIVE")
+            + "AND a.status = com.openbag.association.finance.entity.MemberAddonStatus.ACTIVE")
     List<Object[]> activeAddonNames(@Param("organizationId") Long organizationId);
 
     @Query("SELECT COALESCE(MAX(m.memberNumber), 0) FROM AssociationMembership m WHERE m.organization.id = :organizationId")
@@ -88,21 +88,21 @@ public interface AssociationMembershipRepository extends JpaRepository<Associati
 
     @Query("""
             SELECT m.deliveryPerson.vehicleType, COUNT(m) FROM AssociationMembership m
-            WHERE m.organization.id = :organizationId AND m.status = com.openbag.enums.MembershipStatus.ACTIVE
+            WHERE m.organization.id = :organizationId AND m.status = com.openbag.association.core.entity.MembershipStatus.ACTIVE
             GROUP BY m.deliveryPerson.vehicleType
             """)
     List<Object[]> countActiveByVehicleType(@Param("organizationId") Long organizationId);
 
     @Query("""
             SELECT COUNT(m) FROM AssociationMembership m
-            WHERE m.organization.id = :organizationId AND m.status = com.openbag.enums.MembershipStatus.ACTIVE
+            WHERE m.organization.id = :organizationId AND m.status = com.openbag.association.core.entity.MembershipStatus.ACTIVE
               AND m.deliveryPerson.isAvailable = true
             """)
     long countAvailableNow(@Param("organizationId") Long organizationId);
 
     @Query("""
             SELECT COALESCE(SUM(m.deliveryPerson.totalDeliveries), 0) FROM AssociationMembership m
-            WHERE m.organization.id = :organizationId AND m.status = com.openbag.enums.MembershipStatus.ACTIVE
+            WHERE m.organization.id = :organizationId AND m.status = com.openbag.association.core.entity.MembershipStatus.ACTIVE
             """)
     long sumActiveDeliveries(@Param("organizationId") Long organizationId);
 }

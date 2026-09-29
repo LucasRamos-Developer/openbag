@@ -1,8 +1,8 @@
 package com.openbag.delivery.route.service;
 
-import com.openbag.enums.OrderStatus;
-import com.openbag.enums.RouteOrigin;
-import com.openbag.enums.RouteStatus;
+import com.openbag.order.core.entity.OrderStatus;
+import com.openbag.delivery.route.entity.RouteOrigin;
+import com.openbag.delivery.route.entity.RouteStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.delivery.dispatch.service.DispatchRequestedEvent;

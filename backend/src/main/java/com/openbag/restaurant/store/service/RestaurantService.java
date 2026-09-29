@@ -2,11 +2,11 @@ package com.openbag.restaurant.store.service;
 
 import com.openbag.restaurant.catalog.entity.Product;
 import com.openbag.restaurant.store.entity.Restaurant;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.restaurant.catalog.repository.ProductRepository;
 import com.openbag.restaurant.store.repository.RestaurantRepository;
-import com.openbag.modules.user.service.RoleService;
+import com.openbag.account.service.RoleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

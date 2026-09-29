@@ -1,12 +1,12 @@
 package com.openbag.association.member.service;
 
-import com.openbag.enums.MembershipStatus;
+import com.openbag.association.core.entity.MembershipStatus;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.delivery.courier.repository.DeliveryPersonRepository;
 import com.openbag.association.core.entity.AssociationMembership;
 import com.openbag.association.core.repository.AssociationMembershipRepository;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

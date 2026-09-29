@@ -1,6 +1,5 @@
 package com.openbag.association.finance.entity;
 
-import com.openbag.enums.AddonPricing;
 import com.openbag.association.core.entity.Organization;
 import jakarta.persistence.*;
 import lombok.Getter;

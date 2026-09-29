@@ -1,7 +1,7 @@
 package com.openbag.association.finance.dto;
 
-import com.openbag.enums.AddonPricing;
-import com.openbag.enums.MemberAddonStatus;
+import com.openbag.association.finance.entity.AddonPricing;
+import com.openbag.association.finance.entity.MemberAddonStatus;
 import com.openbag.association.finance.entity.MemberAddon;
 import com.openbag.association.core.entity.AssociationMembership;
 

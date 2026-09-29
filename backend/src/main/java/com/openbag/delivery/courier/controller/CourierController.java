@@ -11,7 +11,7 @@ import com.openbag.delivery.courier.dto.WorkHistoryDTO;
 import com.openbag.delivery.courier.service.CourierEarningsService;
 import com.openbag.delivery.link.service.CourierLinkService;
 import com.openbag.delivery.courier.service.CourierProfileService;
-import com.openbag.modules.user.service.UserService;
+import com.openbag.account.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

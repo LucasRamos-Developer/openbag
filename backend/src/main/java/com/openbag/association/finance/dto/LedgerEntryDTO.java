@@ -1,8 +1,8 @@
 package com.openbag.association.finance.dto;
 
-import com.openbag.enums.LedgerAccount;
-import com.openbag.enums.LedgerCategory;
-import com.openbag.enums.LedgerDirection;
+import com.openbag.association.finance.entity.LedgerAccount;
+import com.openbag.association.finance.entity.LedgerCategory;
+import com.openbag.association.finance.entity.LedgerDirection;
 import com.openbag.association.finance.entity.LedgerEntry;
 import com.openbag.association.core.entity.AssociationMembership;
 

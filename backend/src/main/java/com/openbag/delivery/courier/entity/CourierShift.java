@@ -1,6 +1,5 @@
 package com.openbag.delivery.courier.entity;
 
-import com.openbag.enums.ShiftMode;
 import com.openbag.restaurant.store.entity.Restaurant;
 import jakarta.persistence.*;
 import lombok.Getter;

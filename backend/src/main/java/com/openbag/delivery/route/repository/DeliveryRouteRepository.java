@@ -1,6 +1,6 @@
 package com.openbag.delivery.route.repository;
 
-import com.openbag.enums.RouteStatus;
+import com.openbag.delivery.route.entity.RouteStatus;
 import com.openbag.delivery.route.entity.DeliveryRoute;
 import org.locationtech.jts.geom.LineString;
 import org.springframework.data.jpa.repository.JpaRepository;

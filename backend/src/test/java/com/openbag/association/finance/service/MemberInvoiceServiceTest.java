@@ -1,11 +1,11 @@
 package com.openbag.association.finance.service;
 
-import com.openbag.enums.AddonPricing;
-import com.openbag.enums.InvoiceStatus;
-import com.openbag.enums.MemberPaymentMethod;
-import com.openbag.enums.MembershipFeeMode;
-import com.openbag.enums.MembershipStatus;
-import com.openbag.enums.OrganizationStatus;
+import com.openbag.association.finance.entity.AddonPricing;
+import com.openbag.association.finance.entity.InvoiceStatus;
+import com.openbag.association.finance.entity.MemberPaymentMethod;
+import com.openbag.association.core.entity.MembershipFeeMode;
+import com.openbag.association.core.entity.MembershipStatus;
+import com.openbag.association.core.entity.OrganizationStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.association.finance.dto.InvoiceMonthDTO;
 import com.openbag.association.finance.dto.PayInvoiceRequest;
@@ -20,7 +20,7 @@ import com.openbag.association.core.entity.Organization;
 import com.openbag.association.core.repository.AssociationMembershipRepository;
 import com.openbag.association.core.repository.OrganizationRepository;
 import com.openbag.association.core.service.AssociationService;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

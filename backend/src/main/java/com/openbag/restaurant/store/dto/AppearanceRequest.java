@@ -1,6 +1,6 @@
 package com.openbag.restaurant.store.dto;
 
-import com.openbag.enums.RestaurantThemePreset;
+import com.openbag.restaurant.store.entity.RestaurantThemePreset;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;

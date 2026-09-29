@@ -1,6 +1,6 @@
 package com.openbag.delivery.dispatch.dto;
 
-import com.openbag.enums.OrderStatus;
+import com.openbag.order.core.entity.OrderStatus;
 import com.openbag.order.core.entity.Order;
 import com.openbag.order.core.entity.OrderItem;
 import lombok.AllArgsConstructor;

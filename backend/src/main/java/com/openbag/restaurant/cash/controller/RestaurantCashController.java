@@ -5,7 +5,7 @@ import com.openbag.restaurant.cash.dto.CashReportDTO;
 import com.openbag.restaurant.cash.dto.SettleCourierRequest;
 import com.openbag.restaurant.cash.dto.SettlementDTO;
 import com.openbag.restaurant.cash.service.CashReportService;
-import com.openbag.modules.user.service.UserService;
+import com.openbag.account.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

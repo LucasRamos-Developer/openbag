@@ -1,6 +1,6 @@
 package com.openbag.association.finance.dto;
 
-import com.openbag.enums.MemberPaymentMethod;
+import com.openbag.association.finance.entity.MemberPaymentMethod;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 

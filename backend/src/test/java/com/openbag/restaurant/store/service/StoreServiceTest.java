@@ -1,7 +1,7 @@
 package com.openbag.restaurant.store.service;
 
-import com.openbag.enums.AcceptanceMode;
-import com.openbag.enums.RestaurantThemePreset;
+import com.openbag.restaurant.store.entity.AcceptanceMode;
+import com.openbag.restaurant.store.entity.RestaurantThemePreset;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.restaurant.catalog.entity.Category;
 import com.openbag.restaurant.catalog.repository.CategoryRepository;

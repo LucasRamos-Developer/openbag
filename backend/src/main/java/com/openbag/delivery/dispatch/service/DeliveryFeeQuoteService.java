@@ -1,7 +1,7 @@
 package com.openbag.delivery.dispatch.service;
 
-import com.openbag.enums.CourierPolicy;
-import com.openbag.enums.OrganizationStatus;
+import com.openbag.restaurant.store.entity.CourierPolicy;
+import com.openbag.association.core.entity.OrganizationStatus;
 import com.openbag.association.partnership.entity.RestaurantPartnership;
 import com.openbag.association.partnership.repository.RestaurantPartnershipRepository;
 import com.openbag.association.core.entity.DeliveryRate;

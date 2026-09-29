@@ -48,7 +48,7 @@ public class CourierOfferDTO {
         Order order = offer.getOrder();
         var route = offer.getRoute();
         java.util.List<Order> routeOrders = route == null ? null : route.sortedOrders().stream()
-                .filter(o -> o.getStatus() != com.openbag.enums.OrderStatus.CANCELLED)
+                .filter(o -> o.getStatus() != com.openbag.order.core.entity.OrderStatus.CANCELLED)
                 .toList();
         return CourierOfferDTO.builder()
                 .routeId(route != null ? route.getId() : null)

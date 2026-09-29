@@ -1,9 +1,9 @@
 package com.openbag.delivery.dispatch.service;
 
-import com.openbag.enums.CourierPolicy;
-import com.openbag.enums.DeliveryFeeMode;
-import com.openbag.enums.OrganizationStatus;
-import com.openbag.enums.PartnershipStatus;
+import com.openbag.restaurant.store.entity.CourierPolicy;
+import com.openbag.restaurant.store.entity.DeliveryFeeMode;
+import com.openbag.association.core.entity.OrganizationStatus;
+import com.openbag.association.partnership.entity.PartnershipStatus;
 import com.openbag.association.partnership.entity.RestaurantPartnership;
 import com.openbag.association.partnership.repository.RestaurantPartnershipRepository;
 import com.openbag.association.core.entity.DeliveryRate;

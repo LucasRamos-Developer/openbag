@@ -1,6 +1,6 @@
 package com.openbag.association.community.dto;
 
-import com.openbag.enums.BenefitCategory;
+import com.openbag.association.community.entity.BenefitCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;

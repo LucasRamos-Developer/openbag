@@ -1,7 +1,7 @@
 package com.openbag.platform.security;
 
-import com.openbag.enums.UserType;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.UserType;
+import com.openbag.account.entity.User;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

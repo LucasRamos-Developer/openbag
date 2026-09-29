@@ -1,6 +1,6 @@
 package com.openbag.delivery.courier.dto;
 
-import com.openbag.enums.VehicleType;
+import com.openbag.delivery.courier.entity.VehicleType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

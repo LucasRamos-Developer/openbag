@@ -1,6 +1,6 @@
 package com.openbag.association.community.repository;
 
-import com.openbag.enums.PollStatus;
+import com.openbag.association.community.entity.PollStatus;
 import com.openbag.association.community.entity.Poll;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

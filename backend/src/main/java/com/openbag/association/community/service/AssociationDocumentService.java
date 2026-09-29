@@ -1,6 +1,6 @@
 package com.openbag.association.community.service;
 
-import com.openbag.enums.AssociationDocumentType;
+import com.openbag.association.community.entity.AssociationDocumentType;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.association.community.dto.AssociationDocumentDTO;
@@ -8,7 +8,7 @@ import com.openbag.association.community.entity.AssociationDocument;
 import com.openbag.association.community.repository.AssociationDocumentRepository;
 import com.openbag.association.core.service.AssociationService;
 import com.openbag.platform.files.FileStorageService;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

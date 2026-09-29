@@ -1,6 +1,6 @@
 package com.openbag.order.review.service;
 
-import com.openbag.enums.OrderStatus;
+import com.openbag.order.core.entity.OrderStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ConflictException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
@@ -15,7 +15,7 @@ import com.openbag.order.review.dto.OrderReviewDTO;
 import com.openbag.order.review.dto.ReviewSummaryDTO;
 import com.openbag.order.review.entity.Review;
 import com.openbag.order.review.repository.ReviewRepository;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

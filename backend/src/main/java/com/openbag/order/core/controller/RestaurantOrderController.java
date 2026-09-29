@@ -1,7 +1,7 @@
 package com.openbag.order.core.controller;
 
 import com.openbag.platform.security.annotation.IsRestaurantOwner;
-import com.openbag.enums.OrderStatus;
+import com.openbag.order.core.entity.OrderStatus;
 import com.openbag.order.core.dto.CreateStoreOrderRequest;
 import com.openbag.order.core.dto.OrderDTO;
 import com.openbag.order.core.service.OrderService;

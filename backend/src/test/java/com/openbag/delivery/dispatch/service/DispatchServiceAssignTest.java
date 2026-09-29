@@ -1,12 +1,12 @@
 package com.openbag.delivery.dispatch.service;
 
-import com.openbag.enums.CourierWorkStatus;
-import com.openbag.enums.DeliveryFeeMode;
-import com.openbag.enums.DeliveryOfferStatus;
-import com.openbag.enums.OrderStatus;
-import com.openbag.enums.OrganizationStatus;
-import com.openbag.enums.PartnershipStatus;
-import com.openbag.enums.ShiftMode;
+import com.openbag.delivery.courier.entity.CourierWorkStatus;
+import com.openbag.restaurant.store.entity.DeliveryFeeMode;
+import com.openbag.delivery.dispatch.entity.DeliveryOfferStatus;
+import com.openbag.order.core.entity.OrderStatus;
+import com.openbag.association.core.entity.OrganizationStatus;
+import com.openbag.association.partnership.entity.PartnershipStatus;
+import com.openbag.delivery.courier.entity.ShiftMode;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.delivery.dispatch.dto.AssignCourierRequest;
 import com.openbag.delivery.dispatch.dto.CourierMessage;
@@ -26,7 +26,7 @@ import com.openbag.order.core.service.OrderService;
 import com.openbag.association.core.entity.DeliveryRate;
 import com.openbag.association.core.entity.Organization;
 import com.openbag.restaurant.store.entity.Restaurant;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -273,7 +273,7 @@ class DispatchServiceAssignTest {
 
     @Test
     void pickupOrdersNeverCallACourier() {
-        order.setFulfillment(com.openbag.enums.FulfillmentType.PICKUP);
+        order.setFulfillment(com.openbag.order.core.entity.FulfillmentType.PICKUP);
         restaurant.setRouteBatchingEnabled(false);
 
         service.dispatchLocked(order);
@@ -344,7 +344,7 @@ class DispatchServiceAssignTest {
         com.openbag.delivery.route.entity.DeliveryRoute route = new com.openbag.delivery.route.entity.DeliveryRoute();
         route.setId(1L);
         route.setRestaurant(restaurant);
-        route.setStatus(com.openbag.enums.RouteStatus.DISPATCHING);
+        route.setStatus(com.openbag.delivery.route.entity.RouteStatus.DISPATCHING);
         for (Order o : List.of(order, second)) {
             o.setRoute(route);
             o.setDispatchReleasedAt(NOW);

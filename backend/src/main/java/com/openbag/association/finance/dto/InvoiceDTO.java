@@ -1,8 +1,8 @@
 package com.openbag.association.finance.dto;
 
-import com.openbag.enums.InvoiceLineType;
-import com.openbag.enums.InvoiceStatus;
-import com.openbag.enums.MemberPaymentMethod;
+import com.openbag.association.finance.entity.InvoiceLineType;
+import com.openbag.association.finance.entity.InvoiceStatus;
+import com.openbag.association.finance.entity.MemberPaymentMethod;
 import com.openbag.association.finance.entity.MemberInvoice;
 import com.openbag.association.finance.entity.MemberInvoiceLine;
 import com.openbag.association.core.entity.AssociationMembership;

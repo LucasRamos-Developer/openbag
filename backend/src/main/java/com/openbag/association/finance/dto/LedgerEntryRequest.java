@@ -1,6 +1,6 @@
 package com.openbag.association.finance.dto;
 
-import com.openbag.enums.ManualEntryKind;
+import com.openbag.association.finance.entity.ManualEntryKind;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

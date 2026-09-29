@@ -1,10 +1,8 @@
 package com.openbag.delivery.courier.entity;
 
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import com.openbag.association.core.entity.Organization;
 import com.openbag.order.core.entity.Order;
-import com.openbag.enums.CourierWorkStatus;
-import com.openbag.enums.VehicleType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

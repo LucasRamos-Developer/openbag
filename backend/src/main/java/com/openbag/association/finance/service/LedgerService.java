@@ -1,11 +1,11 @@
 package com.openbag.association.finance.service;
 
-import com.openbag.enums.InvoiceLineType;
-import com.openbag.enums.InvoiceStatus;
-import com.openbag.enums.LedgerAccount;
-import com.openbag.enums.LedgerCategory;
-import com.openbag.enums.LedgerDirection;
-import com.openbag.enums.ManualEntryKind;
+import com.openbag.association.finance.entity.InvoiceLineType;
+import com.openbag.association.finance.entity.InvoiceStatus;
+import com.openbag.association.finance.entity.LedgerAccount;
+import com.openbag.association.finance.entity.LedgerCategory;
+import com.openbag.association.finance.entity.LedgerDirection;
+import com.openbag.association.finance.entity.ManualEntryKind;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.association.finance.dto.FinanceSummaryDTO;
@@ -22,7 +22,7 @@ import com.openbag.association.core.entity.Organization;
 import com.openbag.association.core.repository.OrganizationRepository;
 import com.openbag.association.core.repository.AssociationMembershipRepository;
 import com.openbag.association.core.service.AssociationService;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

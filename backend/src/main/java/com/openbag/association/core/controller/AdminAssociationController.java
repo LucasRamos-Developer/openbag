@@ -1,10 +1,10 @@
 package com.openbag.association.core.controller;
 
-import com.openbag.enums.OrganizationStatus;
+import com.openbag.association.core.entity.OrganizationStatus;
 import com.openbag.association.core.dto.AssociationDTO;
 import com.openbag.association.core.dto.ReasonRequest;
 import com.openbag.association.core.service.AssociationService;
-import com.openbag.modules.user.service.UserService;
+import com.openbag.account.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

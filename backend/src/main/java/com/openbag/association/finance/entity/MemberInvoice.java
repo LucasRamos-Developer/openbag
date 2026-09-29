@@ -1,10 +1,8 @@
 package com.openbag.association.finance.entity;
 
-import com.openbag.enums.InvoiceStatus;
-import com.openbag.enums.MemberPaymentMethod;
 import com.openbag.association.core.entity.AssociationMembership;
 import com.openbag.association.core.entity.Organization;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,6 +1,5 @@
 package com.openbag.association.community.entity;
 
-import com.openbag.enums.BenefitCategory;
 import com.openbag.association.core.entity.Organization;
 import jakarta.persistence.*;
 import lombok.Getter;

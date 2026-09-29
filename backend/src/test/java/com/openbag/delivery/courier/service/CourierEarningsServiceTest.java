@@ -1,6 +1,6 @@
 package com.openbag.delivery.courier.service;
 
-import com.openbag.enums.OrderStatus;
+import com.openbag.order.core.entity.OrderStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.delivery.courier.dto.CourierEarningsDTO;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
@@ -8,7 +8,7 @@ import com.openbag.delivery.courier.repository.DeliveryPersonRepository;
 import com.openbag.order.core.entity.Order;
 import com.openbag.order.core.repository.OrderRepository;
 import com.openbag.restaurant.store.entity.Restaurant;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

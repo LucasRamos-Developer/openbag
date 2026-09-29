@@ -1,6 +1,6 @@
 package com.openbag.association.partnership.service;
 
-import com.openbag.enums.MembershipStatus;
+import com.openbag.association.core.entity.MembershipStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.association.partnership.dto.AssociationReportDTO;
@@ -15,7 +15,7 @@ import com.openbag.association.core.entity.Organization;
 import com.openbag.association.core.repository.AssociationMembershipRepository;
 import com.openbag.association.core.repository.OrganizationRepository;
 import com.openbag.restaurant.store.entity.Restaurant;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

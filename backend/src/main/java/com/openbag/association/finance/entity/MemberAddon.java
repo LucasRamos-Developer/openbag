@@ -1,6 +1,5 @@
 package com.openbag.association.finance.entity;
 
-import com.openbag.enums.MemberAddonStatus;
 import com.openbag.association.core.entity.AssociationMembership;
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -1,7 +1,7 @@
 package com.openbag.association.community.service;
 
-import com.openbag.enums.MembershipStatus;
-import com.openbag.enums.PollStatus;
+import com.openbag.association.core.entity.MembershipStatus;
+import com.openbag.association.community.entity.PollStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.association.community.dto.PollDTO;
@@ -14,7 +14,7 @@ import com.openbag.association.community.repository.PollVoteRepository;
 import com.openbag.association.core.entity.AssociationMembership;
 import com.openbag.association.core.repository.AssociationMembershipRepository;
 import com.openbag.association.core.service.AssociationService;
-import com.openbag.modules.user.entity.User;
+import com.openbag.account.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

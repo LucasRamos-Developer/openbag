@@ -1,6 +1,6 @@
 package com.openbag.association.community.dto;
 
-import com.openbag.enums.PollStatus;
+import com.openbag.association.community.entity.PollStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;

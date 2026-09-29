@@ -1,8 +1,8 @@
 package com.openbag.association.partnership.service;
 
-import com.openbag.enums.CourierPolicy;
-import com.openbag.enums.PartnershipSide;
-import com.openbag.enums.PartnershipStatus;
+import com.openbag.restaurant.store.entity.CourierPolicy;
+import com.openbag.association.partnership.entity.PartnershipSide;
+import com.openbag.association.partnership.entity.PartnershipStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ConflictException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;

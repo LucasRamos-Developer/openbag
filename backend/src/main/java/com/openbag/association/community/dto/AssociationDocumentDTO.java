@@ -1,6 +1,6 @@
 package com.openbag.association.community.dto;
 
-import com.openbag.enums.AssociationDocumentType;
+import com.openbag.association.community.entity.AssociationDocumentType;
 import com.openbag.association.community.entity.AssociationDocument;
 
 import java.time.LocalDate;

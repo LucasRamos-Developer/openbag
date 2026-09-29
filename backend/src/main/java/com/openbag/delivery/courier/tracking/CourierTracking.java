@@ -1,6 +1,6 @@
 package com.openbag.delivery.courier.tracking;
 
-import com.openbag.enums.OrderStatus;
+import com.openbag.order.core.entity.OrderStatus;
 import com.openbag.order.core.entity.Order;
 
 import java.util.Collection;
