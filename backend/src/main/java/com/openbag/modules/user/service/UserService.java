@@ -41,16 +41,21 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com ID: " + id));
     }
 
-    public User updateUser(User userDetails) {
+    /** Nome e telefone do usuário logado; o telefone continua único, como no cadastro */
+    public User updateProfile(String fullName, String phoneNumber) {
         User currentUser = getCurrentUser();
-        
-        if (userDetails.getFullName() != null) {
-            currentUser.setFullName(userDetails.getFullName());
+
+        if (fullName != null && !fullName.isBlank()) {
+            currentUser.setFullName(fullName.trim());
         }
-        if (userDetails.getPhoneNumber() != null) {
-            currentUser.setPhoneNumber(userDetails.getPhoneNumber());
+        if (phoneNumber != null && !phoneNumber.isBlank()) {
+            String phone = phoneNumber.trim();
+            if (!phone.equals(currentUser.getPhoneNumber()) && userRepository.existsByPhoneNumber(phone)) {
+                throw new com.openbag.exception.BadRequestException("Telefone já está em uso");
+            }
+            currentUser.setPhoneNumber(phone);
         }
-        
+
         return userRepository.save(currentUser);
     }
 

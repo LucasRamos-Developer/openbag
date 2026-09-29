@@ -10,6 +10,7 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
+@lombok.extern.slf4j.Slf4j
 public class JwtTokenProvider {
 
     @Value("${app.jwt.secret}")
@@ -64,16 +65,11 @@ public class JwtTokenProvider {
                 .build()
                 .parseSignedClaims(authToken);
             return true;
-        } catch (SecurityException ex) {
-            System.err.println("Invalid JWT signature");
-        } catch (MalformedJwtException ex) {
-            System.err.println("Invalid JWT token");
         } catch (ExpiredJwtException ex) {
-            System.err.println("Expired JWT token");
-        } catch (UnsupportedJwtException ex) {
-            System.err.println("Unsupported JWT token");
-        } catch (IllegalArgumentException ex) {
-            System.err.println("JWT claims string is empty");
+            log.debug("Token JWT vencido");
+        } catch (JwtException | IllegalArgumentException ex) {
+            // Assinatura errada, token malformado ou vazio: sem stack trace nem o token no log
+            log.debug("Token JWT inválido: {}", ex.getClass().getSimpleName());
         }
         return false;
     }

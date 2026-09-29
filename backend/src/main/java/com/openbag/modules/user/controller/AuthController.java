@@ -155,22 +155,10 @@ public class AuthController {
         description = "Registra um novo restaurante sem upload de imagens usando JSON"
     )
     public ResponseEntity<?> registerRestaurantJson(@Valid @RequestBody RestaurantOnboardingRequest request) {
-        try {
-            Restaurant restaurant = restaurantOnboardingService.completeOnboarding(request, null, null);
-            
-            RestaurantOnboardingResponse response = new RestaurantOnboardingResponse(
-                restaurant.getId(),
-                "Restaurante cadastrado com sucesso!"
-            );
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (com.openbag.exception.BadRequestException e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Erro ao cadastrar restaurante: " + e.getMessage()));
-        }
+        // Erros de validação viram 400 com a mensagem; os outros, 500 sem detalhes internos (GlobalExceptionHandler)
+        Restaurant restaurant = restaurantOnboardingService.completeOnboarding(request, null, null);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new RestaurantOnboardingResponse(restaurant.getId(), "Restaurante cadastrado com sucesso!"));
     }
 
     @PostMapping(value = "/register/restaurant", consumes = {"multipart/form-data"})
@@ -182,24 +170,16 @@ public class AuthController {
             @RequestPart("data") String dataJson,
             @RequestPart(value = "logo", required = false) MultipartFile logo,
             @RequestPart(value = "banner", required = false) MultipartFile banner) {
+        // Parse manual do JSON da parte "data" (mapper do Spring: entende LocalTime dos horários)
+        RestaurantOnboardingRequest request;
         try {
-            // Parse manual do JSON da parte "data" (mapper do Spring: entende LocalTime dos horários)
-            RestaurantOnboardingRequest request = objectMapper.readValue(dataJson, RestaurantOnboardingRequest.class);
-            
-            Restaurant restaurant = restaurantOnboardingService.completeOnboarding(request, logo, banner);
-            
-            RestaurantOnboardingResponse response = new RestaurantOnboardingResponse(
-                restaurant.getId(),
-                "Restaurante cadastrado com sucesso!"
-            );
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (com.openbag.exception.BadRequestException e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Erro ao cadastrar restaurante: " + e.getMessage()));
+            request = objectMapper.readValue(dataJson, RestaurantOnboardingRequest.class);
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new com.openbag.exception.BadRequestException("Dados do cadastro inválidos");
         }
+
+        Restaurant restaurant = restaurantOnboardingService.completeOnboarding(request, logo, banner);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new RestaurantOnboardingResponse(restaurant.getId(), "Restaurante cadastrado com sucesso!"));
     }
 }

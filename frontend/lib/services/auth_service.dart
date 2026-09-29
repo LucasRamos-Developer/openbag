@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../constants/app_constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -7,7 +8,7 @@ import '../models/user.dart';
 import 'api_client.dart';
 
 class AuthService extends ChangeNotifier {
-  static const String baseUrl = 'http://localhost:8080/api';
+  static const String baseUrl = AppConstants.baseUrl;
   
   User? _currentUser;
   String? _token;

@@ -46,7 +46,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception ex) {
-            logger.error("Could not set user authentication in security context", ex);
+            // Usuário do token não existe mais, por exemplo: segue sem autenticação (a rota protegida responde 401/403)
+            logger.debug("Não foi possível autenticar pelo token: " + ex.getClass().getSimpleName());
         }
 
         filterChain.doFilter(request, response);

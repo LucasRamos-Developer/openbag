@@ -1,6 +1,7 @@
 package com.openbag.modules.user.controller;
 
 import com.openbag.modules.user.dto.AddressDTO;
+import com.openbag.modules.user.dto.JwtAuthenticationResponse;
 import com.openbag.modules.user.dto.RoleDTO;
 import com.openbag.modules.user.dto.UserPermissionsResponse;
 import com.openbag.modules.user.entity.Permission;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,17 +53,22 @@ public class UserController {
     @GetMapping("/profile")
     @Operation(summary = "Buscar perfil do usuário atual")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<User> getCurrentUserProfile() {
-        User user = userService.getCurrentUser();
-        return ResponseEntity.ok(user);
+    public ResponseEntity<JwtAuthenticationResponse.UserDto> getCurrentUserProfile() {
+        return ResponseEntity.ok(new JwtAuthenticationResponse.UserDto(userService.getCurrentUser()));
     }
 
     @PutMapping("/profile")
     @Operation(summary = "Atualizar perfil do usuário")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<User> updateProfile(@Valid @RequestBody User userDetails) {
-        User updatedUser = userService.updateUser(userDetails);
-        return ResponseEntity.ok(updatedUser);
+    public ResponseEntity<JwtAuthenticationResponse.UserDto> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        // Só nome e telefone: a entidade inteira no corpo deixaria o cliente tentar mudar email, papéis ou senha
+        User updatedUser = userService.updateProfile(request.fullName(), request.phoneNumber());
+        return ResponseEntity.ok(new JwtAuthenticationResponse.UserDto(updatedUser));
+    }
+
+    public record UpdateProfileRequest(
+            @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres") String fullName,
+            @Size(min = 8, max = 15, message = "Telefone deve ter entre 8 e 15 caracteres") String phoneNumber) {
     }
 
     @GetMapping("/addresses")
@@ -112,130 +119,100 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Adicionar role a usuário", description = "Adiciona uma role a um usuário (somente ADMIN)")
     public ResponseEntity<?> addRoleToUser(@PathVariable Long id, @RequestBody Map<String, String> request) {
-        try {
-            String roleName = request.get("roleName");
-            if (roleName == null || roleName.isBlank()) {
-                return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Nome da role é obrigatório"));
-            }
-
-            roleService.addRoleToUser(id, roleName.toUpperCase());
-
-            return ResponseEntity.ok(Map.of(
-                "message", "Role adicionada com sucesso",
-                "userId", id,
-                "roleName", roleName
-            ));
-        } catch (Exception e) {
+        String roleName = request.get("roleName");
+        if (roleName == null || roleName.isBlank()) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", "Nome da role é obrigatório"));
         }
+
+        roleService.addRoleToUser(id, roleName.toUpperCase());
+
+        return ResponseEntity.ok(Map.of(
+            "message", "Role adicionada com sucesso",
+            "userId", id,
+            "roleName", roleName
+        ));
     }
 
     @DeleteMapping("/{id}/roles/{roleName}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Remover role de usuário", description = "Remove uma role de um usuário (somente ADMIN)")
     public ResponseEntity<?> removeRoleFromUser(@PathVariable Long id, @PathVariable String roleName) {
-        try {
-            roleService.removeRoleFromUser(id, roleName.toUpperCase());
+        roleService.removeRoleFromUser(id, roleName.toUpperCase());
 
-            return ResponseEntity.ok(Map.of(
-                "message", "Role removida com sucesso",
-                "userId", id,
-                "roleName", roleName
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
-        }
+        return ResponseEntity.ok(Map.of(
+            "message", "Role removida com sucesso",
+            "userId", id,
+            "roleName", roleName
+        ));
     }
 
     @GetMapping("/{id}/roles")
     @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
     @Operation(summary = "Listar roles de usuário", description = "Lista todas as roles de um usuário")
     public ResponseEntity<?> getUserRoles(@PathVariable Long id) {
-        try {
-            List<Role> roles = roleService.getUserRoles(id);
-            List<RoleDTO> roleDTOs = roles.stream()
-                    .map(RoleDTO::simple)
-                    .collect(Collectors.toList());
+        List<Role> roles = roleService.getUserRoles(id);
+        List<RoleDTO> roleDTOs = roles.stream()
+                .map(RoleDTO::simple)
+                .collect(Collectors.toList());
 
-            return ResponseEntity.ok(Map.of(
-                "userId", id,
-                "roles", roleDTOs
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
-        }
+        return ResponseEntity.ok(Map.of(
+            "userId", id,
+            "roles", roleDTOs
+        ));
     }
 
     @GetMapping("/{id}/permissions")
     @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
     @Operation(summary = "Listar permissões de usuário", description = "Lista todas as permissões de um usuário")
     public ResponseEntity<?> getUserPermissions(@PathVariable Long id) {
-        try {
-            List<Permission> permissions = roleService.getUserPermissions(id);
-            List<String> permissionNames = permissions.stream()
-                    .map(Permission::getName)
-                    .collect(Collectors.toList());
+        List<Permission> permissions = roleService.getUserPermissions(id);
+        List<String> permissionNames = permissions.stream()
+                .map(Permission::getName)
+                .collect(Collectors.toList());
 
-            return ResponseEntity.ok(Map.of(
-                "userId", id,
-                "permissions", permissionNames
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
-        }
+        return ResponseEntity.ok(Map.of(
+            "userId", id,
+            "permissions", permissionNames
+        ));
     }
 
     @GetMapping("/me/permissions")
     @Operation(summary = "Minhas permissões", description = "Retorna roles e permissões do usuário logado")
     public ResponseEntity<?> getMyPermissions(Authentication authentication) {
-        try {
-            var principal = (com.openbag.security.CustomUserDetailsService.CustomUserPrincipal) authentication.getPrincipal();
-            Long userId = principal.getId();
+        var principal = (com.openbag.security.CustomUserDetailsService.CustomUserPrincipal) authentication.getPrincipal();
+        Long userId = principal.getId();
 
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-            UserPermissionsResponse response = UserPermissionsResponse.fromUser(user);
+        UserPermissionsResponse response = UserPermissionsResponse.fromUser(user);
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
-        }
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}/roles")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Substituir roles de usuário", description = "Substitui todas as roles de um usuário (somente ADMIN)")
     public ResponseEntity<?> setUserRoles(@PathVariable Long id, @RequestBody Map<String, List<String>> request) {
-        try {
-            List<String> roleNames = request.get("roleNames");
-            if (roleNames == null || roleNames.isEmpty()) {
-                return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Lista de roles é obrigatória"));
-            }
-
-            // Converte para uppercase
-            List<String> upperRoleNames = roleNames.stream()
-                    .map(String::toUpperCase)
-                    .collect(Collectors.toList());
-
-            roleService.setUserRoles(id, upperRoleNames);
-
-            return ResponseEntity.ok(Map.of(
-                "message", "Roles atualizadas com sucesso",
-                "userId", id,
-                "roleNames", upperRoleNames
-            ));
-        } catch (Exception e) {
+        List<String> roleNames = request.get("roleNames");
+        if (roleNames == null || roleNames.isEmpty()) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", "Lista de roles é obrigatória"));
         }
+
+        // Converte para uppercase
+        List<String> upperRoleNames = roleNames.stream()
+                .map(String::toUpperCase)
+                .collect(Collectors.toList());
+
+        roleService.setUserRoles(id, upperRoleNames);
+
+        return ResponseEntity.ok(Map.of(
+            "message", "Roles atualizadas com sucesso",
+            "userId", id,
+            "roleNames", upperRoleNames
+        ));
     }
 
     @PostMapping("/{id}/upload-profile-image")
@@ -255,12 +232,12 @@ public class UserController {
         }
         
         user.setProfileImageUrl(imageUrl);
-        User updatedUser = userService.updateUser(user);
+        User updatedUser = userRepository.save(user);
         
         Map<String, Object> response = new HashMap<>();
         response.put("profileImageUrl", imageUrl);
         response.put("fullUrl", "/api/files/" + imageUrl);
-        response.put("user", updatedUser);
+        response.put("user", new JwtAuthenticationResponse.UserDto(updatedUser));
         
         return ResponseEntity.ok(response);
     }
@@ -277,7 +254,7 @@ public class UserController {
         if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
             fileStorageService.deleteFile(user.getProfileImageUrl());
             user.setProfileImageUrl(null);
-            userService.updateUser(user);
+            userRepository.save(user);
         }
         
         Map<String, String> response = new HashMap<>();

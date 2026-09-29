@@ -1,4 +1,6 @@
-version: '3.8'
+# Ambiente de DESENVOLVIMENTO. As senhas vêm do arquivo .env (copie o .env.example); sem ele, valem as de
+# desenvolvimento abaixo. As portas ficam só em 127.0.0.1: os serviços não aparecem para a rede local.
+# Produção não usa este arquivo (veja "Produção (perfil prod)" no README-DEVELOPER).
 
 services:
   # PostgreSQL Database
@@ -9,9 +11,9 @@ services:
     environment:
       POSTGRES_DB: openbag
       POSTGRES_USER: openbag
-      POSTGRES_PASSWORD: openbag123
+      POSTGRES_PASSWORD: ${OPENBAG_DB_PASSWORD:-openbag123}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init:/docker-entrypoint-initdb.d
@@ -23,10 +25,10 @@ services:
     image: redis:7-alpine
     container_name: open-bag-redis
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --requirepass ${OPENBAG_REDIS_PASSWORD:-openbag-redis}
     networks:
       - open-bag-network
 
@@ -40,8 +42,8 @@ services:
       - xpack.security.enabled=false
       - xpack.security.enrollment.enabled=false
     ports:
-      - "9200:9200"
-      - "9300:9300"
+      - "127.0.0.1:9200:9200"
+      - "127.0.0.1:9300:9300"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     networks:
@@ -54,7 +56,7 @@ services:
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     ports:
-      - "5601:5601"
+      - "127.0.0.1:5601:5601"
     depends_on:
       - elasticsearch
     networks:
@@ -73,13 +75,14 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/openbag
       - SPRING_DATASOURCE_USERNAME=openbag
-      - SPRING_DATASOURCE_PASSWORD=openbag123
-      - SPRING_REDIS_HOST=redis
-      - SPRING_REDIS_PORT=6379
+      - SPRING_DATASOURCE_PASSWORD=${OPENBAG_DB_PASSWORD:-openbag123}
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - SPRING_DATA_REDIS_PASSWORD=${OPENBAG_REDIS_PASSWORD:-openbag-redis}
       - ELASTICSEARCH_HOST=elasticsearch
       - ELASTICSEARCH_PORT=9200
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     depends_on:
       - postgres
       - redis

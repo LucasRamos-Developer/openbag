@@ -486,12 +486,12 @@ SELECT * FROM restaurants LIMIT 10;
 
 - **Database**: `openbag`
 - **User**: `openbag`
-- **Password**: `openbag123`
-- **Port**: `5432`
+- **Password**: `OPENBAG_DB_PASSWORD` do arquivo `.env` (copie o `.env.example`). Sem o `.env`, vale a senha de desenvolvimento, `openbag123`.
+- **Port**: `5432`, só em `127.0.0.1`
 
 ### Redis
 
-Hoje só a configuração existe. Os usos previstos são cache e rate limiting (roadmap 0.4.0).
+Guarda os contadores do limite de requisições (veja [Limite de requisições](#limite-de-requisições-rate-limiting)). A senha é `OPENBAG_REDIS_PASSWORD` do `.env`, e o padrão de desenvolvimento é `openbag-redis`. O backend lê a mesma variável. Sem Redis, o backend funciona normalmente: cada instância conta sozinha.
 
 ```bash
 # Acessar Redis CLI

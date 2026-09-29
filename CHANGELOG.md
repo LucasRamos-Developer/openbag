@@ -48,12 +48,21 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ### Segurança
 
-- **Segredos de produção obrigatórios.** O novo perfil `prod` (padrão da imagem Docker) não tem valores padrão para o segredo do JWT, o banco e as origens do app. O `SecretsValidator` impede o backend de subir com o segredo de desenvolvimento, com a senha `admin123` ou com a conta de demonstração ligada. Nos outros perfis, ele só avisa no log.
+- **Segredos de produção obrigatórios.** O novo perfil `prod` (padrão da imagem Docker) não tem valores padrão para o segredo do JWT, o banco e as origens do app. Sem essas variáveis, o backend não sobe e lista na hora todas as que faltam. O `SecretsValidator` impede o backend de subir com o segredo de desenvolvimento, com a senha `admin123` ou com a conta de demonstração ligada. Nos outros perfis, ele só avisa no log.
 - **O cadastro público sempre cria um cliente.** Antes, o `userType` enviado no corpo era gravado e, sem roles, virava a permissão do usuário. Isso permitia criar uma conta ADMIN. O tipo legado não concede mais permissão nenhuma.
 - **Uploads só de imagens de verdade.** O tipo é detectado pelos bytes do arquivo (JPEG, PNG, WEBP ou GIF), e a extensão salva vem desse tipo, e não do nome enviado. A pasta de destino fica presa ao diretório de upload. A rota `/files` só serve imagens, com o tipo fixo e uma política que não roda scripts. Antes, um HTML enviado como `.png` ou com a extensão `.html` era servido como página.
 - A rota genérica `POST /files/upload/{folder}`, que qualquer usuário logado podia usar, saiu. Cada imagem continua sendo enviada pela rota do próprio recurso.
 - **CORS e WebSocket só das origens configuradas** (`OPENBAG_CORS_ORIGINS`), em vez de qualquer origem. O CORS passou a aceitar `PATCH`.
 - Uma conta desativada perde o acesso na hora, na API e no WebSocket, mesmo com um token ainda válido.
+- **Revisão de segurança (OWASP Top 10):** o checklist está em [docs/roadmap/0.4.0-seguranca.md](docs/roadmap/0.4.0-seguranca.md#checklist-owasp-top-10-2021).
+  - Erros do cadastro de loja e da gestão de papéis não devolvem mais a mensagem interna da exceção.
+  - O log fica em INFO e sem SQL fora do perfil `local`. O JWT inválido não gera mais stack trace.
+  - `GET /users/profile` e `PUT /users/profile` usam DTO. Antes, o corpo era a entidade inteira, e o telefone novo não era conferido.
+  - As anotações `@HasPermission` (com erro) e `@IsOrderOwner`, sem uso, saíram.
+  - `docker-compose`: senhas pelo `.env` (veja o `.env.example`), Redis com senha e portas só em `127.0.0.1`. Imagem do backend em dois estágios, só com o JRE e sem root.
+  - O endereço da API no app é definido no build (`--dart-define=API_URL=...`). Três serviços do app ainda tinham `localhost:8080` fixo.
+- **Dependências:** Spring Boot 3.3.0 → 3.5.16, springdoc 2.5.0 → 2.8.17, jjwt 0.12.7, driver do PostgreSQL 42.7.13 e modelmapper 3.2.6.
+- **CI no GitHub Actions:** testes do backend (com Testcontainers), `flutter analyze` e `flutter test` a cada push. OWASP Dependency-Check toda semana e Dependabot.
 - **Throttling:**
   - O servidor aceita no máximo um ping de localização a cada 10 segundos por entregador. O app manda a cada 20 segundos e também a cada 30 metros andados, o que numa avenida vira um ping a cada 2 segundos.
   - Saltos impossíveis de GPS (acima de 150 km/h em menos de um minuto) são descartados.
@@ -97,6 +106,7 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - Dois cliques na baixa de uma fatura lançavam a mensalidade e a caixinha duas vezes. Dois auxílios ao mesmo tempo podiam deixar a caixinha negativa.
   - O aceite de oferta travava o entregador antes do pedido, e a atribuição pela loja fazia o contrário. Isso podia dar deadlock (500 no app). A ordem agora é única: pedido e depois entregador, e vários pedidos sempre em ordem de id.
 - A expiração de pedidos sem resposta e a geração mensal de faturas rodavam numa transação só: um erro desfazia todos. Agora é uma transação por pedido e por associação. O despacho em segundo plano tenta de novo quando encontra um conflito.
+- A imagem Docker do backend não era construída: o plugin do Spring Boot 3.3 não empacota classes do Java 25.
 - Uma enxurrada de endereços diferentes no checkout prendia as threads do servidor na fila da geocodificação (1 consulta por segundo, com a thread dormindo na vez). Agora cada consulta reserva uma vaga e desiste se ela passar de 3 segundos: o endereço fica sem coordenadas e a taxa usa o valor "a partir de".
 - A resposta da foto de perfil e o `GET /users/profile` entravam num laço entre papéis e permissões e quebravam no meio do JSON.
 - Método não permitido e rota inexistente respondiam 500. Agora respondem 405 e 404.

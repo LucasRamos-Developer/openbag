@@ -1,9 +1,10 @@
 import 'dart:convert';
+import '../constants/app_constants.dart';
 import 'package:http/http.dart' as http;
 import '../models/restaurant.dart';
 
 class CategoryService {
-  static const String baseUrl = 'http://localhost:8080/api';
+  static const String baseUrl = AppConstants.baseUrl;
 
   /// Busca todas as categorias disponíveis
   Future<List<Category>> getAllCategories() async {

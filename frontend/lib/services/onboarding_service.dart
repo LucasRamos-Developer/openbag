@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../constants/app_constants.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
@@ -8,7 +9,7 @@ import '../models/onboarding/restaurant_onboarding_data.dart';
 import '../models/onboarding/association_onboarding_data.dart';
 
 class OnboardingService {
-  static const String baseUrl = 'http://localhost:8080/api';
+  static const String baseUrl = AppConstants.baseUrl;
   static const String draftKey = 'restaurant_onboarding_draft';
   static const String associationDraftKey = 'association_onboarding_draft';
 

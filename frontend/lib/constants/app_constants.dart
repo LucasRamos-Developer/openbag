@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class AppConstants {
-  // API Configuration
-  static const String baseUrl = 'http://localhost:8080/api';
+  /// Endereço da API, definido no build: flutter build web --dart-define=API_URL=https://api.exemplo.com/api
+  static const String baseUrl = String.fromEnvironment('API_URL', defaultValue: 'http://localhost:8080/api');
 
   /// URL absoluta de um arquivo enviado ao backend (ex: "associations/abc.png")
   static String fileUrl(String relativePath) => '$baseUrl/files/$relativePath';
