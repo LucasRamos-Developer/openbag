@@ -208,12 +208,10 @@ O agendamento é ativado por `@EnableScheduling` no `AppConfig`.
 
 ## Dados
 
-- O schema é gerado pelo Hibernate com `spring.jpa.hibernate.ddl-auto=update`. Os arquivos em `db/migration` são antigos e **não são aplicados** (o Flyway não está no `pom.xml`).
-- Limitações do `update`:
-  - colunas novas em tabelas existentes chegam `NULL`, então use tipos wrapper ou getters com valor padrão;
-  - as restrições `CHECK` de enums não são atualizadas, então um valor novo de enum exige ajuste manual.
-- A troca por migrações versionadas está no roadmap da versão **0.4.0**.
-- O banco precisa do PostGIS: o `schema.sql` cria a extensão antes do Hibernate (`spring.sql.init.mode=always`).
+- O esquema vem das migrações do Flyway (`backend/src/main/resources/db/migration`). O Hibernate só confere se as entidades batem com o banco (`ddl-auto=validate`).
+- Toda mudança de entidade vira uma migração nova, inclusive valores novos de enum (o `CHECK` da coluna é recriado).
+- Bancos criados antes do Flyway entram com *baseline* na V1, que tem o mesmo esquema e os mesmos nomes de restrições do antigo `ddl-auto=update`.
+- O banco precisa do PostGIS: a V1 cria a extensão.
 
 ---
 

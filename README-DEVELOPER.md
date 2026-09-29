@@ -123,7 +123,7 @@ docker logs -f open-bag-app
 
 ### Opção 3: Desenvolvimento Local (sem Docker)
 
-Para desenvolvimento sem Docker, você precisa instalar PostgreSQL (com PostGIS), Redis e Elasticsearch localmente. Sem o PostGIS, o backend não sobe: ele roda `CREATE EXTENSION IF NOT EXISTS postgis` na subida.
+Para desenvolvimento sem Docker, você precisa instalar PostgreSQL (com PostGIS), Redis e Elasticsearch localmente. Sem o PostGIS, o backend não sobe: a primeira migração roda `CREATE EXTENSION IF NOT EXISTS postgis`.
 
 ```bash
 # 1. Criar banco de dados PostgreSQL
@@ -443,17 +443,26 @@ Os ícones do app (`web/favicon.png` e `web/icons/`) são gerados por `tools/bra
 
 O projeto usa **PostgreSQL 15** com **PostGIS 3** como banco de dados principal (imagem montada por `database/Dockerfile`: a `postgres:15` oficial com o pacote `postgresql-15-postgis-3`, na mesma base Debian, para não mudar a collation dos volumes já criados). O PostGIS guarda o caminho pelas ruas das rotas.
 
-O `backend/src/main/resources/schema.sql` cria a extensão antes do Hibernate (`spring.sql.init.mode=always`), então vale também para um volume antigo, criado com a imagem `postgres:15`.
+A primeira migração cria a extensão, então vale também para um volume antigo, criado com a imagem `postgres:15`.
 
-#### Schema
+#### Schema e migrações (Flyway)
 
-Hoje o schema é gerado pelo Hibernate (`spring.jpa.hibernate.ddl-auto=update`). Os arquivos em `db/migration` são antigos e **não são aplicados**, porque o Flyway não está no `pom.xml`.
+O esquema vem das migrações em `backend/src/main/resources/db/migration`, aplicadas pelo Flyway na subida. O Hibernate não cria nem altera nada: com `spring.jpa.hibernate.ddl-auto=validate`, ele só confere se as entidades batem com o banco e impede a subida se faltar uma tabela ou uma coluna.
 
-Cuidados com o `update`:
-- colunas novas em tabelas existentes chegam `NULL`, então use tipos wrapper ou getters com valor padrão;
-- as restrições `CHECK` de enums não são atualizadas, então um valor novo de enum exige ajuste manual no banco.
+- `V1__esquema_inicial.sql`: o esquema da 0.3.0, gerado pelo Hibernate, com os mesmos nomes de chaves, únicos e checks que o antigo `ddl-auto=update` criava.
+- `V2__preenche_colunas_legadas.sql`: dados que antes eram preenchidos na subida.
 
-A troca por migrações versionadas está no roadmap da versão **0.4.0** (veja o [CHANGELOG](CHANGELOG.md#roadmap)).
+**Mudou uma entidade? Crie uma migração.** O nome segue `V<número>__<descrição>.sql` (por exemplo, `V3__pedido_com_versao.sql`), e uma migração já aplicada nunca é editada. Isso inclui valores novos em enums: o Hibernate cria um `CHECK` para cada coluna `@Enumerated(STRING)`, e a migração precisa recriá-lo:
+
+```sql
+ALTER TABLE orders DROP CONSTRAINT orders_status_check;
+ALTER TABLE orders ADD CONSTRAINT orders_status_check
+    CHECK (status IN ('PENDING', 'CONFIRMED', ..., 'NOVO_VALOR'));
+```
+
+O teste `FlywayMigrationTest` sobe o backend contra um Postgres + PostGIS de verdade (Testcontainers) e falha se as migrações não baterem com as entidades.
+
+**Banco criado antes do Flyway.** Um banco que já existia entra com *baseline* na V1 (`spring.flyway.baseline-on-migrate`) e segue da V2. Se ele estava atrás do código (o backend não sobe e acusa `Schema-validation: missing column`), suba **uma vez** com `--spring.jpa.hibernate.ddl-auto=update` para completar as colunas e volte ao normal. Se preferir começar do zero, apague o volume do Postgres (os dados se perdem) e a conta de demonstração é recriada com `OPENBAG_DEMO_ENABLED=true`.
 
 ```bash
 # Para recriar o banco do zero:
@@ -763,11 +772,8 @@ flutter analyze
 ```bash
 cd backend
 
-# Rodar todos os testes
+# Rodar todos os testes (os de integração precisam do Docker; sem ele, são pulados)
 mvn test
-
-# Rodar testes de integração
-mvn verify
 
 # Rodar com coverage
 mvn test jacoco:report
@@ -778,13 +784,8 @@ open target/site/jacoco/index.html
 
 #### Estrutura de Testes
 
-```
-src/test/java/com/openbag/
-├── controller/          # Testes de Controller (MockMvc)
-├── service/             # Testes de Service (Mockito)
-├── repository/          # Testes de Repository (DataJpaTest)
-└── integration/         # Testes de integração (SpringBootTest)
-```
+- A maioria é de unidade, com JUnit 5 e Mockito, ao lado do pacote testado (`modules/<módulo>/service/...Test`).
+- Os testes de integração estendem `support/IntegrationTest`: sobem o backend inteiro contra um Postgres + PostGIS em container (Testcontainers, com a imagem de `database/Dockerfile`), com o esquema criado pelas migrações. A primeira execução constrói a imagem e demora cerca de um minuto.
 
 ### Frontend (Flutter Test)
 
@@ -880,14 +881,9 @@ public class CorsConfig implements WebMvcConfigurer {
 
 **Erro**: `violates check constraint "..._check"`
 
-**Causa**: o `ddl-auto=update` não atualiza as restrições `CHECK` que o Hibernate cria para colunas `@Enumerated(STRING)`.
+**Causa**: o valor novo do enum não está no `CHECK` da coluna.
 
-**Solução**:
-```bash
-docker exec -it open-bag-postgres psql -U openbag -d openbag
--- remova a restrição antiga (o nome aparece na mensagem de erro)
-ALTER TABLE <tabela> DROP CONSTRAINT <tabela>_<coluna>_check;
-```
+**Solução**: crie uma migração que recria o `CHECK` com o valor novo (veja [Schema e migrações](#schema-e-migrações-flyway)). Não altere o banco à mão: os outros bancos (de outras pessoas, do CI e de produção) ficariam diferentes.
 
 #### 6. Redis connection timeout
 

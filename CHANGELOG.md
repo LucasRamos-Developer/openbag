@@ -55,6 +55,12 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 - **CORS e WebSocket só das origens configuradas** (`OPENBAG_CORS_ORIGINS`), em vez de qualquer origem. O CORS passou a aceitar `PATCH`.
 - Uma conta desativada perde o acesso na hora, na API e no WebSocket, mesmo com um token ainda válido.
 
+### Alterado
+
+- **Migrações versionadas com Flyway.** O esquema vem de `db/migration`, e o Hibernate só confere se as entidades batem com o banco (`ddl-auto=validate`). A V1 foi gerada das entidades e tem os mesmos nomes de chaves, únicos e checks que o `ddl-auto=update` criava, então um banco que já existia entra com *baseline* na V1 sem diferença. Os preenchimentos que rodavam em toda subida (`DataBackfill`) viraram a V2. Saíram o `schema.sql` (a V1 cria a extensão PostGIS) e os scripts MySQL antigos, que nunca rodavam.
+  - **Banco local antigo:** se o backend acusar `Schema-validation: missing column`, o banco está atrás do código. Suba uma vez com `--spring.jpa.hibernate.ddl-auto=update` e volte ao normal (veja o README-DEVELOPER).
+- **Testes de integração** com Testcontainers, contra a mesma imagem Postgres + PostGIS do docker-compose. O primeiro (`FlywayMigrationTest`) falha se uma entidade mudar sem migração.
+
 ### Corrigido
 
 - A resposta da foto de perfil e o `GET /users/profile` entravam num laço entre papéis e permissões e quebravam no meio do JSON.

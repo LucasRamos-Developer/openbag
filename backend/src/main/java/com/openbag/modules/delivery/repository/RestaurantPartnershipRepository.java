@@ -2,7 +2,6 @@ package com.openbag.modules.delivery.repository;
 
 import com.openbag.modules.delivery.entity.RestaurantPartnership;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -56,13 +55,5 @@ public interface RestaurantPartnershipRepository extends JpaRepository<Restauran
     @Query("SELECT p FROM RestaurantPartnership p WHERE p.organization.id = :organizationId AND " + ACTIVE)
     List<RestaurantPartnership> findActiveByOrganization(@Param("organizationId") Long organizationId);
 
-    @Modifying
-    @Query("UPDATE RestaurantPartnership p SET p.status = com.openbag.enums.PartnershipStatus.ACTIVE "
-            + "WHERE p.status IS NULL AND p.endedAt IS NULL")
-    int backfillActiveStatus();
 
-    @Modifying
-    @Query("UPDATE RestaurantPartnership p SET p.status = com.openbag.enums.PartnershipStatus.ENDED "
-            + "WHERE p.status IS NULL AND p.endedAt IS NOT NULL")
-    int backfillEndedStatus();
 }

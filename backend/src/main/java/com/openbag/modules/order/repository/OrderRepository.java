@@ -158,13 +158,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Object[]> sumCourierEarningsByCourier(@Param("organizationId") Long organizationId,
                                                @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
-    /** Registra a associação atual do entregador nos pedidos anteriores ao campo (uma vez, na subida) */
-    @Modifying
-    @Query(value = "UPDATE orders o SET courier_organization_id = dp.organization_id FROM delivery_persons dp "
-            + "WHERE dp.id = o.delivery_person_id AND o.courier_organization_id IS NULL "
-            + "AND dp.organization_id IS NOT NULL", nativeQuery = true)
-    int backfillCourierOrganization();
-
     @Query("SELECT COUNT(o) FROM Order o WHERE o.restaurant.id = :restaurantId "
             + "AND o.status = com.openbag.enums.OrderStatus.CANCELLED AND o.cancelledAt >= :start AND o.cancelledAt < :end")
     long countCancelledByRestaurantBetween(@Param("restaurantId") Long restaurantId,
