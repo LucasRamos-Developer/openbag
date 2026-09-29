@@ -40,11 +40,11 @@ import com.openbag.modules.shared.util.GeoUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -67,6 +67,9 @@ import java.util.function.Consumer;
 @Service
 @Slf4j
 public class DispatchService {
+
+    /** Tentativas do trabalho de fundo quando outra transação mexe nos mesmos registros */
+    static final int RETRY_ATTEMPTS = 3;
 
     public static final Set<OrderStatus> DISPATCHABLE =
             EnumSet.of(OrderStatus.CONFIRMED, OrderStatus.PREPARING, OrderStatus.READY_FOR_PICKUP);
@@ -125,15 +128,13 @@ public class DispatchService {
      * avisa o entregador atribuído e, se o pedido ainda espera entregador, oferece a alguém.
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onOrderChanged(OrderChangedEvent event) {
-        orderRepository.findByIdForUpdate(event.orderId()).ifPresent(this::handleOrderChange);
+        inNewTransaction(event.orderId(), this::handleOrderChange);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onDispatchRequested(DispatchRequestedEvent event) {
-        orderRepository.findByIdForUpdate(event.orderId()).ifPresent(this::dispatchLocked);
+        inNewTransaction(event.orderId(), this::dispatchLocked);
     }
 
     private void handleOrderChange(Order order) {
@@ -146,7 +147,7 @@ public class DispatchService {
                 leaveRoute(order);
                 // A rota continua com os outros pedidos: se ainda procura entregador, oferece de novo
                 if (route.getStatus() == RouteStatus.DISPATCHING) {
-                    dispatchRoute(route);
+                    requestRouteDispatch(route);
                 }
             }
             return;
@@ -179,7 +180,8 @@ public class DispatchService {
     /**
      * Ofertas sem resposta no prazo: expiram e o pedido vai para o próximo entregador
      */
-    @Scheduled(fixedDelayString = "${app.delivery.offer-check-ms:5000}", initialDelay = 15000)
+    @Scheduled(fixedDelayString = "${app.delivery.offer-check-ms:5000}",
+            initialDelayString = "${app.delivery.offer-check-initial-delay-ms:15000}")
     public void expireOffers() {
         LocalDateTime now = LocalDateTime.now(clock);
         for (DeliveryOffer expired : offerRepository.findExpired(now)) {
@@ -202,7 +204,8 @@ public class DispatchService {
     /**
      * Pedidos que continuam sem entregador: nova tentativa (alguém pode ter ficado online ou terminado uma entrega)
      */
-    @Scheduled(fixedDelayString = "${app.delivery.retry-ms:15000}", initialDelay = 20000)
+    @Scheduled(fixedDelayString = "${app.delivery.retry-ms:15000}",
+            initialDelayString = "${app.delivery.retry-initial-delay-ms:20000}")
     public void retryWaitingOrders() {
         for (Long orderId : orderRepository.findIdsAwaitingCourier(DISPATCHABLE)) {
             inNewTransaction(orderId, this::dispatchLocked);
@@ -212,12 +215,13 @@ public class DispatchService {
     /**
      * Turnos livres sem sinal de localização há muito tempo são encerrados (app fechado)
      */
-    @Scheduled(fixedDelayString = "${app.delivery.stale-shift-check-ms:60000}", initialDelay = 60000)
+    @Scheduled(fixedDelayString = "${app.delivery.stale-shift-check-ms:60000}",
+            initialDelayString = "${app.delivery.stale-shift-initial-delay-ms:60000}")
     public void closeStaleShifts() {
         LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime before = now.minusMinutes(properties.getShiftTimeoutMinutes());
         for (CourierShift stale : shiftRepository.findStaleFreeShifts(before)) {
-            newTransaction.executeWithoutResult(tx -> {
+            withRetry("turno " + stale.getId(), () -> newTransaction.executeWithoutResult(tx -> {
                 DeliveryPerson courier = deliveryPersonRepository.findByIdForUpdate(stale.getDeliveryPerson().getId())
                         .orElseThrow();
                 CourierShift shift = courier.getCurrentShift();
@@ -233,7 +237,7 @@ public class DispatchService {
                 notifier.send(courier.getId(), new CourierMessage(CourierMessage.Type.STATE_CHANGED, null, null,
                         "Você ficou offline porque o app parou de enviar a localização"));
                 log.info("Turno {} do entregador {} encerrado por falta de sinal", shift.getId(), courier.getId());
-            });
+            }));
         }
     }
 
@@ -376,10 +380,12 @@ public class DispatchService {
         }
         DeliveryRoute route = routeRepository.findByIdAndRestaurantId(routeId, restaurantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Rota não encontrada"));
+        // Trava todos os pedidos da rota em ordem de id, como o aceite da oferta da rota
+        orderRepository.findAllByIdForUpdate(orderRepository.findIdsByRouteId(routeId));
         List<Order> orders = new ArrayList<>();
         for (Order order : route.sortedOrders()) {
             if (DISPATCHABLE.contains(order.getStatus())) {
-                orders.add(orderRepository.findByIdForUpdate(order.getId()).orElseThrow());
+                orders.add(order);
             }
         }
         if (orders.isEmpty() || orders.stream().anyMatch(o -> o.getPickedUpAt() != null)) {
@@ -675,7 +681,13 @@ public class DispatchService {
         }
         if (order.getRoute() != null) {
             if (order.getRoute().getStatus() == RouteStatus.DISPATCHING) {
-                dispatchRoute(order.getRoute());
+                List<Order> waiting = waitingOrders(order.getRoute());
+                if (!waiting.isEmpty() && waiting.get(0).getId().equals(order.getId())) {
+                    dispatchRoute(order.getRoute());
+                } else {
+                    // Só este pedido está travado: travar o líder agora fugiria da ordem das travas
+                    requestRouteDispatch(order.getRoute());
+                }
             }
             return;
         }
@@ -697,8 +709,17 @@ public class DispatchService {
         createOffer(order, choice.get().candidate(), choice.get().score(), null);
     }
 
+    /** Pede o despacho da rota pelo pedido líder, numa transação própria depois desta (que trava o líder primeiro) */
+    private void requestRouteDispatch(DeliveryRoute route) {
+        List<Order> waiting = waitingOrders(route);
+        if (!waiting.isEmpty()) {
+            events.publishEvent(new DispatchRequestedEvent(waiting.get(0).getId()));
+        }
+    }
+
     /**
-     * Oferece a rota inteira a um entregador; a oferta fica registrada no pedido líder (primeiro da ordem)
+     * Oferece a rota inteira a um entregador; a oferta fica registrada no pedido líder (primeiro da ordem), que
+     * precisa estar travado por quem chama
      */
     void dispatchRoute(DeliveryRoute route) {
         List<Order> orders = waitingOrders(route);
@@ -999,11 +1020,31 @@ public class DispatchService {
 
     // ============= Auxiliares =============
 
+    /** Trabalho de fundo sobre um pedido (travado), numa transação própria e com nova tentativa em conflito */
     private void inNewTransaction(Long orderId, Consumer<Order> work) {
-        try {
-            newTransaction.executeWithoutResult(tx -> orderRepository.findByIdForUpdate(orderId).ifPresent(work));
-        } catch (RuntimeException e) {
-            log.error("Falha no despacho do pedido {}", orderId, e);
+        withRetry("pedido " + orderId, () -> newTransaction.executeWithoutResult(
+                tx -> orderRepository.findByIdForUpdate(orderId).ifPresent(work)));
+    }
+
+    /**
+     * Roda de novo quando outra transação mexeu nos mesmos registros (versão mudou, deadlock ou trava expirada).
+     * Sem isso, o despacho de um pedido podia simplesmente não acontecer e deixar o entregador preso.
+     */
+    static void withRetry(String what, Runnable work) {
+        for (int attempt = 1; ; attempt++) {
+            try {
+                work.run();
+                return;
+            } catch (ConcurrencyFailureException e) {
+                if (attempt >= RETRY_ATTEMPTS) {
+                    log.error("Conflito no despacho ({}) depois de {} tentativas", what, attempt, e);
+                    return;
+                }
+                log.info("Conflito no despacho ({}), tentativa {}: {}", what, attempt, e.getClass().getSimpleName());
+            } catch (RuntimeException e) {
+                log.error("Falha no despacho ({})", what, e);
+                return;
+            }
         }
     }
 

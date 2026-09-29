@@ -6,6 +6,7 @@ import com.openbag.modules.delivery.entity.DeliveryPerson;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -39,6 +40,16 @@ public interface DeliveryPersonRepository extends JpaRepository<DeliveryPerson, 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT dp FROM DeliveryPerson dp WHERE dp.id = :id")
     Optional<DeliveryPerson> findByIdForUpdate(@Param("id") Long id);
+
+    /**
+     * Grava só a posição, sem carregar e salvar o entregador inteiro: o ping de localização (a cada 20 s) nunca
+     * desfaz uma mudança de situação feita ao mesmo tempo (ex.: o aceite de uma oferta)
+     */
+    @Modifying
+    @Query("UPDATE DeliveryPerson d SET d.lastLatitude = :latitude, d.lastLongitude = :longitude, "
+            + "d.lastSeenAt = :seenAt WHERE d.id = :id")
+    int updateLocation(@Param("id") Long id, @Param("latitude") Double latitude, @Param("longitude") Double longitude,
+                       @Param("seenAt") java.time.LocalDateTime seenAt);
 
     /**
      * Entregadores online no modo livre com localização recente: candidatos às ofertas

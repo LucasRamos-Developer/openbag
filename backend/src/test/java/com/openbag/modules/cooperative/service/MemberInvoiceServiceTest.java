@@ -194,7 +194,7 @@ class MemberInvoiceServiceTest {
         invoice.setEarnings(BigDecimal.ZERO);
         invoice.setTotal(new BigDecimal("125.00"));
         invoice.setStatus(InvoiceStatus.OPEN);
-        when(invoiceRepository.findByIdAndOrganization(7L, 10L)).thenReturn(Optional.of(invoice));
+        when(invoiceRepository.findByIdAndOrganizationForUpdate(7L, 10L)).thenReturn(Optional.of(invoice));
         User manager = new User();
 
         service.pay(10L, 7L, new PayInvoiceRequest(MemberPaymentMethod.PIX, null, null), manager);
@@ -216,7 +216,7 @@ class MemberInvoiceServiceTest {
     void paymentDateCannotBeInTheFuture() {
         MemberInvoice invoice = new MemberInvoice();
         invoice.setStatus(InvoiceStatus.OPEN);
-        when(invoiceRepository.findByIdAndOrganization(anyLong(), anyLong())).thenReturn(Optional.of(invoice));
+        when(invoiceRepository.findByIdAndOrganizationForUpdate(anyLong(), anyLong())).thenReturn(Optional.of(invoice));
 
         assertThatThrownBy(() -> service.pay(10L, 7L,
                 new PayInvoiceRequest(MemberPaymentMethod.CASH, NOW.toLocalDate().plusDays(1), null), new User()))

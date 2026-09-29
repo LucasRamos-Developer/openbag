@@ -2,7 +2,9 @@ package com.openbag.modules.cooperative.repository;
 
 import com.openbag.enums.InvoiceStatus;
 import com.openbag.modules.cooperative.entity.MemberInvoice;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -28,6 +30,12 @@ public interface MemberInvoiceRepository extends JpaRepository<MemberInvoice, Lo
     @Query("SELECT i FROM MemberInvoice i JOIN FETCH i.membership m JOIN FETCH m.deliveryPerson dp JOIN FETCH dp.user "
             + "WHERE i.id = :id AND i.organization.id = :organizationId")
     Optional<MemberInvoice> findByIdAndOrganization(@Param("id") Long id, @Param("organizationId") Long organizationId);
+
+    /** Trava só a fatura (sem juntar o cooperado): duas baixas ao mesmo tempo esperam uma pela outra */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT i FROM MemberInvoice i WHERE i.id = :id AND i.organization.id = :organizationId")
+    Optional<MemberInvoice> findByIdAndOrganizationForUpdate(@Param("id") Long id,
+                                                             @Param("organizationId") Long organizationId);
 
     boolean existsByMembershipIdAndMonth(Long membershipId, LocalDate month);
 

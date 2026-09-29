@@ -27,6 +27,14 @@ public interface DeliveryOfferRepository extends JpaRepository<DeliveryOffer, Lo
 
     Optional<DeliveryOffer> findByIdAndDeliveryPersonId(Long id, Long deliveryPersonId);
 
+    /**
+     * Pedido (o líder, numa rota) e rota de uma oferta do entregador, sem carregar a oferta: o aceite trava os
+     * pedidos antes de ler a oferta
+     */
+    @Query("SELECT o.order.id, r.id FROM DeliveryOffer o LEFT JOIN o.route r "
+            + "WHERE o.id = :offerId AND o.deliveryPerson.user.id = :userId")
+    List<Object[]> findOrderAndRouteOfCourierOffer(@Param("offerId") Long offerId, @Param("userId") Long userId);
+
     @Query("SELECT o FROM DeliveryOffer o WHERE o.status = com.openbag.enums.DeliveryOfferStatus.PENDING "
             + "AND o.expiresAt < :now")
     List<DeliveryOffer> findExpired(@Param("now") LocalDateTime now);

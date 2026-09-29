@@ -26,7 +26,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -86,6 +88,9 @@ public class MemberInvoiceService {
 
     @Autowired
     private Clock clock;
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     // ============= Política =============
 
@@ -154,7 +159,7 @@ public class MemberInvoiceService {
     }
 
     public InvoiceDTO pay(Long organizationId, Long invoiceId, PayInvoiceRequest request, User by) {
-        MemberInvoice invoice = findInvoice(organizationId, invoiceId);
+        MemberInvoice invoice = lockInvoice(organizationId, invoiceId);
         if (invoice.getStatus() != InvoiceStatus.OPEN) {
             throw new BadRequestException("Esta fatura não está em aberto");
         }
@@ -174,7 +179,7 @@ public class MemberInvoiceService {
 
     /** Dispensa a fatura (ex: cooperado afastado), com o motivo */
     public InvoiceDTO waive(Long organizationId, Long invoiceId, String reason, User by) {
-        MemberInvoice invoice = findInvoice(organizationId, invoiceId);
+        MemberInvoice invoice = lockInvoice(organizationId, invoiceId);
         if (invoice.getStatus() != InvoiceStatus.OPEN) {
             throw new BadRequestException("Esta fatura não está em aberto");
         }
@@ -186,7 +191,7 @@ public class MemberInvoiceService {
 
     /** Desfaz a baixa ou a dispensa (lançamento errado): a fatura volta a ficar em aberto */
     public InvoiceDTO reopen(Long organizationId, Long invoiceId) {
-        MemberInvoice invoice = findInvoice(organizationId, invoiceId);
+        MemberInvoice invoice = lockInvoice(organizationId, invoiceId);
         if (invoice.getStatus() == InvoiceStatus.OPEN) {
             throw new BadRequestException("Esta fatura já está em aberto");
         }
@@ -252,15 +257,25 @@ public class MemberInvoiceService {
 
     /** Dia 1, de madrugada: gera as faturas do mês que terminou em todas as associações com cobrança definida */
     @Scheduled(cron = "${app.cooperative.invoice-cron:0 0 3 1 * *}", zone = "America/Sao_Paulo")
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void generatePreviousMonthForAll() {
         YearMonth previous = YearMonth.now(clock).minusMonths(1);
-        for (Organization organization : organizationRepository.findByStatusOrderByTradingNameAsc(OrganizationStatus.ACTIVE)) {
-            if (organization.isFeePolicyConfigured()) {
-                int created = generateMissing(organization, previous);
-                if (created > 0) {
-                    log.info("Associação {}: {} fatura(s) de {} geradas automaticamente", organization.getId(),
-                            created, previous);
-                }
+        for (Organization active : organizationRepository.findByStatusOrderByTradingNameAsc(OrganizationStatus.ACTIVE)) {
+            // Uma transação por associação: um erro numa delas (ex.: fatura gerada ao mesmo tempo pelo gestor)
+            // não desfaz as das outras
+            try {
+                transactionTemplate.executeWithoutResult(tx -> {
+                    Organization organization = organizationRepository.findById(active.getId()).orElseThrow();
+                    if (organization.isFeePolicyConfigured()) {
+                        int created = generateMissing(organization, previous);
+                        if (created > 0) {
+                            log.info("Associação {}: {} fatura(s) de {} geradas automaticamente", organization.getId(),
+                                    created, previous);
+                        }
+                    }
+                });
+            } catch (RuntimeException e) {
+                log.error("Falha ao gerar as faturas de {} da associação {}", previous, active.getId(), e);
             }
         }
     }
@@ -353,6 +368,15 @@ public class MemberInvoiceService {
     private static Comparator<InvoiceDTO> byMember() {
         return Comparator.comparing(InvoiceDTO::memberNumber, Comparator.nullsLast(Comparator.naturalOrder()))
                 .thenComparing(InvoiceDTO::memberName);
+    }
+
+    /**
+     * Fatura travada: duas baixas (ou baixa e reabertura) ao mesmo tempo esperam uma pela outra, e a segunda vê a
+     * fatura já paga. Antes, os dois cliques lançavam a mensalidade e a caixinha duas vezes.
+     */
+    private MemberInvoice lockInvoice(Long organizationId, Long invoiceId) {
+        return invoiceRepository.findByIdAndOrganizationForUpdate(invoiceId, organizationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Fatura não encontrada"));
     }
 
     private MemberInvoice findInvoice(Long organizationId, Long invoiceId) {

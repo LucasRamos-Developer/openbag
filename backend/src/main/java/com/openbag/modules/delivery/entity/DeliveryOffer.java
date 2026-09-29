@@ -29,6 +29,10 @@ public class DeliveryOffer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Trava otimista: aceite, recusa e expiração da mesma oferta nunca valem juntos */
+    @Version
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;

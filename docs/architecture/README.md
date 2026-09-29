@@ -213,6 +213,19 @@ O agendamento é ativado por `@EnableScheduling` no `AppConfig`.
 - Bancos criados antes do Flyway entram com *baseline* na V1, que tem o mesmo esquema e os mesmos nomes de restrições do antigo `ddl-auto=update`.
 - O banco precisa do PostGIS: a V1 cria a extensão.
 
+### Ações simultâneas
+
+O mesmo pedido pode ser mexido ao mesmo tempo pela loja, pelo entregador, pelo cliente e pelos jobs. As regras abaixo evitam que uma ação desfaça a outra:
+
+- **Quem muda um pedido trava o pedido** (`OrderRepository.findByIdForUpdate`): etapas da loja, cancelamento do cliente, aceite do entregador, retirada, entrega e jobs.
+- **Ordem das travas: pedido antes do entregador.** Quem trava mais de um pedido usa `findAllByIdForUpdate`, que trava em ordem de id. Com o líder de uma rota travado, não se trava outro pedido: pede-se o despacho da rota por evento (`DispatchRequestedEvent`).
+- **Trava otimista** (`@Version`) em `Order`, `DeliveryPerson`, `DeliveryOffer`, `DeliveryRoute` e `MemberInvoice`: uma gravação feita a partir de uma leitura antiga falha em vez de sobrescrever.
+- **A posição do entregador é gravada à parte** (`DeliveryPersonRepository.updateLocation`), sem salvar a entidade inteira, e o `DeliveryPerson` usa `@DynamicUpdate`.
+- **Conflito vira 409.** No trabalho de fundo (eventos do despacho, jobs e planejador de rotas), `DispatchService.withRetry` tenta de novo até 3 vezes.
+- **O banco confere as regras de "um aberto por vez"**: uma oferta pendente por pedido e por entregador, um turno aberto e um vínculo aberto por entregador. São restrições de exclusão adiadas para o commit, porque o Hibernate insere o registro novo antes de atualizar o antigo.
+- **As mudanças de status passam por `OrderStatus.canTransitionTo`.**
+- O teste `ConcurrentActionsTest` reproduz cada corrida com duas threads contra o banco de verdade.
+
 ---
 
 ## Frontend (Flutter)

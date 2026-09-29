@@ -133,11 +133,12 @@ public class CourierWorkService {
      */
     public void updateLocation(User user, LocationRequest location) {
         DeliveryPerson courier = findCourier(user);
-        updatePosition(courier, location);
-        deliveryPersonRepository.save(courier);
+        LocalDateTime now = LocalDateTime.now(clock);
+        // Só a posição: salvar o entregador inteiro desfaria um aceite gravado ao mesmo tempo
+        deliveryPersonRepository.updateLocation(courier.getId(), location.getLatitude(), location.getLongitude(), now);
         CourierTracking.currentStop(ordersOnTheWay(courier)).ifPresent(order ->
                 events.publishEvent(new CourierLocationEvent(order.getId(), location.getLatitude(),
-                        location.getLongitude(), courier.getLastSeenAt())));
+                        location.getLongitude(), now)));
     }
 
     /**
@@ -195,7 +196,11 @@ public class CourierWorkService {
     // ============= Ofertas =============
 
     public CourierWorkStateDTO acceptOffer(User user, Long offerId) {
+        // Ordem das travas, a mesma do resto do despacho: pedidos (em ordem de id) e depois o entregador.
+        // Travar o entregador primeiro dava deadlock com a loja atribuindo o mesmo pedido a ele.
+        Long orderId = lockOfferOrders(user, offerId);
         DeliveryPerson courier = lockCourier(user);
+        // A oferta é lida depois das travas: a expiração e a recusa mexem nela com o pedido ou o entregador travado
         DeliveryOffer offer = offerRepository.findByIdAndDeliveryPersonId(offerId, courier.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Oferta não encontrada"));
         LocalDateTime now = LocalDateTime.now(clock);
@@ -206,7 +211,7 @@ public class CourierWorkService {
             throw new BadRequestException("Você precisa estar online para aceitar entregas");
         }
 
-        Order order = orderRepository.findByIdForUpdate(offer.getOrder().getId()).orElseThrow();
+        Order order = orderRepository.findByIdForUpdate(orderId).orElseThrow();
         if (order.getDeliveryPerson() != null || order.getStaffCourier() != null
                 || !DispatchService.DISPATCHABLE.contains(order.getStatus())) {
             offer.setStatus(DeliveryOfferStatus.CANCELLED);
@@ -380,6 +385,24 @@ public class CourierWorkService {
         return orderRepository.findByIdForUpdate(orderId)
                 .filter(o -> o.getDeliveryPerson() != null && o.getDeliveryPerson().getId().equals(courier.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Entrega não encontrada"));
+    }
+
+    /**
+     * Trava o pedido da oferta ou, numa rota, todos os pedidos dela, em ordem de id. Devolve o pedido da oferta.
+     */
+    private Long lockOfferOrders(User user, Long offerId) {
+        Object[] row = offerRepository.findOrderAndRouteOfCourierOffer(offerId, user.getId()).stream()
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Oferta não encontrada"));
+        Long orderId = (Long) row[0];
+        Long routeId = (Long) row[1];
+        java.util.Set<Long> ids = new java.util.TreeSet<>();
+        ids.add(orderId);
+        if (routeId != null) {
+            ids.addAll(orderRepository.findIdsByRouteId(routeId));
+        }
+        orderRepository.findAllByIdForUpdate(ids);
+        return orderId;
     }
 
     private CourierWorkStateDTO toState(DeliveryPerson courier) {

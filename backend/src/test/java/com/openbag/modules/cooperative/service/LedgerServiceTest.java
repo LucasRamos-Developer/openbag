@@ -53,6 +53,7 @@ class LedgerServiceTest {
     @Mock private MemberInvoiceRepository invoiceRepository;
     @Mock private AssociationMembershipRepository membershipRepository;
     @Mock private AssociationService associationService;
+    @Mock private com.openbag.modules.organization.repository.OrganizationRepository organizationRepository;
     @Spy private Clock clock = Clock.fixed(NOW.atZone(ZONE).toInstant(), ZONE);
 
     @InjectMocks

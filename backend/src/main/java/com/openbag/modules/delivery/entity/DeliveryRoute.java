@@ -30,6 +30,10 @@ public class DeliveryRoute {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Trava otimista da rota */
+    @Version
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;

@@ -4,7 +4,9 @@ import com.openbag.enums.OrganizationStatus;
 import com.openbag.modules.organization.entity.Organization;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -14,6 +16,11 @@ import java.util.Optional;
 
 @Repository
 public interface OrganizationRepository extends JpaRepository<Organization, Long> {
+
+    /** Serializa as saídas da caixinha e do caixa de uma associação (o saldo é conferido antes de gravar) */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT o FROM Organization o WHERE o.id = :id")
+    Optional<Organization> findByIdForUpdate(@Param("id") Long id);
 
     Optional<Organization> findByCnpj(String cnpj);
 

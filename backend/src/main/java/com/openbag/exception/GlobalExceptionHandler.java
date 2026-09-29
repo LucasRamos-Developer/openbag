@@ -2,6 +2,8 @@ package com.openbag.exception;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -127,6 +129,28 @@ public class GlobalExceptionHandler {
                 request.getDescription(false)
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.PAYLOAD_TOO_LARGE);
+    }
+
+    /**
+     * Duas ações sobre o mesmo registro ao mesmo tempo (trava otimista, deadlock ou trava expirada): uma vale e a
+     * outra recebe 409 para recarregar, em vez de um 500
+     */
+    @ExceptionHandler(ConcurrencyFailureException.class)
+    public ResponseEntity<ErrorResponse> handleConcurrencyFailure(ConcurrencyFailureException ex, WebRequest request) {
+        logger.info("Conflito de concorrência em {}: {}", request.getDescription(false), ex.getClass().getSimpleName());
+        return new ResponseEntity<>(new ErrorResponse(HttpStatus.CONFLICT.value(),
+                "Outra pessoa mudou este registro agora. Atualize a tela e tente de novo.",
+                LocalDateTime.now(), request.getDescription(false)), HttpStatus.CONFLICT);
+    }
+
+    /** Restrição do banco (único, check, chave): o pedido conflita com o que já está gravado */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex, WebRequest request) {
+        logger.warn("Restrição do banco violada em {}: {}", request.getDescription(false),
+                ex.getMostSpecificCause().getMessage());
+        return new ResponseEntity<>(new ErrorResponse(HttpStatus.CONFLICT.value(),
+                "Não foi possível salvar: os dados conflitam com um registro existente. Atualize a tela e tente de novo.",
+                LocalDateTime.now(), request.getDescription(false)), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(Exception.class)

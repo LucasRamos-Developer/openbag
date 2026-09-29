@@ -76,13 +76,27 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                                                                                    java.time.LocalDateTime end, Pageable pageable);
 
     // Pedidos que o restaurante não aceitou dentro do prazo
-    List<Order> findByStatusAndAcceptDeadlineBefore(OrderStatus status, java.time.LocalDateTime now);
+    @Query("SELECT o.id FROM Order o WHERE o.status = :status AND o.acceptDeadline < :now ORDER BY o.id")
+    List<Long> findIdsByStatusAndAcceptDeadlineBefore(@Param("status") OrderStatus status,
+                                                      @Param("now") java.time.LocalDateTime now);
 
     // ============= Entregas pelo entregador do app =============
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT o FROM Order o WHERE o.id = :id")
     Optional<Order> findByIdForUpdate(@Param("id") Long id);
+
+    /**
+     * Trava vários pedidos de uma vez, sempre em ordem crescente de id. Quem trava mais de um pedido usa esta
+     * consulta: duas operações sobre os mesmos pedidos esperam uma pela outra em vez de travar em ciclo (deadlock).
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT o FROM Order o WHERE o.id IN :ids ORDER BY o.id")
+    List<Order> findAllByIdForUpdate(@Param("ids") java.util.Collection<Long> ids);
+
+    /** Pedidos de uma rota (ids), para travá-los juntos */
+    @Query("SELECT o.id FROM Order o WHERE o.route.id = :routeId")
+    List<Long> findIdsByRouteId(@Param("routeId") Long routeId);
 
     /**
      * Pedidos aceitos que ainda esperam entregador

@@ -35,6 +35,10 @@ public class MemberInvoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Trava otimista: baixa, dispensa e reabertura da mesma fatura nunca valem juntas */
+    @Version
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;

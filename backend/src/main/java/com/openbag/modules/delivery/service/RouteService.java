@@ -94,7 +94,10 @@ public class RouteService {
     public void merge(Long restaurantId, List<Long> orderIds) {
         Restaurant restaurant = findRestaurant(restaurantId);
         List<Order> orders = new ArrayList<>();
-        for (Long id : new LinkedHashSet<>(orderIds)) {
+        // Trava em ordem de id (duas junções com os mesmos pedidos esperam uma pela outra, sem deadlock);
+        // a ordem escolhida pela loja continua valendo para a sequência
+        orderRepository.findAllByIdForUpdate(new java.util.TreeSet<>(orderIds));
+        for (Long id : new java.util.LinkedHashSet<>(orderIds)) {
             Order order = orderRepository.findByIdForUpdate(id)
                     .filter(o -> o.getRestaurant().getId().equals(restaurantId))
                     .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
@@ -153,6 +156,7 @@ public class RouteService {
             throw new BadRequestException("Esta rota já está procurando entregador");
         }
         LocalDateTime now = LocalDateTime.now(clock);
+        orderRepository.findAllByIdForUpdate(orderRepository.findIdsByRouteId(routeId));
         List<Order> orders = route.sortedOrders();
         route.setStatus(RouteStatus.DISPATCHING);
         route.setOrigin(RouteOrigin.MANUAL);

@@ -11,6 +11,8 @@ import com.openbag.modules.order.repository.OrderRepository;
 import com.openbag.modules.restaurant.entity.Restaurant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -39,6 +41,7 @@ class RestaurantOrderServiceTest {
     @Mock private OrderRepository orderRepository;
     @Spy private OrderService orderService = new OrderService();
     @Mock private ApplicationEventPublisher events;
+    @Spy private TransactionTemplate transactionTemplate = new TransactionTemplate(mock(PlatformTransactionManager.class));
     @Spy private Clock clock = Clock.fixed(Instant.parse("2026-09-25T15:00:00Z"), ZoneId.of("America/Sao_Paulo"));
 
     @InjectMocks
@@ -58,7 +61,7 @@ class RestaurantOrderServiceTest {
         order.setSubtotal(BigDecimal.TEN);
         order.setDeliveryFee(BigDecimal.ONE);
         order.setTotalAmount(BigDecimal.valueOf(11));
-        lenient().when(orderRepository.findByIdAndRestaurantId(10L, RID)).thenReturn(Optional.of(order));
+        lenient().when(orderRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(order));
         lenient().when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
     }
 
@@ -129,14 +132,14 @@ class RestaurantOrderServiceTest {
 
     @Test
     void orderFromAnotherRestaurantIsNotFound() {
-        when(orderRepository.findByIdAndRestaurantId(10L, 2L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> service.accept(2L, 10L)).isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
     void unansweredOrdersExpireAsSystemCancellation() {
-        when(orderRepository.findByStatusAndAcceptDeadlineBefore(OrderStatus.PENDING, LocalDateTime.now(clock)))
-                .thenReturn(List.of(order));
+        order.setAcceptDeadline(LocalDateTime.now(clock).minusMinutes(1));
+        when(orderRepository.findIdsByStatusAndAcceptDeadlineBefore(OrderStatus.PENDING, LocalDateTime.now(clock)))
+                .thenReturn(List.of(10L));
 
         service.expireUnansweredOrders();
 

@@ -23,6 +23,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "delivery_persons")
+// Grava só as colunas alteradas: salvar a situação não reescreve a posição, que o ping atualiza à parte
+@org.hibernate.annotations.DynamicUpdate
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,6 +33,11 @@ public class DeliveryPerson {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    /** Trava otimista da situação do entregador; a posição é gravada à parte e não muda a versão */
+    @Version
+    @lombok.EqualsAndHashCode.Exclude
+    private Long version;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", unique = true)

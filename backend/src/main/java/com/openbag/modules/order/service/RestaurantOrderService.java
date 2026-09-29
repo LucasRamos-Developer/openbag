@@ -15,7 +15,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -47,6 +49,9 @@ public class RestaurantOrderService {
 
     @Autowired
     private Clock clock;
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     @Transactional(readOnly = true)
     public List<OrderDTO> getBoard(Long restaurantId) {
@@ -140,19 +145,35 @@ public class RestaurantOrderService {
     /**
      * Cancela os pedidos que o restaurante (modo MANUAL) não aceitou dentro do prazo
      */
-    @Scheduled(fixedDelayString = "${app.orders.expiration-check-ms:30000}", initialDelay = 30000)
+    @Scheduled(fixedDelayString = "${app.orders.expiration-check-ms:30000}",
+            initialDelayString = "${app.orders.expiration-initial-delay-ms:30000}")
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void expireUnansweredOrders() {
         LocalDateTime now = LocalDateTime.now(clock);
-        for (Order order : orderRepository.findByStatusAndAcceptDeadlineBefore(OrderStatus.PENDING, now)) {
-            order.setStatus(OrderStatus.CANCELLED);
-            order.setCancelledAt(now);
-            order.setCancelledBy(CancelledBy.SYSTEM);
-            order.setCancellationReason("O restaurante não respondeu a tempo");
-            orderService.addTracking(order, OrderStatus.CANCELLED, "Cancelado automaticamente: o restaurante não respondeu a tempo", now);
-            orderRepository.save(order);
-            events.publishEvent(new OrderChangedEvent(order.getId(), OrderChangedEvent.Type.ORDER_UPDATED));
-            log.info("Pedido {} cancelado por falta de resposta do restaurante {}", order.getId(), order.getRestaurant().getId());
+        for (Long orderId : orderRepository.findIdsByStatusAndAcceptDeadlineBefore(OrderStatus.PENDING, now)) {
+            // Um pedido por transação, travado: o aceite da loja no mesmo instante espera e depois vê o cancelamento
+            try {
+                transactionTemplate.executeWithoutResult(tx -> expireIfUnanswered(orderId, now));
+            } catch (RuntimeException e) {
+                log.error("Falha ao expirar o pedido {}", orderId, e);
+            }
         }
+    }
+
+    private void expireIfUnanswered(Long orderId, LocalDateTime now) {
+        Order order = orderRepository.findByIdForUpdate(orderId).orElse(null);
+        if (order == null || order.getStatus() != OrderStatus.PENDING || order.getAcceptDeadline() == null
+                || !order.getAcceptDeadline().isBefore(now)) {
+            return;
+        }
+        order.setStatus(OrderStatus.CANCELLED);
+        order.setCancelledAt(now);
+        order.setCancelledBy(CancelledBy.SYSTEM);
+        order.setCancellationReason("O restaurante não respondeu a tempo");
+        orderService.addTracking(order, OrderStatus.CANCELLED, "Cancelado automaticamente: o restaurante não respondeu a tempo", now);
+        orderRepository.save(order);
+        events.publishEvent(new OrderChangedEvent(order.getId(), OrderChangedEvent.Type.ORDER_UPDATED));
+        log.info("Pedido {} cancelado por falta de resposta do restaurante {}", order.getId(), order.getRestaurant().getId());
     }
 
     // ============= Helpers =============
@@ -167,8 +188,13 @@ public class RestaurantOrderService {
         return OrderDTO.from(advance(findOrder(restaurantId, orderId), allowedFrom, target, message, effect));
     }
 
+    /**
+     * Pedido do restaurante, travado: cada etapa lê e grava o pedido sem que o entregador, o cliente ou outra aba
+     * do painel mudem ele no meio (antes, marcar "pronto" durante o aceite apagava o entregador)
+     */
     private Order findOrder(Long restaurantId, Long orderId) {
-        return orderRepository.findByIdAndRestaurantId(orderId, restaurantId)
+        return orderRepository.findByIdForUpdate(orderId)
+                .filter(o -> o.getRestaurant().getId().equals(restaurantId))
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
     }
 
@@ -178,7 +204,7 @@ public class RestaurantOrderService {
      */
     public Order advance(Order order, Set<OrderStatus> allowedFrom, OrderStatus target, String message,
                          StepEffect effect) {
-        if (!allowedFrom.contains(order.getStatus())) {
+        if (!allowedFrom.contains(order.getStatus()) || !order.getStatus().canTransitionTo(target)) {
             throw new BadRequestException(order.getStatus() == OrderStatus.CANCELLED
                     ? "Este pedido já foi cancelado"
                     : "Não é possível mudar o pedido de \"" + order.getStatus().getDisplayName() + "\" para \""

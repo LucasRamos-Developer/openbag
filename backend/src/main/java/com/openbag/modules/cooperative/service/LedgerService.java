@@ -19,6 +19,7 @@ import com.openbag.modules.cooperative.repository.LedgerEntryRepository;
 import com.openbag.modules.cooperative.repository.MemberInvoiceRepository;
 import com.openbag.modules.organization.entity.AssociationMembership;
 import com.openbag.modules.organization.entity.Organization;
+import com.openbag.modules.organization.repository.OrganizationRepository;
 import com.openbag.modules.organization.repository.AssociationMembershipRepository;
 import com.openbag.modules.organization.service.AssociationService;
 import com.openbag.modules.user.entity.User;
@@ -66,6 +67,9 @@ public class LedgerService {
 
     @Autowired
     private Clock clock;
+
+    @Autowired
+    private OrganizationRepository organizationRepository;
 
     /**
      * Baixa da fatura: mensalidade e adicionais entram no caixa geral e a contribuição, na caixinha solidária
@@ -136,6 +140,8 @@ public class LedgerService {
             throw new BadRequestException("Escolha o cooperado que recebe o auxílio");
         }
         if (kind.getDirection() == LedgerDirection.OUT) {
+            // Trava a associação antes de conferir o saldo: dois auxílios ao mesmo tempo não deixam a caixinha negativa
+            organizationRepository.findByIdForUpdate(organizationId);
             BigDecimal balance = ledgerRepository.balance(organizationId, kind.getAccount());
             if (balance.compareTo(request.amount()) < 0) {
                 throw new BadRequestException(String.format("Saldo insuficiente em %s (%s)",

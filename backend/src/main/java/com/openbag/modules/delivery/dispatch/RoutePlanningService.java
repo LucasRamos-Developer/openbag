@@ -53,14 +53,12 @@ public class RoutePlanningService {
         this.transaction = new TransactionTemplate(transactionManager);
     }
 
-    @Scheduled(fixedDelayString = "${app.delivery.route-planning-ms:10000}", initialDelay = 20000)
+    @Scheduled(fixedDelayString = "${app.delivery.route-planning-ms:10000}",
+            initialDelayString = "${app.delivery.route-planning-initial-delay-ms:20000}")
     public void planRoutes() {
         for (Long restaurantId : orderRepository.findRestaurantIdsAwaitingRelease(DispatchService.DISPATCHABLE)) {
-            try {
-                transaction.executeWithoutResult(tx -> planRestaurant(restaurantId));
-            } catch (RuntimeException e) {
-                log.error("Falha ao planejar as rotas do restaurante {}", restaurantId, e);
-            }
+            DispatchService.withRetry("rotas do restaurante " + restaurantId,
+                    () -> transaction.executeWithoutResult(tx -> planRestaurant(restaurantId)));
         }
     }
 

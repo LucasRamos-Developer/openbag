@@ -32,10 +32,11 @@ class FlywayMigrationTest extends IntegrationTest {
 
     @Test
     void startupDataIsCreatedOnTopOfTheMigrations() {
-        // DataInitializer: roles, permissões e o ADMIN inicial
+        // DataInitializer (roles, permissões e o ADMIN inicial) e a conta de demonstração, ligada nos testes
         assertThat(jdbc.queryForObject("SELECT count(*) FROM roles", Integer.class)).isPositive();
-        assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM users u JOIN user_roles ur ON ur.user_id = u.id JOIN roles r ON r.id = ur.role_id "
-                        + "WHERE r.name = 'ADMIN'", Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM users WHERE email = 'admin@openbag.local'", Integer.class))
+                .isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM restaurants WHERE slug = 'cantina-demo'", Integer.class))
+                .isEqualTo(1);
     }
 }

@@ -36,6 +36,11 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Trava otimista: duas gravações feitas a partir da mesma leitura não se sobrescrevem (a segunda falha com 409) */
+    @Version
+    @lombok.EqualsAndHashCode.Exclude
+    private Long version;
+
     @Column(name = "order_number", unique = true)
     private String orderNumber;
 

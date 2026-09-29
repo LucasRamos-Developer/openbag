@@ -230,9 +230,11 @@ public class OrderService {
      * O cliente só cancela enquanto o restaurante não aceitou
      */
     public OrderDTO cancelByCustomer(Long orderId, User customer) {
-        Order order = orderRepository.findByIdAndUserId(orderId, customer.getId())
+        // Travado: se o restaurante aceitar no mesmo instante, só uma das duas ações vale
+        Order order = orderRepository.findByIdForUpdate(orderId)
+                .filter(o -> o.getUser() != null && o.getUser().getId().equals(customer.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
-        if (order.getStatus() != OrderStatus.PENDING) {
+        if (order.getStatus() != OrderStatus.PENDING || !order.getStatus().canTransitionTo(OrderStatus.CANCELLED)) {
             throw new BadRequestException("O restaurante já aceitou o pedido. Para cancelar, fale com o restaurante.");
         }
         LocalDateTime now = LocalDateTime.now(clock);
