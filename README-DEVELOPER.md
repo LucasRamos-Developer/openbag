@@ -2,7 +2,7 @@
 
 Documentação técnica completa para desenvolvedores que desejam contribuir com o projeto OpenBag.
 
-> Versão da documentação: **0.3.0**, com as mudanças da 0.4.0 (prontas e ainda não lançadas), atualizada em 2026-09-29. Veja o [CHANGELOG](CHANGELOG.md) e a [arquitetura](docs/architecture/README.md).
+> Versão da documentação: **0.4.0**, atualizada em 2026-09-29. Veja o [CHANGELOG](CHANGELOG.md) e a [arquitetura](docs/architecture/README.md).
 
 ## 📋 Índice
 
@@ -257,7 +257,7 @@ mvn spring-boot:run
 mvn spring-boot:run -Dspring-boot.run.profiles=docker
 
 # Rodar JAR diretamente
-java -jar target/openbag-backend-0.3.0.jar
+java -jar target/openbag-backend-0.4.0.jar
 ```
 
 ### Conta de demonstração
@@ -759,6 +759,14 @@ mvn test -Dtest=ConcurrentActionsTest
 # Dependências com vulnerabilidades conhecidas (precisa de NVD_API_KEY; roda toda semana no CI)
 mvn -Psecurity verify -DskipTests
 ```
+
+**Chave do NVD para o Dependency-Check.** Sem ela, a verificação semanal (`.github/workflows/security.yml`) não roda. Para configurar uma vez:
+
+1. Peça a chave gratuita em https://nvd.nist.gov/developers/request-an-api-key e confirme pelo link que chega no email.
+2. No GitHub, abra o repositório em **Settings → Secrets and variables → Actions → New repository secret**, com o nome `NVD_API_KEY` e a chave como valor. Pelo terminal: `gh secret set NVD_API_KEY`.
+3. Rode o workflow uma vez na mão, em **Actions → Dependências vulneráveis → Run workflow**, e confira se o artefato `dependency-check-report` aparece.
+
+Para rodar localmente, exporte a chave antes do comando: `NVD_API_KEY=... mvn -Psecurity verify -DskipTests`. A primeira execução baixa a base inteira e demora.
 
 #### Estrutura de Testes
 

@@ -1,6 +1,6 @@
 # 📚 Documentação do OpenBag
 
-> Versão da documentação: **0.3.0**, com as mudanças da 0.4.0 (prontas e ainda não lançadas), atualizada em 2026-09-29. Veja o que mudou no [CHANGELOG](../CHANGELOG.md).
+> Versão da documentação: **0.4.0**, atualizada em 2026-09-29. Veja o que mudou no [CHANGELOG](../CHANGELOG.md).
 >
 > **Em andamento:** a 0.5.0 (operação do dia a dia), em cinco entregas pequenas, começando pelas ocorrências ligadas ao pedido. O resumo está na seção [Versões e roadmap](../README.md#versões-e-roadmap) do README.
 

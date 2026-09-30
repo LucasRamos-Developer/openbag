@@ -4,7 +4,7 @@ Todas as mudanças relevantes do OpenBag ficam registradas aqui.
 
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e as versões seguem o [Versionamento Semântico (SemVer)](https://semver.org/lang/pt-BR/).
 
-**Versão atual: 0.3.0**
+**Versão atual: 0.4.0**
 
 ---
 
@@ -46,6 +46,14 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ## [Não lançado]
 
+Nada ainda. A próxima versão é a [0.5.0](#050-operação-do-dia-a-dia).
+
+---
+
+## [0.4.0] - 2026-09-29
+
+Segurança, integridade dos dados e pedido do balcão. A 0.3.0 não ganhou tag: o código dela está na `v0.4.0`.
+
 ### Segurança
 
 - **Segredos de produção obrigatórios.** O novo perfil `prod` (padrão da imagem Docker) não tem valores padrão para o segredo do JWT, o banco e as origens do app. Sem essas variáveis, o backend não sobe e lista na hora todas as que faltam. O `SecretsValidator` impede o backend de subir com o segredo de desenvolvimento, com a senha `admin123` ou com a conta de demonstração ligada. Nos outros perfis, ele só avisa no log.
@@ -79,11 +87,11 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - As chaves ficam guardadas por 24 horas (V4).
   - O app manda a chave ao finalizar o pedido, no pedido do balcão, no acerto de caixa, na baixa de fatura, no lançamento do livro-caixa e no aceite de oferta. Leituras e envios com chave são tentados de novo sozinhos quando a rede falha. A chave só muda quando o servidor responde: se a rede cair no meio do checkout, tocar de novo devolve o mesmo pedido, sem criar outro.
   - Aceitar de novo uma oferta já aceita pelo mesmo entregador devolve a entrega dele, em vez de "oferta não disponível".
-- **Pedido do balcão, do telefone e do WhatsApp** (item 1 da 0.6.0, em testes):
+- **Pedido do balcão, do telefone e do WhatsApp:**
   - A loja registra o pedido de um cliente sem conta (`POST /restaurants/{id}/orders`), com canal, retirada ou entrega, endereço, forma de pagamento e troco.
   - O pedido entra já aceito e segue o mesmo fluxo do app: cozinha, despacho e caixa. A retirada fica fora do despacho e termina com "Cliente retirou".
   - Os preços são recalculados pelo cardápio, e a taxa sai do endereço, como no checkout.
-  - Falta o teste de ponta a ponta: balcão → cozinha → entregador → caixa.
+  - Testado de ponta a ponta no celular (375px): balcão → cozinha → entregador → acerto no caixa, e uma retirada até "Cliente retirou". As capturas estão em [`layout/balcao`](layout/balcao/).
 - **Roadmap da 0.4.0 (Segurança e integridade dos dados)** em [docs/roadmap/0.4.0-seguranca.md](docs/roadmap/0.4.0-seguranca.md). O documento compara cada item com o código atual e lista os casos encontrados: brechas no cadastro, no upload e nos segredos padrão, ações simultâneas que corrompem pedidos e faturas, e a falta de idempotência, limites de requisição e migrações versionadas.
 
 ### Alterado
@@ -100,6 +108,9 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - um só tipo de entregador por entrega;
   - valores em dinheiro nunca negativos.
   - Conflito de trava e violação de restrição respondem **409** com uma mensagem para atualizar a tela, e não mais 500.
+- **Backend organizado por domínio:** `account`, `restaurant`, `order`, `delivery`, `association`, `admin` e `platform` (infraestrutura). Organização e cooperativa ficaram juntas em `association`, e cada enum foi para o domínio dono dele. A API não mudou. A árvore nova está na [arquitetura](docs/architecture/README.md).
+- O rótulo "Pix na entrega" virou "Pix": o título da tela já diz se o pagamento é na entrega ou na retirada.
+- **Regra de UI:** toda tela é mobile first, e o [minimals.cc](https://minimals.cc/) é a referência de estilo (veja a [linguagem visual](frontend/lib/core/ui/README.md#mobile-first)).
 - **Testes de integração** com Testcontainers, contra a mesma imagem Postgres + PostGIS do docker-compose. O primeiro (`FlywayMigrationTest`) falha se uma entidade mudar sem migração.
 
 ### Corrigido
@@ -116,10 +127,14 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 - Uma enxurrada de endereços diferentes no checkout prendia as threads do servidor na fila da geocodificação (1 consulta por segundo, com a thread dormindo na vez). Agora cada consulta reserva uma vaga e desiste se ela passar de 3 segundos: o endereço fica sem coordenadas e a taxa usa o valor "a partir de".
 - A resposta da foto de perfil e o `GET /users/profile` entravam num laço entre papéis e permissões e quebravam no meio do JSON.
 - Método não permitido e rota inexistente respondiam 500. Agora respondem 405 e 404.
+- **Caixa no celular:** em telas estreitas, as formas de pagamento quebravam, e o card, o acerto com os entregadores e os acertos feitos sumiam. Agora a barra fica embaixo do nome, e o saldo dos acertos fica embaixo do texto.
+- Depois de registrar um pedido do balcão, o quadro abria na coluna "Novos", vazia. Agora abre em "Em preparo", onde o pedido entrou.
 
 ---
 
 ## [0.3.0] - 2026-09-29
+
+Sem tag: o código desta versão está na `v0.4.0`.
 
 ### Adicionado
 
@@ -129,7 +144,7 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - `tools/seo/build_seo.py`, rodado no deploy, gera o `robots.txt` e o `sitemap.xml` com as lojas ativas e deixa absolutas as URLs do Open Graph.
   - A prévia de links no WhatsApp e no Facebook mostra a imagem padrão do OpenBag. A prévia por loja precisaria de HTML gerado no servidor ou na hospedagem.
 - **Vitrine por proximidade**: a ordenação "Mais perto" usa o GPS do navegador e, se ele for negado, o ponto do último endereço de entrega (guardado no aparelho ao fazer um pedido ou, com login, o do último pedido). O card mostra a distância em linha reta, e a vitrine diz de onde ela foi medida. A opção só some quando o GPS foi bloqueado de vez e não há endereço. A posição fica só no aparelho; nada é enviado ao servidor. Distâncias abaixo de 1 km aparecem em metros.
-- **Roadmap da 0.6.0 (Operação do dia a dia)** em [docs/roadmap/0.6.0-operacao.md](docs/roadmap/0.6.0-operacao.md). O documento compara as sugestões de produto por papel com o código atual e lista oito itens para antes do piloto, cada um com o estado atual, o código relacionado, o que falta e quando fica pronto.
+- **Roadmap da Operação do dia a dia** (hoje 0.5.0) em [docs/roadmap/0.5.0-operacao.md](docs/roadmap/0.5.0-operacao.md). O documento compara as sugestões de produto por papel com o código atual e lista oito itens para antes do piloto, cada um com o estado atual, o código relacionado, o que falta e quando fica pronto.
 - **Gestão da associação** no painel da cooperativa:
   - **Financeiro**, com cinco abas:
     - Resumo: saldo da caixinha, arrecadado, gasto, a receber e gráfico de entradas e saídas por mês.
@@ -374,6 +389,7 @@ Ideias que ainda precisam ser melhoradas antes de entrar numa versão:
 - Vários idiomas.
 - Federação de cooperativas e governança compartilhada.
 
-[Não lançado]: https://github.com/LucasRamos-Developer/openbag/compare/v0.2.0...HEAD
+[Não lançado]: https://github.com/LucasRamos-Developer/openbag/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/LucasRamos-Developer/openbag/compare/v0.2.0...v0.4.0
 [0.2.0]: https://github.com/LucasRamos-Developer/openbag/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/LucasRamos-Developer/openbag/releases/tag/v0.1.0

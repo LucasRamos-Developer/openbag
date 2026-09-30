@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/vers%C3%A3o-0.3.0-16a34a" alt="Versão 0.3.0"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/vers%C3%A3o-0.4.0-16a34a" alt="Versão 0.4.0"></a>
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/licen%C3%A7a-AGPL--3.0-blue" alt="Licença AGPL-3.0"></a>
   <a href="layout/"><img src="https://img.shields.io/badge/layout-ver%20telas-0f766e" alt="Ver o layout"></a>
 </p>
@@ -18,7 +18,7 @@
   <img src="layout/temas/01-fresh-green.png" alt="Página de um restaurante no OpenBag" width="860">
 </p>
 
-> Esta documentação descreve a versão **0.3.0** e as mudanças de segurança da **0.4.0**, prontas e ainda não lançadas. Veja o que mudou no [CHANGELOG](CHANGELOG.md).
+> Esta documentação descreve a versão **0.4.0**. Veja o que mudou no [CHANGELOG](CHANGELOG.md).
 
 ---
 
