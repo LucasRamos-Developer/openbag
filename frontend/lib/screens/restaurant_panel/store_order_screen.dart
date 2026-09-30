@@ -213,7 +213,7 @@ class _StoreOrderScreenState extends State<StoreOrderScreen> {
       if (panel.store?.autoPrintTicket == true) {
         printOrderTicket(order, restaurantName: panel.store?.name ?? 'OpenBag');
       }
-      _close();
+      _close(created: true);
     } on ApiException catch (e) {
       if (mounted) AppToast.show(context, message: e.message, type: ToastType.error, duration: const Duration(seconds: 6));
     } finally {
@@ -221,7 +221,8 @@ class _StoreOrderScreenState extends State<StoreOrderScreen> {
     }
   }
 
-  void _close() => context.canPop() ? context.pop() : context.go(RestaurantSection.orders.path);
+  /// Volta ao quadro; [created] avisa o quadro para mostrar a coluna em que o pedido entrou
+  void _close({bool created = false}) => context.canPop() ? context.pop(created) : context.go(RestaurantSection.orders.path);
 
   // ============= Tela =============
 

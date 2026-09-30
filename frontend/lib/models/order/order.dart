@@ -5,9 +5,9 @@ import 'order_review.dart';
 double _money(dynamic value) => (value as num?)?.toDouble() ?? 0;
 DateTime? _date(dynamic value) => value is String ? DateTime.tryParse(value) : null;
 
-/// Formas de pagamento na entrega (MVP sem pagamento online)
+/// Formas de pagamento na entrega ou na retirada (MVP sem pagamento online); o título da tela diz qual
 enum PaymentMethod {
-  PIX('Pix na entrega', Icons.pix),
+  PIX('Pix', Icons.pix),
   CREDIT_CARD('Cartão de crédito (maquininha)', Icons.credit_card),
   DEBIT_CARD('Cartão de débito (maquininha)', Icons.credit_card_outlined),
   CASH('Dinheiro', Icons.payments_outlined),

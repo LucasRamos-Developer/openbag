@@ -173,7 +173,8 @@ class _Summary extends StatelessWidget {
   }
 }
 
-/// Uma barra horizontal por forma de pagamento (magnitude de uma série só: uma cor, valor ao lado)
+/// Uma barra horizontal por forma de pagamento (magnitude de uma série só: uma cor, valor ao lado).
+/// No celular, o nome e o valor ficam numa linha e a barra embaixo, com a largura toda.
 class _PaymentsCard extends StatelessWidget {
   final List<PaymentLine> payments;
 
@@ -190,66 +191,80 @@ class _PaymentsCard extends StatelessWidget {
       subtitle: 'Dinheiro fica com o entregador até o acerto; cartão e Pix caem na maquininha ou no Pix da loja',
       child: payments.isEmpty
           ? Text('Nenhuma venda no período.', style: TextStyle(color: c.textMuted))
-          : Column(
-              children: [
-                for (final p in payments)
-                  Tooltip(
-                    message: '${p.method.label}: ${p.orders} ${p.orders == 1 ? 'pedido' : 'pedidos'} · '
-                        '${formatMoney(p.amount)} (${total == 0 ? 0 : (p.amount / total * 100).round()}%)',
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 150,
-                            child: Row(
-                              children: [
-                                Icon(p.method.icon, size: 18, color: c.textMuted),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(p.method.label.replaceAll(RegExp(r' \(.*\)'), ''),
-                                      overflow: TextOverflow.ellipsis, style: TextStyle(color: c.text)),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: LayoutBuilder(
-                              builder: (context, constraints) => Align(
-                                alignment: Alignment.centerLeft,
-                                child: Container(
-                                  height: 14,
-                                  width: max == 0 ? 0 : (constraints.maxWidth * p.amount / max).clamp(4.0, constraints.maxWidth),
-                                  decoration: BoxDecoration(
-                                    color: c.primary,
-                                    borderRadius: const BorderRadius.horizontal(right: Radius.circular(4)),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          SizedBox(
-                            width: 150,
-                            child: Text(
-                              '${formatMoney(p.amount)} · ${p.orders}',
-                              textAlign: TextAlign.end,
-                              style: TextStyle(
-                                color: c.text,
-                                fontWeight: FontWeight.w700,
-                                fontFeatures: const [FontFeature.tabularFigures()],
-                              ),
-                            ),
-                          ),
-                        ],
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                final compact = constraints.maxWidth < 480;
+                return Column(
+                  children: [
+                    for (final p in payments)
+                      Tooltip(
+                        message: '${p.method.label}: ${p.orders} ${p.orders == 1 ? 'pedido' : 'pedidos'} · '
+                            '${formatMoney(p.amount)} (${total == 0 ? 0 : (p.amount / total * 100).round()}%)',
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: compact ? _compactLine(c, p, max) : _wideLine(c, p, max),
+                        ),
                       ),
-                    ),
-                  ),
-              ],
+                  ],
+                );
+              },
             ),
     );
   }
+
+  Widget _compactLine(AppThemeColors c, PaymentLine p, double max) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(children: [Expanded(child: _label(c, p)), const SizedBox(width: 12), _value(c, p)]),
+          const SizedBox(height: 6),
+          _bar(c, p, max),
+        ],
+      );
+
+  Widget _wideLine(AppThemeColors c, PaymentLine p, double max) => Row(
+        children: [
+          SizedBox(width: 150, child: _label(c, p)),
+          const SizedBox(width: 12),
+          Expanded(child: _bar(c, p, max)),
+          const SizedBox(width: 12),
+          SizedBox(width: 150, child: _value(c, p)),
+        ],
+      );
+
+  Widget _label(AppThemeColors c, PaymentLine p) => Row(
+        children: [
+          Icon(p.method.icon, size: 18, color: c.textMuted),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(p.method.label.replaceAll(RegExp(r' \(.*\)'), ''),
+                overflow: TextOverflow.ellipsis, style: TextStyle(color: c.text)),
+          ),
+        ],
+      );
+
+  Widget _value(AppThemeColors c, PaymentLine p) => Text(
+        '${formatMoney(p.amount)} · ${p.orders}',
+        textAlign: TextAlign.end,
+        style: TextStyle(color: c.text, fontWeight: FontWeight.w700, fontFeatures: const [FontFeature.tabularFigures()]),
+      );
+
+  Widget _bar(AppThemeColors c, PaymentLine p, double max) => LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          return Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              height: 14,
+              // Sem espaço (ou sem vendas), nada de barra: clamp com teto menor que o piso lança erro
+              width: max == 0 || width < 4 ? 0 : (width * p.amount / max).clamp(4.0, width),
+              decoration: BoxDecoration(
+                color: c.primary,
+                borderRadius: const BorderRadius.horizontal(right: Radius.circular(4)),
+              ),
+            ),
+          );
+        },
+      );
 }
 
 class _CouriersCard extends StatelessWidget {
@@ -375,21 +390,40 @@ class _SettlementsCard extends StatelessWidget {
     final c = context.appColors;
     return AppPanelCard(
       title: 'Acertos feitos no período',
-      child: Column(
-        children: [
-          for (final s in settlements)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.handshake_outlined, color: c.primaryText),
-              title: Text('${s.name} · ${s.ordersCount} ${s.ordersCount == 1 ? 'entrega' : 'entregas'}'),
-              subtitle: Text(
-                '${formatDateTime(s.settledAt)}${s.settledBy != null ? ' · por ${s.settledBy}' : ''} · '
-                'dinheiro ${formatMoney(s.cashCollected)}, ganhos ${formatMoney(s.courierEarnings)}',
-                style: TextStyle(color: c.textMuted, fontSize: 13),
-              ),
-              trailing: Text(settlementBalanceLabel(s.balance), style: const TextStyle(fontWeight: FontWeight.w700)),
-            ),
-        ],
+      // No celular o saldo vai para baixo do texto, em vez de espremê-lo à direita
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 480;
+          return Column(
+            children: [
+              for (final s in settlements)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.handshake_outlined, color: c.primaryText),
+                  title: Text('${s.name} · ${s.ordersCount} ${s.ordersCount == 1 ? 'entrega' : 'entregas'}'),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${formatDateTime(s.settledAt)}${s.settledBy != null ? ' · por ${s.settledBy}' : ''} · '
+                        'dinheiro ${formatMoney(s.cashCollected)}, ganhos ${formatMoney(s.courierEarnings)}',
+                        style: TextStyle(color: c.textMuted, fontSize: 13),
+                      ),
+                      if (compact)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(settlementBalanceLabel(s.balance),
+                              style: TextStyle(color: c.text, fontWeight: FontWeight.w700)),
+                        ),
+                    ],
+                  ),
+                  trailing: compact
+                      ? null
+                      : Text(settlementBalanceLabel(s.balance), style: const TextStyle(fontWeight: FontWeight.w700)),
+                ),
+            ],
+          );
+        },
       ),
     );
   }

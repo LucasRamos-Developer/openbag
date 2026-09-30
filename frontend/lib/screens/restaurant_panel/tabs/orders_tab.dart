@@ -58,6 +58,17 @@ class _OrdersTabState extends State<OrdersTab> {
 
   String get _restaurantName => context.read<RestaurantPanelService>().store?.name ?? 'OpenBag';
 
+  /// O pedido do balcão entra já aceito: no celular, mostra a coluna "Em preparo" em vez de "Novos" vazia
+  Future<void> _newStoreOrder() async {
+    final created = await context.push<bool>(storeOrderPath);
+    if (created == true && mounted) {
+      setState(() {
+        _showHistory = false;
+        _mobileColumn = _Column.preparo;
+      });
+    }
+  }
+
   void _print(Order order) => printOrderTicket(order, restaurantName: _restaurantName);
 
   List<Order> _ordersOf(_Column column) => switch (column) {
@@ -111,7 +122,7 @@ class _OrdersTabState extends State<OrdersTab> {
               AppButton(
                 text: 'Novo pedido',
                 icon: Icons.add,
-                onPressed: () => context.push(storeOrderPath),
+                onPressed: _newStoreOrder,
               ),
               if (!orders.alertSound.unlocked)
                 AppButton(

@@ -98,6 +98,20 @@ O caminho de cada rota segue as ruas (roteamento pelo OSRM).
 
 ---
 
+## Pedido do balcão, no celular
+
+Teste de ponta a ponta da versão 0.4.0, em 375px: o pedido chega por telefone, vai para a cozinha, é entregue e depois acertado no caixa. Há também um pedido de retirada no balcão.
+
+| Novo pedido | Quadro depois de enviar | Oferta ao entregador |
+|---|---|---|
+| <img src="balcao/1-novo-pedido.png" alt="Novo pedido" width="220"> | <img src="balcao/2-quadro.png" alt="Quadro" width="220"> | <img src="balcao/3-oferta-entregador.png" alt="Oferta" width="220"> |
+
+| Caixa com o acerto | Retirada no balcão |
+|---|---|
+| <img src="balcao/4-caixa-acerto.png" alt="Caixa" width="220"> | <img src="balcao/5-retirada.png" alt="Retirada" width="220"> |
+
+---
+
 ## Rastreio, avaliações e diferença assumida
 
 Depois da retirada, o cliente vê o entregador no mapa, mas só quando é a vez do pedido dele na rota. Depois da entrega, ele avalia a loja e o entregador.
