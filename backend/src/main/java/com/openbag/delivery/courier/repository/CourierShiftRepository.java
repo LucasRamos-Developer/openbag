@@ -31,4 +31,10 @@ public interface CourierShiftRepository extends JpaRepository<CourierShift, Long
     @Query("SELECT s FROM CourierShift s LEFT JOIN FETCH s.restaurant WHERE s.deliveryPerson.id = :deliveryPersonId "
             + "ORDER BY s.startedAt DESC")
     List<CourierShift> findRecentByCourier(@Param("deliveryPersonId") Long deliveryPersonId, Pageable pageable);
+
+    /** Turnos do entregador que tocam [start, end): começaram antes do fim e não terminaram antes do início */
+    @Query("SELECT s FROM CourierShift s WHERE s.deliveryPerson.id = :deliveryPersonId AND s.startedAt < :end "
+            + "AND (s.endedAt IS NULL OR s.endedAt > :start)")
+    List<CourierShift> findOverlapping(@Param("deliveryPersonId") Long deliveryPersonId,
+                                       @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }

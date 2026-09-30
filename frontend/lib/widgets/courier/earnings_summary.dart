@@ -3,7 +3,7 @@ import '../../core/ui/ui.dart';
 import '../../models/courier/courier_earnings.dart';
 import '../../utils/formatters.dart';
 
-/// Ganhos de hoje, da semana e do mês lado a lado
+/// Ganhos de hoje, da semana e do mês lado a lado, com as entregas e os km rodados
 class EarningsSummary extends StatelessWidget {
   final CourierEarnings earnings;
 
@@ -46,6 +46,7 @@ class _Tile extends StatelessWidget {
             child: Text(formatMoney(total.amount), style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
           ),
           Text('${total.deliveries} ${total.deliveries == 1 ? 'entrega' : 'entregas'}', style: textTheme.bodySmall),
+          Text(formatKm(total.distanceKm), style: textTheme.bodySmall),
         ],
       ),
     );

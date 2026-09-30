@@ -206,6 +206,16 @@ String formatDistance(double km) {
   return '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
 }
 
+/// Km somados (rodados no dia, na semana...): sempre em km, com uma casa: "0,0 km", "12,4 km"
+String formatKm(double km) => '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
+
+/// Duração em minutos: "45 min", "3 h", "3 h 05"
+String formatMinutes(int minutes) {
+  if (minutes < 60) return '$minutes min';
+  final rest = minutes % 60;
+  return rest == 0 ? '${minutes ~/ 60} h' : '${minutes ~/ 60} h ${_twoDigits(rest)}';
+}
+
 /// Percentual sem zeros à toa: "5%", "2,5%"
 String formatPercent(num value) {
   // Só tira os zeros depois da vírgula ("10.00" vira "10", "2.50" vira "2,5")

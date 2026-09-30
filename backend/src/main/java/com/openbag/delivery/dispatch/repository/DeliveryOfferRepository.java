@@ -50,4 +50,11 @@ public interface DeliveryOfferRepository extends JpaRepository<DeliveryOffer, Lo
      */
     @Query("SELECT o.deliveryPerson.id FROM DeliveryOffer o WHERE o.status = com.openbag.delivery.dispatch.entity.DeliveryOfferStatus.PENDING")
     Set<Long> findCourierIdsWithPendingOffer();
+
+    /** Km até a retirada de cada pedido que o entregador aceitou por oferta: [id do pedido, km] */
+    @Query("SELECT o.order.id, o.pickupDistanceKm FROM DeliveryOffer o WHERE o.deliveryPerson.id = :deliveryPersonId "
+            + "AND o.status = com.openbag.delivery.dispatch.entity.DeliveryOfferStatus.ACCEPTED "
+            + "AND o.pickupDistanceKm IS NOT NULL AND o.order.id IN :orderIds")
+    List<Object[]> findAcceptedPickupKm(@Param("deliveryPersonId") Long deliveryPersonId,
+                                        @Param("orderIds") java.util.Collection<Long> orderIds);
 }

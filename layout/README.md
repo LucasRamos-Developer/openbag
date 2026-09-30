@@ -126,6 +126,16 @@ Item 1 da 0.5.0: o entregador relata "cliente não localizado", a loja vê na ho
 
 ---
 
+## Km, tempo e médias do entregador, no celular
+
+Item 2 da 0.5.0: a aba Ganhos mostra os km de hoje, da semana e do mês e, no período escolhido, os km, o tempo e as médias. Só o entregador vê.
+
+| Hoje, semana e mês | Km, tempo e médias |
+|---|---|
+| <img src="ganhos/1-hoje-semana-mes.png" alt="Ganhos" width="220"> | <img src="ganhos/2-km-tempo-medias.png" alt="Km, tempo e médias" width="220"> |
+
+---
+
 ## Rastreio, avaliações e diferença assumida
 
 Depois da retirada, o cliente vê o entregador no mapa, mas só quando é a vez do pedido dele na rota. Depois da entrega, ele avalia a loja e o entregador.

@@ -3,14 +3,60 @@ import 'courier_work.dart' show ShiftMode;
 
 double _money(dynamic v) => (v as num?)?.toDouble() ?? 0;
 
+/// Ganho, entregas e km rodados (com o pedido e até a retirada)
 class EarningsTotal {
   final double amount;
   final int deliveries;
+  final double distanceKm;
 
-  const EarningsTotal(this.amount, this.deliveries);
+  const EarningsTotal(this.amount, this.deliveries, [this.distanceKm = 0]);
 
-  factory EarningsTotal.fromJson(Map<String, dynamic>? json) =>
-      EarningsTotal(_money(json?['amount']), (json?['deliveries'] as num?)?.toInt() ?? 0);
+  factory EarningsTotal.fromJson(Map<String, dynamic>? json) => EarningsTotal(_money(json?['amount']),
+      (json?['deliveries'] as num?)?.toInt() ?? 0, (json?['distanceKm'] as num?)?.toDouble() ?? 0);
+}
+
+/// Km, tempo e médias do período, só para o próprio entregador. Médias sem base vêm nulas (a tela mostra "—").
+class CourierWorkStats {
+  final double deliveryKm;
+  final double pickupKm;
+  final double totalKm;
+  final int onlineMinutes;
+  final int deliveringMinutes;
+  final double? amountPerDelivery;
+  final double? kmPerDelivery;
+  final int? minutesPerDelivery;
+  final double? perKm;
+  final double? perHour;
+
+  CourierWorkStats({
+    required this.deliveryKm,
+    required this.pickupKm,
+    required this.totalKm,
+    required this.onlineMinutes,
+    required this.deliveringMinutes,
+    this.amountPerDelivery,
+    this.kmPerDelivery,
+    this.minutesPerDelivery,
+    this.perKm,
+    this.perHour,
+  });
+
+  factory CourierWorkStats.fromJson(Map<String, dynamic> json) {
+    final avg = json['perDelivery'] as Map<String, dynamic>?;
+    double? optMoney(dynamic v) => v == null ? null : _money(v);
+    return CourierWorkStats(
+      deliveryKm: (json['deliveryKm'] as num?)?.toDouble() ?? 0,
+      pickupKm: (json['pickupKm'] as num?)?.toDouble() ?? 0,
+      totalKm: (json['totalKm'] as num?)?.toDouble() ?? 0,
+      onlineMinutes: (json['onlineMinutes'] as num?)?.toInt() ?? 0,
+      deliveringMinutes: (json['deliveringMinutes'] as num?)?.toInt() ?? 0,
+      amountPerDelivery: optMoney(avg?['amount']),
+      kmPerDelivery: (avg?['distanceKm'] as num?)?.toDouble(),
+      minutesPerDelivery: (avg?['minutes'] as num?)?.toInt(),
+      perKm: optMoney(json['perKm']),
+      perHour: optMoney(json['perHour']),
+    );
+  }
 }
 
 class EarningsDay {
@@ -59,6 +105,7 @@ class CourierEarnings {
   final EarningsTotal period;
   final List<EarningsDay> daily;
   final List<EarningsDelivery> deliveries;
+  final CourierWorkStats? stats;
 
   CourierEarnings({
     required this.today,
@@ -67,6 +114,7 @@ class CourierEarnings {
     required this.period,
     required this.daily,
     required this.deliveries,
+    this.stats,
   });
 
   factory CourierEarnings.fromJson(Map<String, dynamic> json) => CourierEarnings(
@@ -76,6 +124,7 @@ class CourierEarnings {
         period: EarningsTotal.fromJson(json['period']),
         daily: [for (final d in (json['daily'] as List? ?? [])) EarningsDay.fromJson(d)],
         deliveries: [for (final d in (json['deliveries'] as List? ?? [])) EarningsDelivery.fromJson(d)],
+        stats: json['stats'] != null ? CourierWorkStats.fromJson(json['stats']) : null,
       );
 }
 

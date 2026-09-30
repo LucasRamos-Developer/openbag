@@ -53,6 +53,18 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - A loja vê na hora: toca o aviso, aparece um toast, uma linha no card do pedido e a seção **Ocorrências** na ficha, com quem relatou e quando. O cliente não vê.
   - O relatório da cooperativa mostra as ocorrências por tipo e por loja. Elas nunca aparecem por cooperado: não são nota nem penalidade.
   - `POST /me/courier/work/orders/{id}/incidents` e a tabela `order_incidents` (V6).
+- **Km, tempo e médias na aba Ganhos** (item 2 da 0.5.0):
+  - Hoje, semana e mês mostram os km rodados, somando o trecho com o pedido e o trecho até a retirada.
+  - O card **Km, tempo e médias** do período tem seis quadros, em duas colunas no celular:
+    - km com o pedido e km até a loja;
+    - tempo em turno, com o tempo com pedido;
+    - médias por entrega (valor, km e minutos);
+    - R$ por km e R$ por hora.
+  - O período ganhou a opção "Hoje".
+  - Os km são estimados pela distância entre os pontos, e não medidos pelo GPS.
+  - Numa rota, o mesmo minuto conta uma vez.
+  - Sem base para a conta, a média fica vazia, em vez de zero.
+  - Só o próprio entregador vê.
 
 ---
 
@@ -331,7 +343,7 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 | 0.2.0 | Operação do restaurante, associações e personalização | Lançada |
 | 0.3.0 | Entregador, cooperativa e cliente | Lançada (sem tag; o código está na v0.4.0) |
 | 0.4.0 | Segurança, integridade dos dados e pedido do balcão | **Atual** |
-| 0.5.0 | Operação do dia a dia | Em andamento (1 de 5) |
+| 0.5.0 | Operação do dia a dia | Em andamento (2 de 5) |
 | 0.6.0 | Auditoria de dados | Planejada |
 | 0.7.0 | Pronto para o piloto | Planejada |
 | 1.0.0 | Primeira versão estável (piloto real) | Planejada |
@@ -360,7 +372,7 @@ O detalhe de cada item, com o que foi feito e o que ficou para depois, está em 
 ### 0.5.0: Operação do dia a dia
 O detalhe de cada item, com o código em que ele se apoia e o que falta, está em [docs/roadmap/0.5.0-operacao.md](docs/roadmap/0.5.0-operacao.md).
 - ~~Ocorrências ligadas ao pedido~~: o entregador relata, a loja vê na hora e a cooperativa vê por tipo e por loja (concluído).
-- Km, tempo em operação e médias (R$ por km e R$ por hora) na aba Ganhos do entregador.
+- ~~Km, tempo em operação e médias (R$ por km e R$ por hora) na aba Ganhos do entregador~~ (concluído).
 - Custo estimado do veículo (combustível, manutenção e depreciação) e resultado estimado.
 - Comunicados da cooperativa para os cooperados.
 - PIN de entrega, que a loja pode exigir.

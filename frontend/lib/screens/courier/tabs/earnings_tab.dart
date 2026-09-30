@@ -9,8 +9,10 @@ import '../../../utils/formatters.dart';
 import '../../../widgets/association/association_report_widgets.dart';
 import '../../../widgets/courier/earnings_chart.dart';
 import '../../../widgets/courier/earnings_summary.dart';
+import '../../../widgets/courier/work_stats_card.dart';
 
 enum _Period {
+  today('Hoje', 1),
   week('7 dias', 7),
   twoWeeks('15 dias', 15),
   month('30 dias', 30);
@@ -20,7 +22,7 @@ enum _Period {
   const _Period(this.label, this.days);
 }
 
-/// Quanto o entregador ganhou: hoje, semana, mês, gráfico por dia e as entregas do período
+/// Quanto o entregador ganhou: hoje, semana, mês, gráfico por dia, km, tempo e médias, e as entregas do período
 class EarningsTab extends StatefulWidget {
   const EarningsTab({super.key});
 
@@ -106,7 +108,7 @@ class EarningsTabState extends State<EarningsTab> {
                   Row(
                     children: [
                       Expanded(
-                        child: Text('Ganhos por dia', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                        child: Text('Período', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
                       ),
                       if (_loading) const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
                     ],
@@ -123,14 +125,20 @@ class EarningsTabState extends State<EarningsTab> {
                   const SizedBox(height: 16),
                   Text(
                     '${formatMoney(earnings.period.amount)} em ${earnings.period.deliveries} '
-                    '${earnings.period.deliveries == 1 ? 'entrega' : 'entregas'} nos últimos ${_period.days} dias',
+                    '${earnings.period.deliveries == 1 ? 'entrega' : 'entregas'} '
+                    '${_period == _Period.today ? 'hoje' : 'nos últimos ${_period.days} dias'}',
                     style: textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 12),
-                  AppCard(
-                    padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
-                    child: EarningsChart(days: earnings.daily),
-                  ),
+                  if (_period != _Period.today)
+                    AppCard(
+                      padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
+                      child: EarningsChart(days: earnings.daily),
+                    ),
+                  if (earnings.stats != null) ...[
+                    const SizedBox(height: 16),
+                    WorkStatsCard(stats: earnings.stats!),
+                  ],
                   if (_association != null) ...[
                     const SizedBox(height: 24),
                     _AssociationShare(report: _association!, days: _period.days),
@@ -175,7 +183,7 @@ class _AssociationShare extends StatelessWidget {
     final mine = report.mine;
     return AppPanelCard(
       title: 'Minha associação',
-      subtitle: '${report.associationName} nos últimos $days dias',
+      subtitle: days == 1 ? '${report.associationName} hoje' : '${report.associationName} nos últimos $days dias',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
