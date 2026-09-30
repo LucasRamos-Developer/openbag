@@ -6,6 +6,17 @@ Sistema de componentes reutilizáveis baseado no design MUI Minimal.
 
 **Referência:** [`layout/restaurante-padrão.png`](../../../../layout/restaurante-padrão.png). Toda tela nova (e toda tela redesenhada) segue esse estilo. Os prints da página do restaurante em cada tema ficam em [`layout/temas/`](../../../../layout/temas/).
 
+**Inspiração de UX/UI:** [minimals.cc](https://minimals.cc/). Vale para os cards limpos, o respiro entre blocos, a hierarquia da tipografia e os painéis com números. É só uma inspiração: quando os dois divergem, o padrão desta seção vence.
+
+### Mobile first
+
+Toda tela é pensada primeiro para o celular e depois cresce para tablet e desktop.
+
+- Desenhe e confira a tela em **375px** de largura antes de olhar no desktop. Ela vai até 1200px (`AppLayout.maxContentWidth`).
+- A área de toque tem no mínimo **48px**. A ação principal fica ao alcance do polegar: no rodapé do card ou da tela, e não escondida num canto do topo.
+- Nenhuma ação depende só de hover, e a página nunca rola na horizontal. Tabelas largas viram lista de cards no celular.
+- Colunas lado a lado empilham na largura pequena ([AppResponsiveRow](#appresponsiverow)).
+
 ### Tokens de cor (`AppThemeColors`)
 
 Nunca use `Colors.x` ou `AppColors.x` fixos em tela nova; leia os tokens com `context.appColors`.
