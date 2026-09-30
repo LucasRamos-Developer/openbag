@@ -127,17 +127,17 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 |--------|-------|--------|
 | 0.1.0 | MVP: cadastro, onboarding, carrinho, pedidos, mapas | Lançada |
 | 0.2.0 | Operação do restaurante, associações e personalização da loja | Lançada |
-| **0.3.0** | **Entregador, cooperativa e cliente** | **Atual** |
-| 0.4.0 | Segurança e integridade dos dados | Concluída, falta lançar |
-| 0.5.0 | Auditoria de dados | Planejada |
-| 0.6.0 | Operação do dia a dia | Em andamento (1 de 8 itens) |
+| 0.3.0 | Entregador, cooperativa e cliente | Lançada |
+| **0.4.0** | **Segurança, integridade dos dados e pedido do balcão** | **Atual** |
+| 0.5.0 | Operação do dia a dia | Próxima |
+| 0.6.0 | Auditoria de dados | Planejada |
+| 0.7.0 | Pronto para o piloto | Planejada |
 | 1.0.0 | Primeira versão estável, com piloto real | Planejada |
 
 > **Em andamento agora**
-> - **Lançar a 0.4.0.** Os sete itens estão prontos e testados. Faltam o fechamento da versão e o merge da branch `feature/painel-cooperativa`, que também leva a tag da 0.3.0.
-> - **Pedido do balcão (item 1 da 0.6.0).** Está no código e no painel da loja. Falta o teste de ponta a ponta: balcão → cozinha → entregador → caixa.
+> - **0.5.0: Operação do dia a dia.** São cinco entregas pequenas, uma de cada vez. A primeira é **Ocorrências ligadas ao pedido**.
 >
-> A 0.5.0 (auditoria) e os outros itens da 0.6.0 ainda não começaram.
+> Cada versão tem no máximo cinco ou seis itens, para o piloto sair logo. O que não é preciso para o piloto fica em [Depois da 1.0](#depois-da-10).
 
 **0.3.0: Entregador, cooperativa e cliente**
 - [x] Concluir as telas do entregador
@@ -147,7 +147,7 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [x] Fluxo do cliente fora da fase de testes, com avaliações
 - [x] Página da loja otimizada para buscadores e vitrine por avaliações e proximidade
 
-**0.4.0: Segurança e integridade dos dados** ([detalhes](docs/roadmap/0.4.0-seguranca.md))
+**0.4.0: Segurança, integridade dos dados e pedido do balcão** ([detalhes](docs/roadmap/0.4.0-seguranca.md))
 - [x] Brechas críticas: segredos padrão, papel no cadastro, upload de arquivos e CORS
 - [x] Integridade dos dados: migrações versionadas (Flyway) e testes de integração
 - [x] Verificação de **race conditions** (ofertas, status do pedido, caixa e faturas) e restrições no banco
@@ -155,15 +155,14 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [x] **Rate limiting** no login, no cadastro, nos pedidos e nos envios de arquivo
 - [x] **Throttling** de localização, de WebSocket e dos jobs agendados
 - [x] Revisão de segurança (OWASP Top 10, dependências e CI)
+- [x] Pedido do balcão, do telefone e do WhatsApp, testado de ponta a ponta no celular
+- [x] Backend organizado por domínio
 
-**0.5.0: Operação do dia a dia** ([detalhes](docs/roadmap/0.6.0-operacao.md))
-- [ ] Pedido feito no balcão ou por telefone, no mesmo fluxo dos pedidos online (implementado; falta o teste de ponta a ponta)
+**0.5.0: Operação do dia a dia** ([detalhes](docs/roadmap/0.5.0-operacao.md))
 - [ ] Ocorrências ligadas ao pedido
-- [ ] Chegada na loja e no cliente, tempos do pedido e espera média por loja
 - [ ] Km, tempo e médias na aba Ganhos do entregador
 - [ ] Custo estimado do veículo e resultado estimado
 - [ ] Comunicados da cooperativa
-- [ ] Composição do valor na oferta e lembrete de pausa
 - [ ] PIN de entrega
 
 **0.6.0: Auditoria de dados**
@@ -171,6 +170,27 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [ ] Histórico que não pode ser alterado para caixa e ganhos
 - [ ] Relatórios exportáveis para a loja e para a cooperativa
 - [ ] LGPD: exportação, exclusão e retenção de dados
+
+**0.7.0: Pronto para o piloto**
+- [ ] Recuperar a senha e confirmar o email (hoje a recuperação é pelo email do projeto)
+- [ ] Aviso de pedido novo e de oferta com o app em segundo plano (Web Push)
+- [ ] Sessão: renovar e revogar o token
+- [ ] Termos de uso e política de privacidade, com aceite no cadastro
+- [ ] Produção: deploy com HTTPS, backup do banco testado e monitoramento
+- [ ] Mobile first nas telas que já existem, e "Escolher entregador" direto no card do pedido
+
+**1.0.0: Piloto real**
+- [ ] Uma cooperativa e duas ou três lojas usando o OpenBag no dia a dia, por algumas semanas
+
+### Depois da 1.0
+
+Ideias que ficaram fora do caminho até o piloto e ainda precisam ser melhoradas antes de entrar numa versão:
+- Chegada na loja e no cliente, tempos do pedido e espera média por loja ([rascunho](docs/roadmap/0.5.0-operacao.md#depois-da-10-a-melhorar))
+- Composição do valor na oferta e lembrete de pausa ([rascunho](docs/roadmap/0.5.0-operacao.md#depois-da-10-a-melhorar))
+- Pagamento online (Pix com QR Code ou um intermediador)
+- App nativo do entregador (Android e iOS), para o GPS funcionar com a tela desligada
+- Prévia do link de cada loja no WhatsApp e nas redes (precisa de HTML gerado no servidor)
+- Spring Boot 4
 
 ---
 

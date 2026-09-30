@@ -308,11 +308,14 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 |--------|-------|--------|
 | 0.1.0 | MVP | Lançada |
 | 0.2.0 | Operação do restaurante, associações e personalização | Lançada |
-| 0.3.0 | Entregador, cooperativa e cliente | **Atual** |
-| 0.4.0 | Segurança e integridade dos dados | Concluída, falta lançar |
-| 0.5.0 | Auditoria de dados | Planejada |
-| 0.6.0 | Operação do dia a dia | Em andamento (1 de 8 itens) |
+| 0.3.0 | Entregador, cooperativa e cliente | Lançada (sem tag; o código está na v0.4.0) |
+| 0.4.0 | Segurança, integridade dos dados e pedido do balcão | **Atual** |
+| 0.5.0 | Operação do dia a dia | Próxima |
+| 0.6.0 | Auditoria de dados | Planejada |
+| 0.7.0 | Pronto para o piloto | Planejada |
 | 1.0.0 | Primeira versão estável (piloto real) | Planejada |
+
+Cada versão tem no máximo cinco ou seis itens, entregues um de cada vez, para o piloto sair logo.
 
 ### 0.3.0: Entregador, cooperativa e cliente
 - ~~Concluir as telas do entregador~~: avaliações, rastreio no mapa e diferença assumida no Caixa (concluído).
@@ -322,8 +325,8 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 - ~~Fluxo do cliente fora da fase de testes, com coleta de avaliações~~: jornada revisada de ponta a ponta no desktop e no celular, com cadastro no meio da compra (concluído).
 - ~~Visibilidade: página da loja otimizada para buscadores (SEO) e vitrine ordenada por avaliações e proximidade, sem posição paga~~ (concluído).
 
-### 0.4.0: Segurança e integridade dos dados
-O detalhe de cada item, com o que foi feito e o que ficou para depois, está em [docs/roadmap/0.4.0-seguranca.md](docs/roadmap/0.4.0-seguranca.md). Todos os itens foram entregues (veja "Não lançado"). Falta fechar a versão.
+### 0.4.0: Segurança, integridade dos dados e pedido do balcão
+O detalhe de cada item, com o que foi feito e o que ficou para depois, está em [docs/roadmap/0.4.0-seguranca.md](docs/roadmap/0.4.0-seguranca.md).
 - ~~**Brechas críticas:** segredos padrão, papel no cadastro, upload de arquivos e CORS~~: perfil `prod` obrigatório, cadastro sempre como cliente, imagens conferidas pelos bytes e CORS só das origens configuradas (concluído).
 - ~~**Integridade:** migrações versionadas no lugar de `ddl-auto=update`~~: Flyway com `validate` e testes de integração com Testcontainers (concluído).
 - ~~**Race conditions:** oferta, status do pedido, caixa e faturas~~: travas com ordem única, `@Version`, restrições no banco e testes de concorrência com duas threads (concluído).
@@ -331,32 +334,43 @@ O detalhe de cada item, com o que foi feito e o que ficou para depois, está em 
 - ~~**Rate limiting:** login, cadastro, pedidos e envio de arquivos~~: contadores no Redis, por IP e por usuário (concluído).
 - ~~**Throttling:** localização, WebSocket e jobs~~: ping a cada 10 s no máximo, limites no WebSocket e jobs com trava distribuída (ShedLock) (concluído).
 - ~~**Revisão de segurança:** OWASP Top 10, segredos e dependências~~: checklist preenchido, Spring Boot 3.5, CI, Dependabot e verificação semanal de dependências vulneráveis (concluído).
+- ~~**Pedido do balcão, do telefone e do WhatsApp**~~: testado de ponta a ponta no celular, do balcão ao acerto no caixa (concluído).
 
-### 0.5.0: Auditoria de dados
+### 0.5.0: Operação do dia a dia
+O detalhe de cada item, com o código em que ele se apoia e o que falta, está em [docs/roadmap/0.5.0-operacao.md](docs/roadmap/0.5.0-operacao.md).
+- Ocorrências ligadas ao pedido: pedido não pronto, cliente não localizado, endereço incorreto e outras.
+- Km, tempo em operação e médias (R$ por km e R$ por hora) na aba Ganhos do entregador.
+- Custo estimado do veículo (combustível, manutenção e depreciação) e resultado estimado.
+- Comunicados da cooperativa para os cooperados.
+- PIN de entrega, que a loja pode exigir.
+
+### 0.6.0: Auditoria de dados
 - Trilha de auditoria: quem mudou o quê e quando, com o valor anterior e o novo, para pedidos, cardápio e preços, caixa, ganhos e vínculos.
 - Histórico que não pode ser alterado para acertos de caixa e ganhos do entregador.
 - Relatórios exportáveis para a loja e para a cooperativa.
 - LGPD: exportação e exclusão de dados pessoais e política de retenção.
 
-### 0.6.0: Operação do dia a dia
-O detalhe de cada item, com o código em que ele se apoia e o que falta, está em [docs/roadmap/0.6.0-operacao.md](docs/roadmap/0.6.0-operacao.md).
-- Pedido feito no balcão ou por telefone, que entra no mesmo fluxo dos pedidos online (implementado, em testes).
-- Ocorrências ligadas ao pedido: pedido não pronto, cliente não localizado, endereço incorreto e outras.
-- "Cheguei na loja" e "Cheguei no cliente", tempos de cada pedido e espera média por loja no relatório da cooperativa.
-- Km, tempo em operação e médias (R$ por km e R$ por hora) na aba Ganhos do entregador.
-- Custo estimado do veículo (combustível, manutenção e depreciação) e resultado estimado.
-- Comunicados da cooperativa para os cooperados.
-- Composição do valor na oferta e lembrete de pausa.
-- PIN de entrega, que a loja pode exigir.
+### 0.7.0: Pronto para o piloto
+- Recuperar a senha e confirmar o email. Hoje a recuperação é feita pelo email do projeto.
+- Aviso de pedido novo e de oferta com o app em segundo plano (Web Push).
+- Sessão: renovar e revogar o token.
+- Termos de uso e política de privacidade, com aceite no cadastro.
+- Produção: deploy com HTTPS, backup do banco testado e monitoramento.
+- Mobile first nas telas que já existem (pontos de quebra em um lugar só) e "Escolher entregador" direto no card do pedido.
 
 ### 1.0.0: Primeira versão estável
-- Piloto com uma cidade e uma cooperativa.
+- Piloto com uma cidade, uma cooperativa e duas ou três lojas, por algumas semanas.
 - API REST e mensagens do WebSocket estáveis e documentadas.
 - App web publicado.
 
-### Ideias sem versão definida
-- Apps nativos para Android e iOS.
+### Depois da 1.0
+Ideias que ainda precisam ser melhoradas antes de entrar numa versão:
+- "Cheguei na loja" e "Cheguei no cliente", tempos de cada pedido e espera média por loja ([rascunho](docs/roadmap/0.5.0-operacao.md#depois-da-10-a-melhorar)).
+- Composição do valor na oferta e lembrete de pausa ([rascunho](docs/roadmap/0.5.0-operacao.md#depois-da-10-a-melhorar)).
 - Pagamento online.
+- Apps nativos para Android e iOS (GPS do entregador com a tela desligada).
+- Prévia do link de cada loja nas redes (HTML gerado no servidor).
+- Spring Boot 4.
 - Vários idiomas.
 - Federação de cooperativas e governança compartilhada.
 
