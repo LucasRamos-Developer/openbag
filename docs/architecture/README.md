@@ -75,7 +75,8 @@ com/openbag/
 ├── order/
 │   ├── core/          #   Pedidos do cliente e do balcão, gestão pela loja
 │   ├── realtime/      #   Eventos de pedido e de localização enviados por WebSocket
-│   └── review/        #   Avaliações da loja e do entregador
+│   ├── review/        #   Avaliações da loja e do entregador
+│   └── incident/      #   Ocorrências relatadas pelo entregador
 ├── delivery/
 │   ├── courier/       #   Perfil, veículos, turno, ganhos e rastreio do entregador
 │   ├── dispatch/      #   Despacho, ofertas, frete e configurações de entrega da loja
@@ -104,6 +105,7 @@ Todas as rotas ficam sob o prefixo `/api`. A lista completa está no Swagger: `h
 | `restaurant.cash` | `/restaurants/{id}/cash` | Caixa da loja e acerto com os entregadores |
 | `order.core` | `/orders`, `/restaurants/{id}/orders` | Checkout do cliente, pedido do balcão e ciclo do pedido na loja (aceitar, preparar, pronto, despachar, entregar) |
 | `order.review` | `/orders/{id}/review`, `/restaurants/{id}/reviews` | Avaliações e respostas da loja |
+| `order.incident` | `/me/courier/work/orders/{id}/incidents` | Ocorrências da entrega: a loja vê no pedido e a cooperativa no relatório |
 | `delivery.courier` | `/me/courier`, `/me/courier/work`, `/public/couriers` | Perfil e veículos do entregador, turno, ofertas e ganhos |
 | `delivery.dispatch` | `/restaurants/{id}/delivery` | Configurações de entrega da loja, entregadores disponíveis e despacho |
 | `delivery.route` | `/restaurants/{id}/routes` | Rotas da loja |

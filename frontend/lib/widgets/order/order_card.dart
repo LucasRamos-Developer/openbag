@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/ui/ui.dart';
 import '../../models/order/order.dart';
 import '../../utils/formatters.dart';
+import 'order_incidents.dart';
 import 'order_origin_badges.dart';
 import 'order_timers.dart';
 
@@ -82,6 +83,10 @@ class OrderCard extends StatelessWidget {
                 ),
               ],
             ),
+          ],
+          if (order.incidents.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            OrderIncidents(incidents: order.incidents, compact: true),
           ],
           if (isNew && order.acceptDeadline != null) ...[
             const SizedBox(height: 6),

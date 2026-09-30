@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../models/courier/courier_work.dart';
+import '../models/order/order_incident.dart';
 import 'alert_sound.dart';
 import 'api_client.dart';
 import 'idempotency_key.dart';
@@ -242,6 +243,15 @@ class CourierWorkService extends ChangeNotifier {
   Future<void> declineOffer(CourierOffer offer) => _action(() => _api.post('$_base/offers/${offer.offerId}/decline'));
 
   Future<void> pickUp(CourierOrder order) => _action(() => _api.post('$_base/orders/${order.orderId}/pickup'));
+
+  final _incidentKey = IdempotencyKey();
+
+  /// Relata uma ocorrência na entrega. O mesmo tipo tocado de novo não duplica (o servidor ignora).
+  Future<void> reportIncident(CourierOrder order, IncidentType type, {String? note}) {
+    final body = {'type': type.name, 'note': note};
+    return _incidentKey.run({'orderId': order.orderId, ...body},
+        (key) => _action(() => _api.post('$_base/orders/${order.orderId}/incidents', data: body, idempotencyKey: key)));
+  }
 
   Future<void> deliver(CourierOrder order) => _action(() => _api.post('$_base/orders/${order.orderId}/deliver'));
 

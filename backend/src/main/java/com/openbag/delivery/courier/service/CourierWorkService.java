@@ -1,5 +1,7 @@
 package com.openbag.delivery.courier.service;
 
+import com.openbag.order.incident.entity.IncidentType;
+import com.openbag.order.incident.service.OrderIncidentService;
 import com.openbag.delivery.link.entity.CourierLinkStatus;
 import com.openbag.delivery.courier.entity.CourierWorkStatus;
 import com.openbag.delivery.dispatch.entity.DeliveryOfferStatus;
@@ -95,6 +97,9 @@ public class CourierWorkService {
 
     @Autowired
     private ApplicationEventPublisher events;
+
+    @Autowired
+    private OrderIncidentService incidentService;
 
     @Autowired
     private Clock clock;
@@ -318,6 +323,20 @@ public class CourierWorkService {
                         .filter(o -> !o.getId().equals(orderId)).toList())
                 .ifPresent(next -> events.publishEvent(new OrderChangedEvent(next.getId(), OrderChangedEvent.Type.ORDER_UPDATED)));
         // Liberação do entregador e contadores: DispatchService, depois do commit
+        return toState(courier);
+    }
+
+    /**
+     * Relata uma ocorrência na entrega em andamento (pedido não pronto, cliente não localizado...).
+     * Trava o pedido, como as outras ações sobre ele.
+     */
+    public CourierWorkStateDTO reportIncident(User user, Long orderId, IncidentType type, String note) {
+        DeliveryPerson courier = findCourier(user);
+        Order order = findAssignedOrder(courier, orderId);
+        if (!IN_PROGRESS.contains(order.getStatus())) {
+            throw new BadRequestException("Essa entrega já terminou");
+        }
+        incidentService.report(order, courier, type, note);
         return toState(courier);
     }
 

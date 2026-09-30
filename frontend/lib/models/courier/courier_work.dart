@@ -1,6 +1,6 @@
 import '../association/association.dart' show parseDate;
 import '../delivery/courier_link.dart';
-import '../order/order.dart' show OrderStatus, PaymentMethod;
+import '../order/order.dart' show OrderStatus, PaymentMethod, IncidentType;
 import 'vehicle.dart';
 
 enum CourierWorkStatus {
@@ -130,6 +130,9 @@ class CourierOrder {
   final int? routeSequence;
   final String? neighborhood;
 
+  /// Ocorrências que o entregador já relatou nesta entrega
+  final Set<IncidentType> reportedIncidents;
+
   CourierOrder({
     required this.orderId,
     this.displayCode,
@@ -153,6 +156,7 @@ class CourierOrder {
     this.routeId,
     this.routeSequence,
     this.neighborhood,
+    this.reportedIncidents = const {},
   });
 
   factory CourierOrder.fromJson(Map<String, dynamic> json) => CourierOrder(
@@ -178,6 +182,7 @@ class CourierOrder {
         routeId: json['routeId'],
         routeSequence: json['routeSequence'],
         neighborhood: json['neighborhood'],
+        reportedIncidents: {for (final t in (json['reportedIncidents'] as List? ?? [])) IncidentType.fromName(t)},
       );
 
   bool get pickedUp => status == OrderStatus.OUT_FOR_DELIVERY;

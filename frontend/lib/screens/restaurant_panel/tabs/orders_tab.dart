@@ -47,11 +47,19 @@ class _OrdersTabState extends State<OrdersTab> {
     _orders.onAccepted = (order) {
       if (panel.store?.autoPrintTicket == true) _print(order);
     };
+    _orders.onIncident = (order, incident) {
+      if (!mounted) return;
+      AppToast.show(context,
+          message: 'Pedido ${order.displayCode ?? '#${order.id}'}: ${incident.title}',
+          type: ToastType.warning,
+          duration: const Duration(seconds: 8));
+    };
   }
 
   @override
   void dispose() {
     _orders.onAccepted = null;
+    _orders.onIncident = null;
     _orders.detach();
     super.dispose();
   }

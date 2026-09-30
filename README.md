@@ -129,13 +129,13 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 | 0.2.0 | Operação do restaurante, associações e personalização da loja | Lançada |
 | 0.3.0 | Entregador, cooperativa e cliente | Lançada |
 | **0.4.0** | **Segurança, integridade dos dados e pedido do balcão** | **Atual** |
-| 0.5.0 | Operação do dia a dia | Próxima |
+| 0.5.0 | Operação do dia a dia | Em andamento (1 de 5) |
 | 0.6.0 | Auditoria de dados | Planejada |
 | 0.7.0 | Pronto para o piloto | Planejada |
 | 1.0.0 | Primeira versão estável, com piloto real | Planejada |
 
 > **Em andamento agora**
-> - **0.5.0: Operação do dia a dia.** São cinco entregas pequenas, uma de cada vez. A primeira é **Ocorrências ligadas ao pedido**.
+> - **0.5.0: Operação do dia a dia (1 de 5).** As ocorrências ligadas ao pedido estão prontas. A próxima entrega é **km, tempo e médias na aba Ganhos do entregador**.
 >
 > Cada versão tem no máximo cinco ou seis itens, para o piloto sair logo. O que não é preciso para o piloto fica em [Depois da 1.0](#depois-da-10).
 
@@ -159,7 +159,7 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [x] Backend organizado por domínio
 
 **0.5.0: Operação do dia a dia** ([detalhes](docs/roadmap/0.5.0-operacao.md))
-- [ ] Ocorrências ligadas ao pedido
+- [x] Ocorrências ligadas ao pedido
 - [ ] Km, tempo e médias na aba Ganhos do entregador
 - [ ] Custo estimado do veículo e resultado estimado
 - [ ] Comunicados da cooperativa

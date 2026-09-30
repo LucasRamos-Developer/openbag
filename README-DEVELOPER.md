@@ -163,7 +163,7 @@ backend/
 │   │   │   ├── platform/           # Infraestrutura: config, security, web, realtime, files, geo, util, seed
 │   │   │   ├── account/            # Cadastro, login, perfil
 │   │   │   ├── restaurant/         # store, catalog, menu, combo, cash
-│   │   │   ├── order/              # core (pedidos do app e do balcão), realtime (WebSocket), review
+│   │   │   ├── order/              # core (pedidos do app e do balcão), realtime (WebSocket), review, incident
 │   │   │   ├── delivery/           # courier, dispatch, route, link
 │   │   │   ├── association/        # core, finance, community, member, partnership
 │   │   │   └── admin/              # Painel da plataforma

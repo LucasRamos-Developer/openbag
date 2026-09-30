@@ -3,6 +3,7 @@ package com.openbag.delivery.courier.controller;
 import com.openbag.delivery.courier.dto.CourierWorkStateDTO;
 import com.openbag.delivery.courier.dto.LocationRequest;
 import com.openbag.delivery.courier.service.CourierWorkService;
+import com.openbag.order.incident.dto.ReportIncidentRequest;
 import com.openbag.account.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -80,6 +81,14 @@ public class CourierWorkController {
     @Operation(summary = "Retirei o pedido no restaurante")
     public ResponseEntity<CourierWorkStateDTO> pickUp(@PathVariable Long orderId) {
         return ResponseEntity.ok(workService.pickUp(userService.getCurrentUser(), orderId));
+    }
+
+    @PostMapping("/orders/{orderId}/incidents")
+    @Operation(summary = "Relatar uma ocorrência na entrega (pedido não pronto, cliente não localizado...)")
+    public ResponseEntity<CourierWorkStateDTO> reportIncident(@PathVariable Long orderId,
+                                                              @Valid @RequestBody ReportIncidentRequest request) {
+        return ResponseEntity.ok(workService.reportIncident(userService.getCurrentUser(), orderId, request.type(),
+                request.note()));
     }
 
     @PostMapping("/orders/{orderId}/deliver")

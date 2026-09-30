@@ -103,6 +103,7 @@ As tabelas mostram as rotas principais de cada área. Todas as rotas estão no S
 | `PUT /me/courier/work/location` | Posição (o servidor aceita no máximo uma a cada 10 s) |
 | `POST /me/courier/work/offers/{id}/accept` e `/decline` | Responder a oferta. Repetir o aceite devolve a mesma entrega. |
 | `POST /me/courier/work/orders/{id}/pickup` e `/deliver` | Retirada e entrega |
+| `POST /me/courier/work/orders/{id}/incidents` | Relatar uma ocorrência (`type`, `note`) na entrega em andamento. A loja vê no pedido; o cliente não. |
 | `/me/association/**` | Área do cooperado: vínculo, resumo, faturas, adicionais, caixinha, convênios, enquetes e documentos |
 
 ### Associação ou cooperativa (gestor)

@@ -7,6 +7,7 @@ import com.openbag.restaurant.cash.entity.CourierSettlement;
 import com.openbag.delivery.route.entity.DeliveryRoute;
 import com.openbag.delivery.link.entity.StaffCourier;
 import com.openbag.association.core.entity.Organization;
+import com.openbag.order.incident.entity.OrderIncident;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -256,6 +257,11 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderTracking> trackings = new ArrayList<>();
+
+    // Ocorrências relatadas pelo entregador, da mais antiga para a mais nova
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    @OrderBy("createdAt ASC")
+    private List<OrderIncident> incidents = new ArrayList<>();
 
     // Constructors
     public Order(User user, Restaurant restaurant, BigDecimal subtotal, BigDecimal deliveryFee, 

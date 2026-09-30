@@ -5,6 +5,7 @@ import '../../models/order/order.dart';
 import '../../utils/formatters.dart';
 import '../../services/restaurant_orders_service.dart';
 import '../delivery/order_courier_section.dart';
+import 'order_incidents.dart';
 import 'order_items_list.dart';
 import 'order_origin_badges.dart';
 import 'order_status_chip.dart';
@@ -87,6 +88,11 @@ class _RestaurantOrderSheetState extends State<_RestaurantOrderSheet> {
                 if (order.status == OrderStatus.PENDING && order.acceptDeadline != null) ...[
                   const SizedBox(height: 8),
                   DeadlineCountdown(deadline: order.acceptDeadline!),
+                ],
+                // Ocorrências no topo: é o que pede ação da loja agora
+                if (order.incidents.isNotEmpty) ...[
+                  const AppSectionHeader(title: 'Ocorrências', padding: EdgeInsets.only(top: 20, bottom: 8)),
+                  OrderIncidents(incidents: order.incidents),
                 ],
                 const AppSectionHeader(title: 'Itens', padding: EdgeInsets.only(top: 20, bottom: 8)),
                 OrderItemsList(items: order.items),

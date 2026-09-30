@@ -46,7 +46,13 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ## [Não lançado]
 
-Nada ainda. A próxima versão é a [0.5.0](#050-operação-do-dia-a-dia).
+### Adicionado
+
+- **Ocorrências ligadas ao pedido** (item 1 da 0.5.0):
+  - Na entrega em andamento, o entregador toca em **Relatar problema** e escolhe o tipo: pedido não estava pronto, endereço incorreto, cliente não localizado, pedido não confere, restaurante fechado, problema no veículo, sem acesso ao local ou outro problema (com uma observação).
+  - A loja vê na hora: toca o aviso, aparece um toast, uma linha no card do pedido e a seção **Ocorrências** na ficha, com quem relatou e quando. O cliente não vê.
+  - O relatório da cooperativa mostra as ocorrências por tipo e por loja. Elas nunca aparecem por cooperado: não são nota nem penalidade.
+  - `POST /me/courier/work/orders/{id}/incidents` e a tabela `order_incidents` (V6).
 
 ---
 
@@ -325,7 +331,7 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 | 0.2.0 | Operação do restaurante, associações e personalização | Lançada |
 | 0.3.0 | Entregador, cooperativa e cliente | Lançada (sem tag; o código está na v0.4.0) |
 | 0.4.0 | Segurança, integridade dos dados e pedido do balcão | **Atual** |
-| 0.5.0 | Operação do dia a dia | Próxima |
+| 0.5.0 | Operação do dia a dia | Em andamento (1 de 5) |
 | 0.6.0 | Auditoria de dados | Planejada |
 | 0.7.0 | Pronto para o piloto | Planejada |
 | 1.0.0 | Primeira versão estável (piloto real) | Planejada |
@@ -353,7 +359,7 @@ O detalhe de cada item, com o que foi feito e o que ficou para depois, está em 
 
 ### 0.5.0: Operação do dia a dia
 O detalhe de cada item, com o código em que ele se apoia e o que falta, está em [docs/roadmap/0.5.0-operacao.md](docs/roadmap/0.5.0-operacao.md).
-- Ocorrências ligadas ao pedido: pedido não pronto, cliente não localizado, endereço incorreto e outras.
+- ~~Ocorrências ligadas ao pedido~~: o entregador relata, a loja vê na hora e a cooperativa vê por tipo e por loja (concluído).
 - Km, tempo em operação e médias (R$ por km e R$ por hora) na aba Ganhos do entregador.
 - Custo estimado do veículo (combustível, manutenção e depreciação) e resultado estimado.
 - Comunicados da cooperativa para os cooperados.

@@ -12,6 +12,8 @@ import com.openbag.order.core.entity.Order;
 import com.openbag.order.core.entity.OrderItem;
 import com.openbag.order.core.entity.OrderTracking;
 import com.openbag.order.core.entity.OrderItemCustomization;
+import com.openbag.order.incident.entity.IncidentType;
+import com.openbag.order.incident.entity.OrderIncident;
 import com.openbag.restaurant.store.entity.Restaurant;
 import com.openbag.order.review.dto.OrderReviewDTO;
 import lombok.AllArgsConstructor;
@@ -85,6 +87,9 @@ public class OrderDTO {
     // Aceito e ainda sem entregador disponível desde este momento
     private LocalDateTime searchingCourierSince;
 
+    // Ocorrências relatadas pelo entregador (só para a loja; o cliente não recebe)
+    private List<Incident> incidents;
+
     // Só para o cliente (CustomerOrderMapper): posição do entregador quando é a vez do pedido,
     // a avaliação feita e até quando ainda dá para avaliar
     private Location courierLocation;
@@ -143,6 +148,22 @@ public class OrderDTO {
         private OrderStatus status;
         private String message;
         private LocalDateTime at;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Incident {
+        private Long id;
+        private IncidentType type;
+        private String note;
+        private String reportedBy;
+        private LocalDateTime at;
+
+        static Incident from(OrderIncident incident) {
+            return new Incident(incident.getId(), incident.getType(), incident.getNote(),
+                    incident.getDeliveryPerson().getUser().getFullName(), incident.getCreatedAt());
+        }
     }
 
     @Data
@@ -215,6 +236,7 @@ public class OrderDTO {
                 .pickedUpAt(order.getPickedUpAt())
                 .searchingCourierSince(order.getDeliveryPerson() == null && order.getStaffCourier() == null
                         ? order.getSearchingCourierSince() : null)
+                .incidents(order.getIncidents().stream().map(Incident::from).toList())
                 .build();
     }
 
@@ -227,6 +249,7 @@ public class OrderDTO {
         OrderDTO dto = from(order);
         dto.setCourierKind(null);
         dto.setReassignableAt(null);
+        dto.setIncidents(null);
         return dto;
     }
 

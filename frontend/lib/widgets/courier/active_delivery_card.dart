@@ -12,7 +12,17 @@ class ActiveDeliveryCard extends StatelessWidget {
   final VoidCallback onPickUp;
   final VoidCallback onDeliver;
 
-  const ActiveDeliveryCard({super.key, required this.order, required this.onPickUp, required this.onDeliver, this.busy = false});
+  /// "Relatar problema": pedido não pronto, cliente não localizado...
+  final VoidCallback? onReportIncident;
+
+  const ActiveDeliveryCard({
+    super.key,
+    required this.order,
+    required this.onPickUp,
+    required this.onDeliver,
+    this.onReportIncident,
+    this.busy = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -122,6 +132,30 @@ class ActiveDeliveryCard extends StatelessWidget {
                 ],
               ),
             ),
+          if (order.reportedIncidents.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.campaign_outlined, size: 18, color: AppColors.warningDarker),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('A loja foi avisada: ${order.reportedIncidents.map((t) => t.label).join(', ')}',
+                      style: textTheme.bodySmall?.copyWith(color: AppColors.warningDarker)),
+                ),
+              ],
+            ),
+          ],
+          if (onReportIncident != null) ...[
+            const SizedBox(height: 8),
+            AppButton(
+              text: 'Relatar problema',
+              icon: Icons.report_problem_outlined,
+              variant: ButtonVariant.text,
+              fullWidth: true,
+              onPressed: busy ? null : onReportIncident,
+            ),
+          ],
         ],
       ),
     );

@@ -89,6 +89,13 @@ class ReportsTabState extends State<ReportsTab> {
               subtitle: 'Lojas com mais entregas primeiro',
               child: AssociationRestaurantList(lines: report.byRestaurant),
             ),
+            const SizedBox(height: 16),
+            AppPanelCard(
+              title: 'Ocorrências',
+              subtitle: 'Relatadas pelos cooperados, por tipo e por loja. Servem para conversar com as lojas; '
+                  'não contam contra ninguém.',
+              child: AssociationIncidentsView(incidents: report.incidents),
+            ),
           ],
         ],
       ),

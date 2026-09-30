@@ -112,6 +112,20 @@ Teste de ponta a ponta da versão 0.4.0, em 375px: o pedido chega por telefone, 
 
 ---
 
+## Ocorrências ligadas ao pedido, no celular
+
+Item 1 da 0.5.0: o entregador relata "cliente não localizado", a loja vê na hora e a cooperativa vê no relatório.
+
+| Relatar problema | Depois do relato | A loja vê na hora |
+|---|---|---|
+| <img src="ocorrencias/1-relatar-problema.png" alt="Relatar problema" width="220"> | <img src="ocorrencias/2-entregador-avisou.png" alt="Entregador avisou" width="220"> | <img src="ocorrencias/3-loja-na-hora.png" alt="Loja" width="220"> |
+
+| Ficha do pedido | Relatório da cooperativa |
+|---|---|
+| <img src="ocorrencias/4-ficha-do-pedido.png" alt="Ficha" width="220"> | <img src="ocorrencias/5-relatorio-cooperativa.png" alt="Relatório" width="220"> |
+
+---
+
 ## Rastreio, avaliações e diferença assumida
 
 Depois da retirada, o cliente vê o entregador no mapa, mas só quando é a vez do pedido dele na rota. Depois da entrega, ele avalia a loja e o entregador.

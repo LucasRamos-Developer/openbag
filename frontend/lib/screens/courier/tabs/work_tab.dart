@@ -10,6 +10,7 @@ import '../../../utils/formatters.dart';
 import '../../../utils/maps.dart';
 import '../../../widgets/courier/active_delivery_card.dart';
 import '../../../widgets/courier/offer_card.dart';
+import '../../../widgets/courier/report_incident_sheet.dart';
 import '../../../widgets/order/live_indicator.dart';
 import '../../../widgets/restaurant/restaurant_logo.dart';
 
@@ -75,6 +76,12 @@ class _WorkTabState extends State<WorkTab> {
     if (confirmed) await _run(() => _work.deliver(order), success: 'Entrega concluída!');
   }
 
+  Future<void> _reportIncident(CourierOrder order) async {
+    final report = await showReportIncidentSheet(context, reported: order.reportedIncidents);
+    if (report == null || !mounted) return;
+    await _run(() => _work.reportIncident(order, report.type, note: report.note), success: 'A loja foi avisada');
+  }
+
   @override
   Widget build(BuildContext context) {
     final work = context.watch<CourierWorkService>();
@@ -129,6 +136,7 @@ class _WorkTabState extends State<WorkTab> {
                         busy: _busy,
                         onPickUp: () => _run(() => _work.pickUp(state.activeOrders[i]), success: 'Pedido retirado'),
                         onDeliver: () => _deliver(state.activeOrders[i]),
+                        onReportIncident: () => _reportIncident(state.activeOrders[i]),
                       ),
                       const SizedBox(height: 16),
                     ],
@@ -138,6 +146,7 @@ class _WorkTabState extends State<WorkTab> {
                       busy: _busy,
                       onPickUp: () => _run(() => _work.pickUp(state.activeOrder!), success: 'Boa entrega!'),
                       onDeliver: () => _deliver(state.activeOrder!),
+                      onReportIncident: () => _reportIncident(state.activeOrder!),
                     ),
                     const SizedBox(height: 16),
                   ] else if (showOffer) ...[
