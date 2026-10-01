@@ -146,6 +146,20 @@ Item 3 da 0.5.0: sem custos, o card convida a preencher; com custos, mostra a so
 
 ---
 
+## Comunicados da cooperativa, no celular
+
+Item 4 da 0.5.0: o gestor publica uma reunião, e o cooperado a vê no resumo e no mural da associação.
+
+| Novo comunicado | Mural do gestor |
+|---|---|
+| <img src="comunicados/1-novo-comunicado.png" alt="Novo comunicado" width="220"> | <img src="comunicados/2-mural-do-gestor.png" alt="Mural do gestor" width="220"> |
+
+| Resumo do cooperado | Mural do cooperado |
+|---|---|
+| <img src="comunicados/3-resumo-do-cooperado.png" alt="Resumo" width="220"> | <img src="comunicados/4-mural-do-cooperado.png" alt="Mural do cooperado" width="220"> |
+
+---
+
 ## Rastreio, avaliações e diferença assumida
 
 Depois da retirada, o cliente vê o entregador no mapa, mas só quando é a vez do pedido dele na rota. Depois da entrega, ele avalia a loja e o entregador.

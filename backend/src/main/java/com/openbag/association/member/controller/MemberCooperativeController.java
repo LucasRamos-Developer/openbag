@@ -1,5 +1,7 @@
 package com.openbag.association.member.controller;
 
+import com.openbag.association.community.dto.AnnouncementDTO;
+import com.openbag.association.community.service.AnnouncementService;
 import com.openbag.association.community.dto.AssociationDocumentDTO;
 import com.openbag.association.community.dto.BenefitDTO;
 import com.openbag.association.finance.dto.MemberAddonDTO;
@@ -64,6 +66,9 @@ public class MemberCooperativeController {
     private AssociationDocumentService documentService;
 
     @Autowired
+    private AnnouncementService announcementService;
+
+    @Autowired
     private UserService userService;
 
     @GetMapping("/invoices")
@@ -115,6 +120,18 @@ public class MemberCooperativeController {
     @Operation(summary = "Votar", description = "Uma vez por enquete; o voto é secreto")
     public ResponseEntity<PollDTO> vote(@PathVariable Long pollId, @Valid @RequestBody VoteRequest request) {
         return ResponseEntity.ok(pollService.vote(userService.getCurrentUser(), pollId, request.optionId()));
+    }
+
+    @GetMapping("/announcements")
+    @Operation(summary = "Comunicados da associação", description = "Os não arquivados, do mais novo, com o que já leu")
+    public ResponseEntity<List<AnnouncementDTO>> announcements() {
+        return ResponseEntity.ok(announcementService.forMember(userService.getCurrentUser()));
+    }
+
+    @PostMapping("/announcements/{announcementId}/read")
+    @Operation(summary = "Marcar comunicado como lido")
+    public ResponseEntity<AnnouncementDTO> readAnnouncement(@PathVariable Long announcementId) {
+        return ResponseEntity.ok(announcementService.markRead(userService.getCurrentUser(), announcementId));
     }
 
     @GetMapping("/documents")

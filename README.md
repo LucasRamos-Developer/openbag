@@ -129,13 +129,13 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 | 0.2.0 | Operação do restaurante, associações e personalização da loja | Lançada |
 | 0.3.0 | Entregador, cooperativa e cliente | Lançada |
 | **0.4.0** | **Segurança, integridade dos dados e pedido do balcão** | **Atual** |
-| 0.5.0 | Operação do dia a dia | Em andamento (3 de 5) |
+| 0.5.0 | Operação do dia a dia | Em andamento (4 de 5) |
 | 0.6.0 | Auditoria de dados | Planejada |
 | 0.7.0 | Pronto para o piloto | Planejada |
 | 1.0.0 | Primeira versão estável, com piloto real | Planejada |
 
 > **Em andamento agora**
-> - **0.5.0: Operação do dia a dia (3 de 5).** As ocorrências, os km, tempo e médias e o custo estimado do veículo estão prontos. A próxima entrega são os **comunicados da cooperativa**.
+> - **0.5.0: Operação do dia a dia (4 de 5).** As ocorrências, os km, tempo e médias, o custo estimado do veículo e os comunicados da cooperativa estão prontos. Falta o **PIN de entrega**, que fecha a versão.
 >
 > Cada versão tem no máximo cinco ou seis itens, para o piloto sair logo. O que não é preciso para o piloto fica em [Depois da 1.0](#depois-da-10).
 
@@ -162,7 +162,7 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [x] Ocorrências ligadas ao pedido
 - [x] Km, tempo e médias na aba Ganhos do entregador
 - [x] Custo estimado do veículo e resultado estimado
-- [ ] Comunicados da cooperativa
+- [x] Comunicados da cooperativa
 - [ ] PIN de entrega
 
 **0.6.0: Auditoria de dados**

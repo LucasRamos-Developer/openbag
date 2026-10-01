@@ -85,7 +85,7 @@ com/openbag/
 ├── association/
 │   ├── core/          #   Associações e cooperativas, membros, convites, tabela de entrega
 │   ├── finance/       #   Mensalidade, adicionais, faturas, livro-caixa, caixinha
-│   ├── community/     #   Convênios, enquetes, atas e documentos
+│   ├── community/     #   Comunicados, convênios, enquetes, atas e documentos
 │   ├── member/        #   O que o cooperado vê em /me/association
 │   └── partnership/   #   Parcerias com as lojas (tabela especial) e relatórios
 └── admin/             # Painel da plataforma (só leitura)

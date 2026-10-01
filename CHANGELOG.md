@@ -71,6 +71,10 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - Cada entrega usa o veículo do turno em que foi feita. Bicicleta e a pé não têm combustível.
   - Sem custos informados, o card convida a preencher em vez de mostrar zero. Quando falta o custo de um veículo usado, ele diz qual.
   - É sempre uma estimativa, e o card avisa.
+- **Comunicados da cooperativa** (item 4 da 0.5.0):
+  - O gestor publica no mural da associação, na aba **Comunicados** da Assembleia: aviso, reunião (com data e hora), mudança na operação, alteração de valor, nova parceria ou treinamento. Dá para corrigir e arquivar, e ele vê quantos cooperados leram.
+  - O cooperado vê os comunicados na área dele. Os não lidos aparecem no topo do **Resumo**, e um toque marca como lido.
+  - Rotas em `/associations/{id}/announcements` e `/me/association/announcements` (V8).
 
 ---
 
@@ -349,7 +353,7 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 | 0.2.0 | Operação do restaurante, associações e personalização | Lançada |
 | 0.3.0 | Entregador, cooperativa e cliente | Lançada (sem tag; o código está na v0.4.0) |
 | 0.4.0 | Segurança, integridade dos dados e pedido do balcão | **Atual** |
-| 0.5.0 | Operação do dia a dia | Em andamento (3 de 5) |
+| 0.5.0 | Operação do dia a dia | Em andamento (4 de 5) |
 | 0.6.0 | Auditoria de dados | Planejada |
 | 0.7.0 | Pronto para o piloto | Planejada |
 | 1.0.0 | Primeira versão estável (piloto real) | Planejada |
@@ -380,7 +384,7 @@ O detalhe de cada item, com o código em que ele se apoia e o que falta, está e
 - ~~Ocorrências ligadas ao pedido~~: o entregador relata, a loja vê na hora e a cooperativa vê por tipo e por loja (concluído).
 - ~~Km, tempo em operação e médias (R$ por km e R$ por hora) na aba Ganhos do entregador~~ (concluído).
 - ~~Custo estimado do veículo (combustível, manutenção e depreciação) e resultado estimado~~ (concluído).
-- Comunicados da cooperativa para os cooperados.
+- ~~Comunicados da cooperativa para os cooperados~~ (concluído).
 - PIN de entrega, que a loja pode exigir.
 
 ### 0.6.0: Auditoria de dados
