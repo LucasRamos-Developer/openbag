@@ -1,6 +1,7 @@
 package com.openbag.association.partnership.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.openbag.order.incident.entity.IncidentType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,6 +30,7 @@ public class AssociationReportDTO {
     private List<Day> daily;
     private List<MemberLine> byMember;
     private List<RestaurantLine> byRestaurant;
+    private Incidents incidents;
     private Mine mine;
 
     /**
@@ -52,5 +54,19 @@ public class AssociationReportDTO {
     }
 
     public record Mine(long deliveries, BigDecimal earnings) {
+    }
+
+    /**
+     * Ocorrências relatadas pelos cooperados no período, por tipo e por loja (a mais citada primeiro).
+     * Nunca por cooperado: a ocorrência não é nota nem penalidade.
+     */
+    public record Incidents(long total, List<TypeCount> byType, List<RestaurantIncidents> byRestaurant) {
+    }
+
+    public record TypeCount(IncidentType type, long count) {
+    }
+
+    public record RestaurantIncidents(Long restaurantId, String name, String slug, String logoUrl, long total,
+                                      List<TypeCount> byType) {
     }
 }

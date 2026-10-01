@@ -1,8 +1,10 @@
 package com.openbag.delivery.courier.controller;
 
 import com.openbag.delivery.courier.dto.CourierWorkStateDTO;
+import com.openbag.delivery.courier.dto.DeliverRequest;
 import com.openbag.delivery.courier.dto.LocationRequest;
 import com.openbag.delivery.courier.service.CourierWorkService;
+import com.openbag.order.incident.dto.ReportIncidentRequest;
 import com.openbag.account.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -82,9 +84,18 @@ public class CourierWorkController {
         return ResponseEntity.ok(workService.pickUp(userService.getCurrentUser(), orderId));
     }
 
+    @PostMapping("/orders/{orderId}/incidents")
+    @Operation(summary = "Relatar uma ocorrência na entrega (pedido não pronto, cliente não localizado...)")
+    public ResponseEntity<CourierWorkStateDTO> reportIncident(@PathVariable Long orderId,
+                                                              @Valid @RequestBody ReportIncidentRequest request) {
+        return ResponseEntity.ok(workService.reportIncident(userService.getCurrentUser(), orderId, request.type(),
+                request.note()));
+    }
+
     @PostMapping("/orders/{orderId}/deliver")
-    @Operation(summary = "Entreguei o pedido")
-    public ResponseEntity<CourierWorkStateDTO> deliver(@PathVariable Long orderId) {
-        return ResponseEntity.ok(workService.deliver(userService.getCurrentUser(), orderId));
+    @Operation(summary = "Entreguei o pedido", description = "Com o PIN do cliente quando a loja exige, e a posição")
+    public ResponseEntity<CourierWorkStateDTO> deliver(@PathVariable Long orderId,
+                                                       @RequestBody(required = false) DeliverRequest request) {
+        return ResponseEntity.ok(workService.deliver(userService.getCurrentUser(), orderId, request));
     }
 }

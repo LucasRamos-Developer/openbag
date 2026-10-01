@@ -112,6 +112,64 @@ Teste de ponta a ponta da versão 0.4.0, em 375px: o pedido chega por telefone, 
 
 ---
 
+## Ocorrências ligadas ao pedido, no celular
+
+Item 1 da 0.5.0: o entregador relata "cliente não localizado", a loja vê na hora e a cooperativa vê no relatório.
+
+| Relatar problema | Depois do relato | A loja vê na hora |
+|---|---|---|
+| <img src="ocorrencias/1-relatar-problema.png" alt="Relatar problema" width="220"> | <img src="ocorrencias/2-entregador-avisou.png" alt="Entregador avisou" width="220"> | <img src="ocorrencias/3-loja-na-hora.png" alt="Loja" width="220"> |
+
+| Ficha do pedido | Relatório da cooperativa |
+|---|---|
+| <img src="ocorrencias/4-ficha-do-pedido.png" alt="Ficha" width="220"> | <img src="ocorrencias/5-relatorio-cooperativa.png" alt="Relatório" width="220"> |
+
+---
+
+## Km, tempo e médias do entregador, no celular
+
+Item 2 da 0.5.0: a aba Ganhos mostra os km de hoje, da semana e do mês e, no período escolhido, os km, o tempo e as médias. Só o entregador vê.
+
+| Hoje, semana e mês | Km, tempo e médias |
+|---|---|
+| <img src="ganhos/1-hoje-semana-mes.png" alt="Ganhos" width="220"> | <img src="ganhos/2-km-tempo-medias.png" alt="Km, tempo e médias" width="220"> |
+
+---
+
+## Custo estimado do veículo, no celular
+
+Item 3 da 0.5.0: sem custos, o card convida a preencher; com custos, mostra a sobra estimada do período.
+
+| Convite | Custos do veículo | Resultado estimado |
+|---|---|---|
+| <img src="custos/1-convite.png" alt="Convite" width="220"> | <img src="custos/2-custos-do-veiculo.png" alt="Custos" width="220"> | <img src="custos/3-resultado-estimado.png" alt="Resultado" width="220"> |
+
+---
+
+## Comunicados da cooperativa, no celular
+
+Item 4 da 0.5.0: o gestor publica uma reunião, e o cooperado a vê no resumo e no mural da associação.
+
+| Novo comunicado | Mural do gestor |
+|---|---|
+| <img src="comunicados/1-novo-comunicado.png" alt="Novo comunicado" width="220"> | <img src="comunicados/2-mural-do-gestor.png" alt="Mural do gestor" width="220"> |
+
+| Resumo do cooperado | Mural do cooperado |
+|---|---|
+| <img src="comunicados/3-resumo-do-cooperado.png" alt="Resumo" width="220"> | <img src="comunicados/4-mural-do-cooperado.png" alt="Mural do cooperado" width="220"> |
+
+---
+
+## PIN de entrega, no celular
+
+Item 5 da 0.5.0: a loja exige o código, o cliente o vê no pedido e o entregador só conclui a entrega com o código certo.
+
+| A loja exige | O cliente vê | O entregador digita | Código errado |
+|---|---|---|---|
+| <img src="pin/1-loja-exige-pin.png" alt="Loja" width="180"> | <img src="pin/2-cliente-ve-o-codigo.png" alt="Cliente" width="180"> | <img src="pin/3-entregador-digita.png" alt="Entregador" width="180"> | <img src="pin/4-codigo-errado.png" alt="Erro" width="180"> |
+
+---
+
 ## Rastreio, avaliações e diferença assumida
 
 Depois da retirada, o cliente vê o entregador no mapa, mas só quando é a vez do pedido dele na rota. Depois da entrega, ele avalia a loja e o entregador.

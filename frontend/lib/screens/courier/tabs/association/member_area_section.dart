@@ -7,6 +7,7 @@ import '../../../../services/courier_service.dart';
 import '../../../../widgets/courier/membership_card.dart';
 import '../../../../widgets/navigation/panel_sub_tabs.dart';
 import '../../courier_section.dart';
+import 'member_announcements_view.dart';
 import 'member_benefits_view.dart';
 import 'member_documents_view.dart';
 import 'member_home_view.dart';
@@ -38,12 +39,13 @@ class MemberAreaSection extends StatelessWidget {
     return PanelSubTabs<MemberAreaTab>(
       title: association.name,
       titleOnCompact: true,
-      subtitle: 'Sua fatura, a caixinha, os convênios, as enquetes e as atas da associação',
+      subtitle: 'Sua fatura, a caixinha, os comunicados, os convênios, as enquetes e as atas da associação',
       tabs: [for (final t in MemberAreaTab.values) SelectItem(value: t, label: t.label, icon: t.icon)],
       value: tab,
       onSelected: (t) => context.go(t.path),
       child: switch (tab) {
         MemberAreaTab.home => MemberHomeView(profile: profile),
+        MemberAreaTab.announcements => const MemberAnnouncementsView(),
         MemberAreaTab.invoices => const MemberInvoicesView(),
         MemberAreaTab.benefits => const MemberBenefitsView(),
         MemberAreaTab.polls => const MemberPollsView(),

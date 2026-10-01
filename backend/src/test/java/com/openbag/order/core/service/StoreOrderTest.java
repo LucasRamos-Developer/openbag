@@ -55,6 +55,7 @@ class StoreOrderTest {
     @Spy private OrderCalculator calculator = new OrderCalculator();
     @Mock private DeliveryFeeQuoteService deliveryFeeQuoteService;
     @Mock private ApplicationEventPublisher events;
+    @Mock private CustomerOrderMapper customerOrderMapper;
     @Spy private Clock clock = Clock.fixed(Instant.parse("2026-09-28T15:00:00Z"), ZoneId.of("America/Sao_Paulo"));
 
     @InjectMocks
@@ -171,5 +172,28 @@ class StoreOrderTest {
         request.setChangeFor(new BigDecimal("20.00"));
 
         assertThatThrownBy(() -> service.createStoreOrder(RID, request)).isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void theAppCheckoutCreatesADeliveryPinAndTheCounterDoesNot() {
+        com.openbag.account.entity.User customer = new com.openbag.account.entity.User();
+        customer.setId(9L);
+        customer.setFullName("Ana Cliente");
+        CreateOrderRequest checkout = new CreateOrderRequest();
+        checkout.setRestaurantId(RID);
+        checkout.setItems(List.of(new CreateOrderRequest.ItemRequest(7L, null, 2, null, List.of())));
+        checkout.setAddress(address());
+        checkout.setPaymentMethod(Order.PaymentMethod.PIX);
+        when(deliveryFeeQuoteService.quote(eq(restaurant), any(), any()))
+                .thenReturn(new com.openbag.delivery.dispatch.service.DeliveryFeeQuoteService.Quote(null, null, null,
+                        new BigDecimal("5.00"), false));
+
+        service.createOrder(checkout, customer);
+        Order app = saved();
+        assertThat(app.getDeliveryPin()).matches("\\d{4}");
+
+        org.mockito.Mockito.clearInvocations(orderRepository);
+        service.createStoreOrder(RID, request(OrderChannel.COUNTER, FulfillmentType.PICKUP));
+        assertThat(saved().getDeliveryPin()).as("o pedido do balcão usa a confirmação simples").isNull();
     }
 }

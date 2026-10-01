@@ -127,6 +127,9 @@ class RestaurantDeliverySettings {
   /// Entregador livre que não aparece: minutos até a loja poder trocá-lo
   final int courierNoShowMinutes;
 
+  /// Exige o código do cliente para concluir as entregas dos pedidos do app
+  final bool requireDeliveryPin;
+
   /// Taxa que o cliente paga, para comparar com a tabela dos parceiros (nula = cobra pela tabela)
   double? get customerFeeToCompare => passesDeliveryFee ? null : deliveryFee;
 
@@ -147,6 +150,7 @@ class RestaurantDeliverySettings {
     required this.activeFixedCouriers,
     required this.pendingFixedCouriers,
     this.courierNoShowMinutes = 10,
+    this.requireDeliveryPin = false,
   });
 
   factory RestaurantDeliverySettings.fromJson(Map<String, dynamic> json) => RestaurantDeliverySettings(
@@ -169,5 +173,6 @@ class RestaurantDeliverySettings {
         activeFixedCouriers: json['activeFixedCouriers'] ?? 0,
         pendingFixedCouriers: json['pendingFixedCouriers'] ?? 0,
         courierNoShowMinutes: json['courierNoShowMinutes'] ?? 10,
+        requireDeliveryPin: json['requireDeliveryPin'] ?? false,
       );
 }

@@ -1,5 +1,8 @@
 package com.openbag.association.community.controller;
 
+import com.openbag.association.community.dto.AnnouncementDTO;
+import com.openbag.association.community.dto.AnnouncementRequest;
+import com.openbag.association.community.service.AnnouncementService;
 import com.openbag.platform.security.annotation.IsAssociationManager;
 import com.openbag.association.community.entity.AssociationDocumentType;
 import com.openbag.association.community.dto.AssociationDocumentDTO;
@@ -30,7 +33,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Convênios, enquetes e documentos (atas) que a associação deixa disponíveis para os cooperados
+ * Convênios, enquetes, comunicados e documentos (atas) que a associação deixa disponíveis para os cooperados
  */
 @RestController
 @RequestMapping("/associations/{id}")
@@ -46,6 +49,9 @@ public class AssociationCommunityController {
 
     @Autowired
     private AssociationDocumentService documentService;
+
+    @Autowired
+    private AnnouncementService announcementService;
 
     @Autowired
     private UserService userService;
@@ -128,6 +134,40 @@ public class AssociationCommunityController {
     public ResponseEntity<Void> deletePoll(@PathVariable Long id, @PathVariable Long pollId) {
         pollService.delete(id, pollId);
         return ResponseEntity.noContent().build();
+    }
+
+    // ============= Comunicados =============
+
+    @GetMapping("/announcements")
+    @IsAssociationManager
+    @Operation(summary = "Comunicados", description = "Publicados e arquivados, com quantos cooperados leram")
+    public ResponseEntity<List<AnnouncementDTO>> listAnnouncements(@PathVariable Long id) {
+        return ResponseEntity.ok(announcementService.list(id));
+    }
+
+    @PostMapping("/announcements")
+    @IsAssociationManager
+    @Operation(summary = "Publicar comunicado", description = "Reunião precisa de data e hora")
+    public ResponseEntity<AnnouncementDTO> publishAnnouncement(@PathVariable Long id,
+                                                               @Valid @RequestBody AnnouncementRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(announcementService.publish(id, request, userService.getCurrentUser()));
+    }
+
+    @PutMapping("/announcements/{announcementId}")
+    @IsAssociationManager
+    @Operation(summary = "Corrigir comunicado")
+    public ResponseEntity<AnnouncementDTO> updateAnnouncement(@PathVariable Long id, @PathVariable Long announcementId,
+                                                              @Valid @RequestBody AnnouncementRequest request) {
+        return ResponseEntity.ok(announcementService.update(id, announcementId, request));
+    }
+
+    @PostMapping("/announcements/{announcementId}/{action:archive|restore}")
+    @IsAssociationManager
+    @Operation(summary = "Arquivar (sai da área do cooperado) ou restaurar comunicado")
+    public ResponseEntity<AnnouncementDTO> archiveAnnouncement(@PathVariable Long id, @PathVariable Long announcementId,
+                                                               @PathVariable String action) {
+        return ResponseEntity.ok(announcementService.archive(id, announcementId, action.equals("archive")));
     }
 
     // ============= Documentos =============

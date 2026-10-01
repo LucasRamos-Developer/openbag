@@ -43,6 +43,7 @@ public class RestaurantDeliverySettingsDTO {
     private long activeFixedCouriers;
     private long pendingFixedCouriers;
     private int courierNoShowMinutes;
+    private boolean requireDeliveryPin;
 
     public record FeeSample(double distanceKm, BigDecimal fee) {
     }

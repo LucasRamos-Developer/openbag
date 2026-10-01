@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/vers%C3%A3o-0.4.0-16a34a" alt="Versão 0.4.0"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/vers%C3%A3o-0.5.0-16a34a" alt="Versão 0.5.0"></a>
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/licen%C3%A7a-AGPL--3.0-blue" alt="Licença AGPL-3.0"></a>
   <a href="layout/"><img src="https://img.shields.io/badge/layout-ver%20telas-0f766e" alt="Ver o layout"></a>
 </p>
@@ -18,7 +18,7 @@
   <img src="layout/temas/01-fresh-green.png" alt="Página de um restaurante no OpenBag" width="860">
 </p>
 
-> Esta documentação descreve a versão **0.4.0**. Veja o que mudou no [CHANGELOG](CHANGELOG.md).
+> Esta documentação descreve a versão **0.5.0**. Veja o que mudou no [CHANGELOG](CHANGELOG.md).
 
 ---
 
@@ -128,14 +128,14 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 | 0.1.0 | MVP: cadastro, onboarding, carrinho, pedidos, mapas | Lançada |
 | 0.2.0 | Operação do restaurante, associações e personalização da loja | Lançada |
 | 0.3.0 | Entregador, cooperativa e cliente | Lançada |
-| **0.4.0** | **Segurança, integridade dos dados e pedido do balcão** | **Atual** |
-| 0.5.0 | Operação do dia a dia | Próxima |
-| 0.6.0 | Auditoria de dados | Planejada |
+| 0.4.0 | Segurança, integridade dos dados e pedido do balcão | Lançada |
+| **0.5.0** | **Operação do dia a dia** | **Atual** |
+| 0.6.0 | Auditoria de dados | Próxima |
 | 0.7.0 | Pronto para o piloto | Planejada |
 | 1.0.0 | Primeira versão estável, com piloto real | Planejada |
 
 > **Em andamento agora**
-> - **0.5.0: Operação do dia a dia.** São cinco entregas pequenas, uma de cada vez. A primeira é **Ocorrências ligadas ao pedido**.
+> - **0.6.0: Auditoria de dados.** A 0.5.0 foi lançada. A próxima versão começa pela **trilha de auditoria** (quem mudou o quê e quando).
 >
 > Cada versão tem no máximo cinco ou seis itens, para o piloto sair logo. O que não é preciso para o piloto fica em [Depois da 1.0](#depois-da-10).
 
@@ -159,11 +159,11 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [x] Backend organizado por domínio
 
 **0.5.0: Operação do dia a dia** ([detalhes](docs/roadmap/0.5.0-operacao.md))
-- [ ] Ocorrências ligadas ao pedido
-- [ ] Km, tempo e médias na aba Ganhos do entregador
-- [ ] Custo estimado do veículo e resultado estimado
-- [ ] Comunicados da cooperativa
-- [ ] PIN de entrega
+- [x] Ocorrências ligadas ao pedido
+- [x] Km, tempo e médias na aba Ganhos do entregador
+- [x] Custo estimado do veículo e resultado estimado
+- [x] Comunicados da cooperativa
+- [x] PIN de entrega
 
 **0.6.0: Auditoria de dados**
 - [ ] Trilha de auditoria (quem, o quê, quando, antes e depois) pode ser um PGaudit

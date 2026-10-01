@@ -10,6 +10,9 @@ import com.openbag.delivery.courier.repository.DeliveryPersonRepository;
 import com.openbag.association.partnership.repository.RestaurantPartnershipRepository;
 import com.openbag.order.core.entity.Order;
 import com.openbag.order.core.repository.OrderRepository;
+import com.openbag.order.incident.entity.IncidentType;
+import com.openbag.order.incident.repository.OrderIncidentRepository;
+import com.openbag.order.incident.repository.OrderIncidentRepository.RestaurantTypeCount;
 import com.openbag.association.core.entity.AssociationMembership;
 import com.openbag.association.core.entity.Organization;
 import com.openbag.association.core.repository.AssociationMembershipRepository;
@@ -29,7 +32,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Relatórios da associação: entregas e ganhos dos cooperados no período, por dia, por cooperado e por loja.
+ * Relatórios da associação: entregas e ganhos dos cooperados no período, por dia, por cooperado e por loja,
+ * e as ocorrências relatadas por tipo e por loja.
  * Usa a associação registrada no pedido, então quem trocou de associação não leva o histórico junto.
  */
 @Service
@@ -52,6 +56,9 @@ public class AssociationReportService {
 
     @Autowired
     private DeliveryPersonRepository deliveryPersonRepository;
+
+    @Autowired
+    private OrderIncidentRepository incidentRepository;
 
     @Autowired
     private Clock clock;
@@ -96,6 +103,8 @@ public class AssociationReportService {
                 .summary(summary(orders))
                 .daily(daily(orders, period.start(), period.end()))
                 .byRestaurant(byRestaurant(organization.getId(), orders))
+                .incidents(incidents(incidentRepository.countByRestaurantAndType(organization.getId(),
+                        period.start().atStartOfDay(), period.end().plusDays(1).atStartOfDay())))
                 .build();
     }
 
@@ -185,6 +194,37 @@ public class AssociationReportService {
                             withAgreement.contains(restaurant.getId()));
                 })
                 .sorted(Comparator.comparing(AssociationReportDTO.RestaurantLine::deliveries).reversed())
+                .toList();
+    }
+
+    /** Junta as contagens por loja e tipo: total, por tipo e por loja, do mais citado para o menos */
+    static AssociationReportDTO.Incidents incidents(List<RestaurantTypeCount> rows) {
+        Map<IncidentType, Long> byType = rows.stream()
+                .collect(Collectors.groupingBy(RestaurantTypeCount::type, () -> new EnumMap<>(IncidentType.class),
+                        Collectors.summingLong(RestaurantTypeCount::count)));
+        List<AssociationReportDTO.RestaurantIncidents> byRestaurant = rows.stream()
+                .collect(Collectors.groupingBy(RestaurantTypeCount::restaurantId, LinkedHashMap::new,
+                        Collectors.toList()))
+                .values().stream()
+                .map(lines -> {
+                    RestaurantTypeCount first = lines.get(0);
+                    return new AssociationReportDTO.RestaurantIncidents(first.restaurantId(), first.name(),
+                            first.slug(), first.logoUrl(), lines.stream().mapToLong(RestaurantTypeCount::count).sum(),
+                            typeCounts(lines.stream().collect(Collectors.toMap(RestaurantTypeCount::type,
+                                    RestaurantTypeCount::count))));
+                })
+                .sorted(Comparator.comparingLong(AssociationReportDTO.RestaurantIncidents::total).reversed()
+                        .thenComparing(AssociationReportDTO.RestaurantIncidents::name))
+                .toList();
+        return new AssociationReportDTO.Incidents(byType.values().stream().mapToLong(Long::longValue).sum(),
+                typeCounts(byType), byRestaurant);
+    }
+
+    private static List<AssociationReportDTO.TypeCount> typeCounts(Map<IncidentType, Long> counts) {
+        return counts.entrySet().stream()
+                .map(e -> new AssociationReportDTO.TypeCount(e.getKey(), e.getValue()))
+                .sorted(Comparator.comparingLong(AssociationReportDTO.TypeCount::count).reversed()
+                        .thenComparing(AssociationReportDTO.TypeCount::type))
                 .toList();
     }
 

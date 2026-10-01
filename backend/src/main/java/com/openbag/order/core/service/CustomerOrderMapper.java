@@ -58,7 +58,14 @@ public class CustomerOrderMapper {
         dto.setCourierLocation(courierLocation(order, now));
         dto.setReview(review == null ? null : OrderReviewDTO.from(review));
         dto.setReviewableUntil(ReviewService.reviewableUntil(order, review != null, now));
+        dto.setDeliveryPin(pinFor(order));
         return dto;
+    }
+
+    /** O PIN aparece para o cliente enquanto a entrega está em andamento e a loja exige */
+    static String pinFor(Order order) {
+        boolean active = !EnumSet.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED).contains(order.getStatus());
+        return active && !order.isPickup() && order.getRestaurant().requiresDeliveryPin() ? order.getDeliveryPin() : null;
     }
 
     private OrderDTO.Location courierLocation(Order order, LocalDateTime now) {

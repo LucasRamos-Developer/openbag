@@ -3,6 +3,8 @@ package com.openbag.delivery.dispatch.dto;
 import com.openbag.order.core.entity.OrderStatus;
 import com.openbag.order.core.entity.Order;
 import com.openbag.order.core.entity.OrderItem;
+import com.openbag.order.incident.entity.IncidentType;
+import com.openbag.order.incident.entity.OrderIncident;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -47,6 +49,10 @@ public class CourierOrderDTO {
     private Long routeId;
     private Integer routeSequence;
     private String neighborhood;
+    // A loja exige o PIN do cliente para concluir esta entrega
+    private boolean pinRequired;
+    // Tipos de ocorrência que o entregador já relatou nesta entrega
+    private List<IncidentType> reportedIncidents;
 
     public static CourierOrderDTO from(Order order) {
         return CourierOrderDTO.builder()
@@ -74,6 +80,8 @@ public class CourierOrderDTO {
                 .routeId(order.getRoute() != null ? order.getRoute().getId() : null)
                 .routeSequence(order.getRouteSequence())
                 .neighborhood(order.getDeliveryNeighborhood())
+                .pinRequired(order.getDeliveryPin() != null && order.getRestaurant().requiresDeliveryPin())
+                .reportedIncidents(order.getIncidents().stream().map(OrderIncident::getType).distinct().toList())
                 .build();
     }
 

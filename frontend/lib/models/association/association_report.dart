@@ -1,4 +1,5 @@
 import '../courier/courier_earnings.dart' show EarningsDay;
+import '../order/order_incident.dart';
 
 double _money(dynamic v) => (v as num?)?.toDouble() ?? 0;
 
@@ -11,6 +12,7 @@ class AssociationReport {
   final List<EarningsDay> daily;
   final List<AssociationMemberLine>? byMember;
   final List<AssociationRestaurantLine> byRestaurant;
+  final AssociationIncidents incidents;
   final ({int deliveries, double earnings})? mine;
 
   AssociationReport({
@@ -21,6 +23,7 @@ class AssociationReport {
     required this.daily,
     this.byMember,
     required this.byRestaurant,
+    required this.incidents,
     this.mine,
   });
 
@@ -39,6 +42,7 @@ class AssociationReport {
           ? null
           : [for (final m in json['byMember'] as List) AssociationMemberLine.fromJson(m)],
       byRestaurant: [for (final r in json['byRestaurant'] as List? ?? []) AssociationRestaurantLine.fromJson(r)],
+      incidents: AssociationIncidents.fromJson(json['incidents'] ?? const {}),
       mine: mine == null
           ? null
           : (deliveries: (mine['deliveries'] as num?)?.toInt() ?? 0, earnings: _money(mine['earnings'])),
@@ -132,5 +136,54 @@ class AssociationRestaurantLine {
         earnings: _money(json['earnings']),
         restaurantSubsidy: _money(json['restaurantSubsidy']),
         agreedRate: json['agreedRate'] ?? false,
+      );
+}
+
+typedef IncidentCount = ({IncidentType type, int count});
+
+List<IncidentCount> _typeCounts(dynamic list) => [
+      for (final t in list as List? ?? [])
+        (type: IncidentType.fromName(t['type']), count: (t['count'] as num?)?.toInt() ?? 0),
+    ];
+
+/// Ocorrências relatadas pelos cooperados no período, por tipo e por loja (a mais citada primeiro).
+/// Nunca por cooperado: ocorrência não é nota nem penalidade.
+class AssociationIncidents {
+  final int total;
+  final List<IncidentCount> byType;
+  final List<AssociationRestaurantIncidents> byRestaurant;
+
+  AssociationIncidents({required this.total, required this.byType, required this.byRestaurant});
+
+  factory AssociationIncidents.fromJson(Map<String, dynamic> json) => AssociationIncidents(
+        total: (json['total'] as num?)?.toInt() ?? 0,
+        byType: _typeCounts(json['byType']),
+        byRestaurant: [
+          for (final r in json['byRestaurant'] as List? ?? []) AssociationRestaurantIncidents.fromJson(r),
+        ],
+      );
+}
+
+class AssociationRestaurantIncidents {
+  final int restaurantId;
+  final String name;
+  final String? logoUrl;
+  final int total;
+  final List<IncidentCount> byType;
+
+  AssociationRestaurantIncidents({
+    required this.restaurantId,
+    required this.name,
+    this.logoUrl,
+    required this.total,
+    required this.byType,
+  });
+
+  factory AssociationRestaurantIncidents.fromJson(Map<String, dynamic> json) => AssociationRestaurantIncidents(
+        restaurantId: json['restaurantId'],
+        name: json['name'] ?? '',
+        logoUrl: json['logoUrl'],
+        total: (json['total'] as num?)?.toInt() ?? 0,
+        byType: _typeCounts(json['byType']),
       );
 }

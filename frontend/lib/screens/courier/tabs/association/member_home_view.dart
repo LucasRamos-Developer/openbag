@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/ui/ui.dart';
+import '../../../../models/cooperative/announcement.dart';
 import '../../../../models/cooperative/billing.dart';
 import '../../../../models/cooperative/community.dart';
 import '../../../../models/cooperative/ledger.dart';
@@ -14,10 +15,16 @@ import '../../../../widgets/cooperative/fund_card.dart';
 import '../../../../widgets/courier/membership_card.dart';
 import '../../courier_section.dart';
 
-typedef _HomeData = ({MyInvoices invoices, List<MemberAddon> addons, SolidarityFund fund, List<Poll> polls});
+typedef _HomeData = ({
+  MyInvoices invoices,
+  List<MemberAddon> addons,
+  SolidarityFund fund,
+  List<Poll> polls,
+  List<Announcement> announcements,
+});
 
-/// Resumo do cooperado, pensado para o celular: o que pede ação primeiro (adicional proposto, fatura em aberto,
-/// enquete para votar), depois a fatura do mês e a caixinha
+/// Resumo do cooperado, pensado para o celular: o que pede ação primeiro (comunicado não lido, adicional proposto,
+/// fatura em aberto, enquete para votar), depois a fatura do mês e a caixinha
 class MemberHomeView extends StatefulWidget {
   final CourierProfile profile;
 
@@ -38,12 +45,14 @@ class _MemberHomeViewState extends State<MemberHomeView> {
       _service.fetchAddons(),
       _service.fetchFund(),
       _service.fetchPolls(),
+      _service.fetchAnnouncements(),
     ]);
     return (
       invoices: results[0] as MyInvoices,
       addons: results[1] as List<MemberAddon>,
       fund: results[2] as SolidarityFund,
       polls: results[3] as List<Poll>,
+      announcements: results[4] as List<Announcement>,
     );
   }
 
@@ -73,11 +82,34 @@ class _MemberHomeViewState extends State<MemberHomeView> {
         final open = data.invoices.open;
         final toVote = data.polls.where((p) => p.canVote).toList();
         final current = data.invoices.current;
+        final unread = data.announcements.where((a) => !a.read).toList();
 
         return AppPageListView(
           top: 8,
           maxWidth: 820,
           children: [
+            for (final a in unread.take(2)) ...[
+              _ActionCard(
+                icon: a.type.icon,
+                title: a.eventAt != null
+                    ? '${a.type.label} · ${formatDate(a.eventAt)} às ${formatTime(a.eventAt)}'
+                    : a.type.label,
+                text: a.title,
+                action: 'Ler',
+                onTap: () => context.go(MemberAreaTab.announcements.path),
+              ),
+              const SizedBox(height: 12),
+            ],
+            if (unread.length > 2) ...[
+              _ActionCard(
+                icon: Icons.campaign_outlined,
+                title: 'Mais ${unread.length - 2} ${unread.length - 2 == 1 ? 'comunicado' : 'comunicados'} sem ler',
+                text: 'Veja todos no mural da associação.',
+                action: 'Ver comunicados',
+                onTap: () => context.go(MemberAreaTab.announcements.path),
+              ),
+              const SizedBox(height: 12),
+            ],
             for (final addon in proposed) ...[
               _AddonProposal(addon: addon, onAnswer: (accept) => _answer(addon, accept)),
               const SizedBox(height: 12),

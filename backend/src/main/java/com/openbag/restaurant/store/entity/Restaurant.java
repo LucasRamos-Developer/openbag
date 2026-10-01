@@ -152,6 +152,10 @@ public class Restaurant {
     @Column(name = "courier_no_show_minutes")
     private Integer courierNoShowMinutes;
 
+    /** Exige o PIN do cliente para concluir as entregas dos pedidos do app (nulo = não exige) */
+    @Column(name = "require_delivery_pin")
+    private Boolean requireDeliveryPin;
+
     // ============= Rotas =============
 
     // Junta entregas do mesmo bairro/direção e chama o entregador perto de ficarem prontas
@@ -367,5 +371,9 @@ public class Restaurant {
             }
         }
         return end;
+    }
+
+    public boolean requiresDeliveryPin() {
+        return Boolean.TRUE.equals(requireDeliveryPin);
     }
 }

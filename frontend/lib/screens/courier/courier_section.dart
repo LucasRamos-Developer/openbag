@@ -31,6 +31,7 @@ enum CourierSection implements PanelSection {
 /// Sub-abas da área do cooperado (`/entregador/associacao/<aba>`)
 enum MemberAreaTab {
   home('resumo', 'Resumo', Icons.home_outlined),
+  announcements('comunicados', 'Comunicados', Icons.campaign_outlined),
   invoices('faturas', 'Faturas', Icons.receipt_long_outlined),
   benefits('convenios', 'Convênios', Icons.handshake_outlined),
   polls('enquetes', 'Enquetes', Icons.how_to_vote_outlined),

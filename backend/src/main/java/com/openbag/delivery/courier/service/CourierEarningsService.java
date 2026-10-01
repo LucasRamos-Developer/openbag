@@ -5,9 +5,11 @@ import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.delivery.courier.dto.CourierEarningsDTO;
 import com.openbag.delivery.courier.dto.WorkHistoryDTO;
+import com.openbag.delivery.courier.entity.CourierShift;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.delivery.courier.repository.CourierShiftRepository;
 import com.openbag.delivery.courier.repository.DeliveryPersonRepository;
+import com.openbag.delivery.dispatch.repository.DeliveryOfferRepository;
 import com.openbag.delivery.link.repository.RestaurantCourierLinkRepository;
 import com.openbag.order.core.entity.Order;
 import com.openbag.order.core.repository.OrderRepository;
@@ -55,11 +57,14 @@ public class CourierEarningsService {
     private RestaurantCourierLinkRepository linkRepository;
 
     @Autowired
+    private DeliveryOfferRepository offerRepository;
+
+    @Autowired
     private Clock clock;
 
     /**
-     * Resumo de hoje, da semana (desde segunda) e do mês, mais a série diária e as entregas de [from, to]
-     * (padrão: últimos 7 dias)
+     * Resumo de hoje, da semana (desde segunda) e do mês, mais a série diária, as entregas e os km, tempo e médias
+     * de [from, to] (padrão: últimos 7 dias). Só o próprio entregador vê.
      */
     public CourierEarningsDTO getEarnings(User user, LocalDate from, LocalDate to) {
         DeliveryPerson courier = findCourier(user);
@@ -74,6 +79,16 @@ public class CourierEarningsService {
         }
 
         List<Order> period = delivered(courier, start, end);
+        List<Order> todayOrders = delivered(courier, today, today);
+        List<Order> weekOrders = delivered(courier, today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)), today);
+        List<Order> monthOrders = delivered(courier, today.withDayOfMonth(1), today);
+        Map<Long, Double> pickupKm = pickupKm(courier, List.of(period, todayOrders, weekOrders, monthOrders));
+        LocalDateTime periodStart = start.atStartOfDay();
+        LocalDateTime periodEnd = end.plusDays(1).atStartOfDay();
+        List<CourierShift> periodShifts = shiftRepository.findOverlapping(courier.getId(), periodStart, periodEnd);
+        List<CourierWorkStats.Interval> shifts = periodShifts.stream()
+                .map(s -> new CourierWorkStats.Interval(s.getStartedAt(), s.getEndedAt()))
+                .toList();
         Map<LocalDate, List<Order>> byDay = period.stream()
                 .collect(Collectors.groupingBy(o -> o.getDeliveredAt().toLocalDate()));
         List<CourierEarningsDTO.Day> daily = new ArrayList<>();
@@ -83,17 +98,20 @@ public class CourierEarningsService {
         }
 
         return CourierEarningsDTO.builder()
-                .today(total(delivered(courier, today, today)))
-                .week(total(delivered(courier, today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)), today)))
-                .month(total(delivered(courier, today.withDayOfMonth(1), today)))
+                .today(total(todayOrders, pickupKm))
+                .week(total(weekOrders, pickupKm))
+                .month(total(monthOrders, pickupKm))
                 .from(start)
                 .to(end)
-                .period(total(period))
+                .period(total(period, pickupKm))
                 .daily(daily)
                 .deliveries(period.stream()
                         .map(o -> new CourierEarningsDTO.Delivery(o.getId(), o.getDisplayCode(), o.getDeliveredAt(),
                                 o.getRestaurant().getName(), o.getDeliveryDistanceKm(), fee(o)))
                         .toList())
+                .stats(CourierWorkStats.of(period, pickupKm, shifts, periodStart, periodEnd, LocalDateTime.now(clock)))
+                .cost(VehicleCostEstimator.estimate(period, pickupKm, periodShifts, courier.getActiveVehicle(),
+                        sum(period)))
                 .build();
     }
 
@@ -139,8 +157,18 @@ public class CourierEarningsService {
                 to.plusDays(1).atStartOfDay());
     }
 
-    private static CourierEarningsDTO.Total total(List<Order> orders) {
-        return new CourierEarningsDTO.Total(sum(orders), orders.size());
+    private static CourierEarningsDTO.Total total(List<Order> orders, Map<Long, Double> pickupKm) {
+        return new CourierEarningsDTO.Total(sum(orders), orders.size(), CourierWorkStats.totalKm(orders, pickupKm));
+    }
+
+    /** Km até a retirada de todos os pedidos das listas, numa consulta só */
+    private Map<Long, Double> pickupKm(DeliveryPerson courier, List<List<Order>> lists) {
+        Set<Long> ids = lists.stream().flatMap(List::stream).map(Order::getId).collect(Collectors.toSet());
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+        return offerRepository.findAcceptedPickupKm(courier.getId(), ids).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Double) row[1], (a, b) -> a));
     }
 
     private static BigDecimal sum(List<Order> orders) {

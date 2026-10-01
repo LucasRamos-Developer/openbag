@@ -4,7 +4,10 @@ import com.openbag.order.core.entity.OrderStatus;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.delivery.courier.dto.CourierEarningsDTO;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
+import com.openbag.delivery.courier.entity.CourierShift;
+import com.openbag.delivery.courier.repository.CourierShiftRepository;
 import com.openbag.delivery.courier.repository.DeliveryPersonRepository;
+import com.openbag.delivery.dispatch.repository.DeliveryOfferRepository;
 import com.openbag.order.core.entity.Order;
 import com.openbag.order.core.repository.OrderRepository;
 import com.openbag.restaurant.store.entity.Restaurant;
@@ -25,6 +28,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
@@ -44,6 +48,12 @@ class CourierEarningsServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
+
+    @Mock
+    private CourierShiftRepository shiftRepository;
+
+    @Mock
+    private DeliveryOfferRepository offerRepository;
 
     @InjectMocks
     private CourierEarningsService service;
@@ -104,5 +114,38 @@ class CourierEarningsServiceTest {
     void rejectsInvertedOrTooLongPeriods() {
         assertThatThrownBy(() -> service.getEarnings(user, TODAY, TODAY.minusDays(1))).isInstanceOf(BadRequestException.class);
         assertThatThrownBy(() -> service.getEarnings(user, TODAY.minusDays(200), TODAY)).isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void periodStatsUseThePickupKmOfTheAcceptedOffersAndTheShifts() {
+        Order first = delivered(TODAY.atTime(12, 0), "10.00");
+        first.setId(1L);
+        first.setDeliveryDistanceKm(3.0);
+        first.setAssignedAt(TODAY.atTime(11, 30));
+        Order second = delivered(TODAY.atTime(14, 0), "8.00");
+        second.setId(2L);
+        second.setDeliveryDistanceKm(2.0);
+        second.setAssignedAt(TODAY.atTime(13, 40));
+        when(orderRepository.findDeliveredByCourierBetween(eq(5L), any(), any())).thenReturn(List.of(first, second));
+        when(offerRepository.findAcceptedPickupKm(eq(5L), anyCollection()))
+                .thenReturn(List.<Object[]>of(new Object[]{1L, 1.0}));
+        CourierShift shift = new CourierShift();
+        shift.setStartedAt(TODAY.atTime(11, 0));
+        shift.setEndedAt(TODAY.atTime(14, 0));
+        when(shiftRepository.findOverlapping(eq(5L), any(), any())).thenReturn(List.of(shift));
+
+        CourierEarningsDTO dto = service.getEarnings(user, TODAY, TODAY);
+
+        assertThat(dto.getToday().distanceKm()).as("3 + 2 com o pedido e 1 até a retirada").isEqualTo(6.0);
+        CourierEarningsDTO.Stats stats = dto.getStats();
+        assertThat(stats.deliveryKm()).isEqualTo(5.0);
+        assertThat(stats.pickupKm()).isEqualTo(1.0);
+        assertThat(stats.onlineMinutes()).isEqualTo(180);
+        assertThat(stats.deliveringMinutes()).isEqualTo(50);
+        assertThat(stats.perDelivery().amount()).isEqualByComparingTo("9.00");
+        assertThat(stats.perDelivery().distanceKm()).isEqualTo(2.5);
+        assertThat(stats.perDelivery().minutes()).isEqualTo(25);
+        assertThat(stats.perKm()).isEqualByComparingTo("3.00");
+        assertThat(stats.perHour()).isEqualByComparingTo("6.00");
     }
 }

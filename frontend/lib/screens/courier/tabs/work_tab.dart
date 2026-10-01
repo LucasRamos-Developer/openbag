@@ -9,7 +9,9 @@ import '../../../services/courier_work_service.dart';
 import '../../../utils/formatters.dart';
 import '../../../utils/maps.dart';
 import '../../../widgets/courier/active_delivery_card.dart';
+import '../../../widgets/courier/delivery_pin_dialog.dart';
 import '../../../widgets/courier/offer_card.dart';
+import '../../../widgets/courier/report_incident_sheet.dart';
 import '../../../widgets/order/live_indicator.dart';
 import '../../../widgets/restaurant/restaurant_logo.dart';
 
@@ -66,6 +68,12 @@ class _WorkTabState extends State<WorkTab> {
   }
 
   Future<void> _deliver(CourierOrder order) async {
+    if (order.pinRequired) {
+      final pin = await showDeliveryPinDialog(context,
+          charge: '${formatMoney(order.totalAmount)} (${order.paymentMethod.label})');
+      if (pin != null) await _run(() => _work.deliver(order, pin: pin), success: 'Entrega concluída!');
+      return;
+    }
     final confirmed = await AppDialog.confirm(
       context,
       title: 'Confirmar entrega?',
@@ -73,6 +81,12 @@ class _WorkTabState extends State<WorkTab> {
       confirmLabel: 'Entreguei',
     );
     if (confirmed) await _run(() => _work.deliver(order), success: 'Entrega concluída!');
+  }
+
+  Future<void> _reportIncident(CourierOrder order) async {
+    final report = await showReportIncidentSheet(context, reported: order.reportedIncidents);
+    if (report == null || !mounted) return;
+    await _run(() => _work.reportIncident(order, report.type, note: report.note), success: 'A loja foi avisada');
   }
 
   @override
@@ -129,6 +143,7 @@ class _WorkTabState extends State<WorkTab> {
                         busy: _busy,
                         onPickUp: () => _run(() => _work.pickUp(state.activeOrders[i]), success: 'Pedido retirado'),
                         onDeliver: () => _deliver(state.activeOrders[i]),
+                        onReportIncident: () => _reportIncident(state.activeOrders[i]),
                       ),
                       const SizedBox(height: 16),
                     ],
@@ -138,6 +153,7 @@ class _WorkTabState extends State<WorkTab> {
                       busy: _busy,
                       onPickUp: () => _run(() => _work.pickUp(state.activeOrder!), success: 'Boa entrega!'),
                       onDeliver: () => _deliver(state.activeOrder!),
+                      onReportIncident: () => _reportIncident(state.activeOrder!),
                     ),
                     const SizedBox(height: 16),
                   ] else if (showOffer) ...[

@@ -7,6 +7,7 @@ import com.openbag.restaurant.cash.entity.CourierSettlement;
 import com.openbag.delivery.route.entity.DeliveryRoute;
 import com.openbag.delivery.link.entity.StaffCourier;
 import com.openbag.association.core.entity.Organization;
+import com.openbag.order.incident.entity.OrderIncident;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -247,6 +248,21 @@ public class Order {
     @Column(name = "courier_settled_at")
     private LocalDateTime courierSettledAt;
 
+    // PIN de entrega: só nos pedidos do app; o cliente mostra ao entregador quando a loja exige
+    @Column(name = "delivery_pin", length = 4)
+    private String deliveryPin;
+
+    // Tentativas erradas do PIN (depois do limite, só a loja confirma a entrega)
+    @Column(name = "delivery_pin_attempts", nullable = false)
+    private int deliveryPinAttempts = 0;
+
+    // Onde o entregador estava ao marcar "Entreguei"
+    @Column(name = "delivered_latitude")
+    private Double deliveredLatitude;
+
+    @Column(name = "delivered_longitude")
+    private Double deliveredLongitude;
+
     // Desde quando o pedido espera um entregador sem nenhum disponível
     @Column(name = "searching_courier_since")
     private LocalDateTime searchingCourierSince;
@@ -256,6 +272,11 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderTracking> trackings = new ArrayList<>();
+
+    // Ocorrências relatadas pelo entregador, da mais antiga para a mais nova
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    @OrderBy("createdAt ASC")
+    private List<OrderIncident> incidents = new ArrayList<>();
 
     // Constructors
     public Order(User user, Restaurant restaurant, BigDecimal subtotal, BigDecimal deliveryFee, 

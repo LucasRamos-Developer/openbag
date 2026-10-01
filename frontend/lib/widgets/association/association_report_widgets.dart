@@ -94,6 +94,76 @@ class AssociationRestaurantList extends StatelessWidget {
   }
 }
 
+String _times(int n) => '$n ${n == 1 ? 'vez' : 'vezes'}';
+
+/// Ocorrências do período: quantas de cada tipo e, por loja, quais aconteceram.
+/// No celular cada loja ocupa a largura toda, com os tipos embaixo do nome.
+class AssociationIncidentsView extends StatelessWidget {
+  final AssociationIncidents incidents;
+
+  const AssociationIncidentsView({super.key, required this.incidents});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.appColors;
+    if (incidents.total == 0) {
+      return Text('Nenhuma ocorrência relatada no período.', style: TextStyle(color: c.textMuted));
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final t in incidents.byType)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.warningLighter.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(t.type.icon, size: 16, color: AppColors.warningDarker),
+                    const SizedBox(width: 6),
+                    Text('${t.type.label} · ${t.count}', style: TextStyle(color: c.text, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        for (var i = 0; i < incidents.byRestaurant.length; i++) ...[
+          if (i > 0) Divider(height: 16, color: c.border),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RestaurantLogo(logoUrl: incidents.byRestaurant[i].logoUrl, name: incidents.byRestaurant[i].name, size: 36),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(incidents.byRestaurant[i].name, style: TextStyle(fontWeight: FontWeight.w600, color: c.text)),
+                    Text(
+                      incidents.byRestaurant[i].byType.map((t) => '${t.type.label}: ${_times(t.count)}').join(' · '),
+                      style: TextStyle(color: c.textMuted, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text('${incidents.byRestaurant[i].total}', style: TextStyle(fontWeight: FontWeight.w700, color: c.text)),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 /// Entregas e ganhos por cooperado (só o gestor vê)
 class AssociationMemberList extends StatelessWidget {
   final List<AssociationMemberLine> lines;

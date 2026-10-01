@@ -11,6 +11,9 @@ import com.openbag.delivery.courier.repository.DeliveryPersonRepository;
 import com.openbag.association.partnership.repository.RestaurantPartnershipRepository;
 import com.openbag.order.core.entity.Order;
 import com.openbag.order.core.repository.OrderRepository;
+import com.openbag.order.incident.entity.IncidentType;
+import com.openbag.order.incident.repository.OrderIncidentRepository;
+import com.openbag.order.incident.repository.OrderIncidentRepository.RestaurantTypeCount;
 import com.openbag.association.core.entity.AssociationMembership;
 import com.openbag.association.core.entity.DeliveryRate;
 import com.openbag.association.core.entity.Organization;
@@ -52,6 +55,7 @@ class AssociationReportServiceTest {
     @Mock private AssociationMembershipRepository membershipRepository;
     @Mock private RestaurantPartnershipRepository partnershipRepository;
     @Mock private DeliveryPersonRepository deliveryPersonRepository;
+    @Mock private OrderIncidentRepository incidentRepository;
     @Spy private Clock clock = Clock.fixed(TODAY.atTime(12, 0).atZone(ZONE).toInstant(), ZONE);
 
     @InjectMocks
@@ -196,5 +200,36 @@ class AssociationReportServiceTest {
                 .isInstanceOf(BadRequestException.class);
         assertThatThrownBy(() -> service.forManager(10L, TODAY, TODAY.minusDays(1)))
                 .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void incidentsAreCountedByTypeAndByRestaurantWithTheMostCitedFirst() {
+        List<RestaurantTypeCount> rows = List.of(
+                new RestaurantTypeCount(1L, "Cantina", "cantina", null, IncidentType.ORDER_NOT_READY, 1),
+                new RestaurantTypeCount(2L, "Burger", "burger", null, IncidentType.ORDER_NOT_READY, 3),
+                new RestaurantTypeCount(2L, "Burger", "burger", null, IncidentType.CUSTOMER_NOT_FOUND, 1),
+                new RestaurantTypeCount(1L, "Cantina", "cantina", null, IncidentType.WRONG_ADDRESS, 2));
+
+        AssociationReportDTO.Incidents incidents = AssociationReportService.incidents(rows);
+
+        assertThat(incidents.total()).isEqualTo(7);
+        assertThat(incidents.byType()).containsExactly(
+                new AssociationReportDTO.TypeCount(IncidentType.ORDER_NOT_READY, 4),
+                new AssociationReportDTO.TypeCount(IncidentType.WRONG_ADDRESS, 2),
+                new AssociationReportDTO.TypeCount(IncidentType.CUSTOMER_NOT_FOUND, 1));
+        assertThat(incidents.byRestaurant()).extracting(AssociationReportDTO.RestaurantIncidents::name)
+                .containsExactly("Burger", "Cantina");
+        assertThat(incidents.byRestaurant().get(0).byType()).containsExactly(
+                new AssociationReportDTO.TypeCount(IncidentType.ORDER_NOT_READY, 3),
+                new AssociationReportDTO.TypeCount(IncidentType.CUSTOMER_NOT_FOUND, 1));
+    }
+
+    @Test
+    void withoutIncidentsTheReportShowsZero() {
+        AssociationReportDTO.Incidents incidents = AssociationReportService.incidents(List.of());
+
+        assertThat(incidents.total()).isZero();
+        assertThat(incidents.byType()).isEmpty();
+        assertThat(incidents.byRestaurant()).isEmpty();
     }
 }

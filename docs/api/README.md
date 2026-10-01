@@ -1,6 +1,6 @@
 # API REST do OpenBag
 
-> Descreve a versão 0.4.0. A lista completa e sempre atualizada fica no **Swagger**: `http://localhost:8080/api/swagger-ui.html`. O Swagger só existe em desenvolvimento e fica desligado no perfil `prod`.
+> Descreve a versão 0.5.0. A lista completa e sempre atualizada fica no **Swagger**: `http://localhost:8080/api/swagger-ui.html`. O Swagger só existe em desenvolvimento e fica desligado no perfil `prod`.
 
 Todas as rotas ficam sob o prefixo **`/api`**. Os exemplos abaixo omitem esse prefixo.
 
@@ -102,8 +102,11 @@ As tabelas mostram as rotas principais de cada área. Todas as rotas estão no S
 | `POST /me/courier/work/online` e `/offline`, `/checkin/{restaurantId}` e `/checkout` | Turno livre ou fixo |
 | `PUT /me/courier/work/location` | Posição (o servidor aceita no máximo uma a cada 10 s) |
 | `POST /me/courier/work/offers/{id}/accept` e `/decline` | Responder a oferta. Repetir o aceite devolve a mesma entrega. |
-| `POST /me/courier/work/orders/{id}/pickup` e `/deliver` | Retirada e entrega |
-| `/me/association/**` | Área do cooperado: vínculo, resumo, faturas, adicionais, caixinha, convênios, enquetes e documentos |
+| `POST /me/courier/work/orders/{id}/pickup` e `/deliver` | Retirada e entrega. O `/deliver` aceita `pin` (quando a loja exige o código do cliente), `latitude` e `longitude`. |
+| `GET /me/courier/earnings?from=&to=` | Ganhos de hoje, da semana e do mês (com km) e do período, com km, tempo e médias (`stats`). Só o próprio entregador. Traz também o resultado estimado (`cost`) com os custos do veículo. |
+| `PUT /me/courier/vehicles/{id}/costs` | Custos do veículo: consumo, preço do combustível, manutenção e depreciação por km (todos opcionais; vazio apaga) |
+| `POST /me/courier/work/orders/{id}/incidents` | Relatar uma ocorrência (`type`, `note`) na entrega em andamento. A loja vê no pedido; o cliente não. |
+| `/me/association/**` | Área do cooperado: vínculo, resumo, faturas, adicionais, caixinha, comunicados (com `POST /announcements/{id}/read`), convênios, enquetes e documentos |
 
 ### Associação ou cooperativa (gestor)
 
@@ -111,6 +114,7 @@ As tabelas mostram as rotas principais de cada área. Todas as rotas estão no S
 |---|---|
 | `GET /associations/me`, `GET` e `PUT /associations/{id}`, `PUT /associations/{id}/delivery-rate` | Dados e tabela de entrega |
 | `/associations/{id}/members/**` e `/invites/**` | Associados (com exportação em CSV) e convites |
+| `/associations/{id}/announcements` | Comunicados: listar (com quantos leram), publicar, corrigir (`PUT /{aid}`) e arquivar ou restaurar (`POST /{aid}/archive` ou `/restore`) |
 | `/associations/{id}/partnerships/**` e `/reports` | Lojas parceiras, tabela especial e relatórios |
 | `/associations/{id}/fee-policy`, `/addon-plans`, `/invoices/**`, `/ledger` e `/finance/summary` | Mensalidade, adicionais, faturas (baixa, dispensa e reabertura), livro-caixa e painel financeiro |
 | `/associations/{id}/benefits`, `/polls` e `/documents` | Convênios, enquetes e atas |

@@ -27,6 +27,9 @@ class RestaurantOrdersService extends ChangeNotifier {
   /// Chamado quando um pedido é aceito (para imprimir a comanda automaticamente)
   void Function(Order order)? onAccepted;
 
+  /// Chamado quando o entregador relata uma ocorrência (a tela mostra o aviso)
+  void Function(Order order, OrderIncident incident)? onIncident;
+
   int? get restaurantId => _restaurantId;
   bool get connected => _realtime.connected;
   bool get isLoading => _isLoading;
@@ -104,6 +107,13 @@ class RestaurantOrdersService extends ChangeNotifier {
     // Quando a própria tela aceita, o pedido já está CONFIRMED localmente e não toca de novo.
     if (order.status == OrderStatus.CONFIRMED && previous?.status != OrderStatus.CONFIRMED) {
       alertSound.chime();
+    }
+    // Ocorrência nova relatada pelo entregador: toca e avisa
+    final known = {for (final i in previous?.incidents ?? const <OrderIncident>[]) i.id};
+    final fresh = order.incidents.where((i) => !known.contains(i.id)).toList();
+    if (previous != null && fresh.isNotEmpty) {
+      alertSound.chime();
+      onIncident?.call(order, fresh.last);
     }
   }
 

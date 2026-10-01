@@ -55,6 +55,7 @@ enum FinanceTab {
 
 /// Sub-abas da Assembleia (`/associacao/assembleia/<aba>`)
 enum CommunityTab {
+  announcements('comunicados', 'Comunicados', Icons.campaign_outlined),
   polls('enquetes', 'Enquetes', Icons.poll_outlined),
   documents('documentos', 'Atas e documentos', Icons.folder_outlined);
 
@@ -63,7 +64,7 @@ enum CommunityTab {
   final IconData icon;
   const CommunityTab(this.slug, this.label, this.icon);
 
-  static CommunityTab fromSlug(String? slug) => values.where((t) => t.slug == slug).firstOrNull ?? polls;
+  static CommunityTab fromSlug(String? slug) => values.where((t) => t.slug == slug).firstOrNull ?? announcements;
 
   String get path => '${AssociationSection.community.path}/$slug';
 }

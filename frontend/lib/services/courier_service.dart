@@ -93,6 +93,23 @@ class CourierService extends ChangeNotifier {
     return vehicle;
   }
 
+  /// Custos do veículo para o resultado estimado (vazio apaga)
+  Future<void> updateVehicleCosts(int id, {
+    double? fuelConsumptionKmPerLiter,
+    double? fuelPricePerLiter,
+    double? maintenancePerKm,
+    double? depreciationPerKm,
+  }) async {
+    final updated = Vehicle.fromJson(await _api.put('$_base/vehicles/$id/costs', data: {
+      'fuelConsumptionKmPerLiter': fuelConsumptionKmPerLiter,
+      'fuelPricePerLiter': fuelPricePerLiter,
+      'maintenancePerKm': maintenancePerKm,
+      'depreciationPerKm': depreciationPerKm,
+    }));
+    _vehicles = [for (final v in _vehicles) v.id == id ? updated : v];
+    notifyListeners();
+  }
+
   Future<void> updateVehiclePhoto(int id, XFile file) async {
     await _api.post('$_base/vehicles/$id/photo', data: await _form(file));
     await _reloadVehiclesAndProfile();

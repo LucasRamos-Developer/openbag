@@ -1,8 +1,8 @@
 # 📚 Documentação do OpenBag
 
-> Versão da documentação: **0.4.0**, atualizada em 2026-09-29. Veja o que mudou no [CHANGELOG](../CHANGELOG.md).
+> Versão da documentação: **0.5.0**, atualizada em 2026-10-01. Veja o que mudou no [CHANGELOG](../CHANGELOG.md).
 >
-> **Em andamento:** a 0.5.0 (operação do dia a dia), em cinco entregas pequenas, começando pelas ocorrências ligadas ao pedido. O resumo está na seção [Versões e roadmap](../README.md#versões-e-roadmap) do README.
+> **Em andamento:** a 0.5.0 (operação do dia a dia) foi lançada. A próxima é a 0.6.0 (auditoria de dados). O resumo está na seção [Versões e roadmap](../README.md#versões-e-roadmap) do README.
 
 ## 📖 Estrutura da documentação
 
@@ -11,7 +11,7 @@
 - **[README principal](../README.md)**: proposta, telas, roadmap e contato.
 - **[CHANGELOG](../CHANGELOG.md)**: histórico de versões, regras do versionamento semântico e roadmap.
 - **[Roadmap 0.4.0](roadmap/0.4.0-seguranca.md)**: segurança e integridade dos dados. Foi lançada, com o que foi feito em cada item, o checklist do OWASP Top 10 e o que ficou para depois.
-- **[Roadmap 0.5.0](roadmap/0.5.0-operacao.md)**: operação do dia a dia, a próxima versão, com o estado de cada item, o que falta e o que ficou para depois da 1.0.
+- **[Roadmap 0.5.0](roadmap/0.5.0-operacao.md)**: operação do dia a dia, lançada, com o estado de cada item, o que falta e o que ficou para depois da 1.0.
 - **[Layout](../layout/)**: todas as capturas de tela da versão atual.
 - **[Guia de contribuição](../CONTRIBUTING.md)**: como contribuir com o projeto.
 
@@ -59,7 +59,7 @@ docs/
 │   └── README.md           # API REST
 ├── roadmap/
 │   ├── 0.4.0-seguranca.md  # 0.4.0: segurança e integridade (lançada)
-│   └── 0.5.0-operacao.md   # 0.5.0: operação do dia a dia (próxima)
+│   └── 0.5.0-operacao.md   # 0.5.0: operação do dia a dia (lançada)
 └── guides/
     └── openstreetmap.md
 ```

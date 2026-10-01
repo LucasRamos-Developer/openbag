@@ -4,7 +4,7 @@ Todas as mudanças relevantes do OpenBag ficam registradas aqui.
 
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e as versões seguem o [Versionamento Semântico (SemVer)](https://semver.org/lang/pt-BR/).
 
-**Versão atual: 0.4.0**
+**Versão atual: 0.5.0**
 
 ---
 
@@ -46,7 +46,48 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 
 ## [Não lançado]
 
-Nada ainda. A próxima versão é a [0.5.0](#050-operação-do-dia-a-dia).
+Nada ainda. A próxima versão é a [0.6.0](#060-auditoria-de-dados).
+
+---
+
+## [0.5.0] - 2026-10-01
+
+Operação do dia a dia: cinco entregas pequenas, cada uma testada de ponta a ponta no celular.
+
+### Adicionado
+
+- **Ocorrências ligadas ao pedido** (item 1 da 0.5.0):
+  - Na entrega em andamento, o entregador toca em **Relatar problema** e escolhe o tipo: pedido não estava pronto, endereço incorreto, cliente não localizado, pedido não confere, restaurante fechado, problema no veículo, sem acesso ao local ou outro problema (com uma observação).
+  - A loja vê na hora: toca o aviso, aparece um toast, uma linha no card do pedido e a seção **Ocorrências** na ficha, com quem relatou e quando. O cliente não vê.
+  - O relatório da cooperativa mostra as ocorrências por tipo e por loja. Elas nunca aparecem por cooperado: não são nota nem penalidade.
+  - `POST /me/courier/work/orders/{id}/incidents` e a tabela `order_incidents` (V6).
+- **Km, tempo e médias na aba Ganhos** (item 2 da 0.5.0):
+  - Hoje, semana e mês mostram os km rodados, somando o trecho com o pedido e o trecho até a retirada.
+  - O card **Km, tempo e médias** do período tem seis quadros, em duas colunas no celular:
+    - km com o pedido e km até a loja;
+    - tempo em turno, com o tempo com pedido;
+    - médias por entrega (valor, km e minutos);
+    - R$ por km e R$ por hora.
+  - O período ganhou a opção "Hoje".
+  - Os km são estimados pela distância entre os pontos, e não medidos pelo GPS.
+  - Numa rota, o mesmo minuto conta uma vez.
+  - Sem base para a conta, a média fica vazia, em vez de zero.
+  - Só o próprio entregador vê.
+- **Custo estimado do veículo** (item 3 da 0.5.0):
+  - O entregador informa, se quiser, o consumo e o preço do combustível, a manutenção por km e a depreciação por km de cada veículo (`PUT /me/courier/vehicles/{id}/costs`, V7).
+  - Na aba Ganhos, o card **Resultado estimado** mostra os ganhos, o custo de cada parte e a sobra estimada do período: km × (preço ÷ consumo + manutenção + depreciação).
+  - Cada entrega usa o veículo do turno em que foi feita. Bicicleta e a pé não têm combustível.
+  - Sem custos informados, o card convida a preencher em vez de mostrar zero. Quando falta o custo de um veículo usado, ele diz qual.
+  - É sempre uma estimativa, e o card avisa.
+- **Comunicados da cooperativa** (item 4 da 0.5.0):
+  - O gestor publica no mural da associação, na aba **Comunicados** da Assembleia: aviso, reunião (com data e hora), mudança na operação, alteração de valor, nova parceria ou treinamento. Dá para corrigir e arquivar, e ele vê quantos cooperados leram.
+  - O cooperado vê os comunicados na área dele. Os não lidos aparecem no topo do **Resumo**, e um toque marca como lido.
+  - Rotas em `/associations/{id}/announcements` e `/me/association/announcements` (V8).
+- **PIN de entrega** (item 5 da 0.5.0):
+  - A loja pode exigir, nas regras de entrega, o código do cliente para concluir as entregas dos pedidos do app.
+  - O cliente vê um código de 4 dígitos no pedido, e o entregador o digita em "Entreguei". Com o código errado, a entrega não é concluída. Depois de 5 erros, só a loja confirma.
+  - Pedidos do balcão, do telefone e do WhatsApp seguem com a confirmação simples.
+  - A posição do entregador no momento da entrega fica registrada no pedido (V9).
 
 ---
 
@@ -324,9 +365,9 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 | 0.1.0 | MVP | Lançada |
 | 0.2.0 | Operação do restaurante, associações e personalização | Lançada |
 | 0.3.0 | Entregador, cooperativa e cliente | Lançada (sem tag; o código está na v0.4.0) |
-| 0.4.0 | Segurança, integridade dos dados e pedido do balcão | **Atual** |
-| 0.5.0 | Operação do dia a dia | Próxima |
-| 0.6.0 | Auditoria de dados | Planejada |
+| 0.4.0 | Segurança, integridade dos dados e pedido do balcão | Lançada |
+| 0.5.0 | Operação do dia a dia | **Atual** |
+| 0.6.0 | Auditoria de dados | Próxima |
 | 0.7.0 | Pronto para o piloto | Planejada |
 | 1.0.0 | Primeira versão estável (piloto real) | Planejada |
 
@@ -353,11 +394,11 @@ O detalhe de cada item, com o que foi feito e o que ficou para depois, está em 
 
 ### 0.5.0: Operação do dia a dia
 O detalhe de cada item, com o código em que ele se apoia e o que falta, está em [docs/roadmap/0.5.0-operacao.md](docs/roadmap/0.5.0-operacao.md).
-- Ocorrências ligadas ao pedido: pedido não pronto, cliente não localizado, endereço incorreto e outras.
-- Km, tempo em operação e médias (R$ por km e R$ por hora) na aba Ganhos do entregador.
-- Custo estimado do veículo (combustível, manutenção e depreciação) e resultado estimado.
-- Comunicados da cooperativa para os cooperados.
-- PIN de entrega, que a loja pode exigir.
+- ~~Ocorrências ligadas ao pedido~~: o entregador relata, a loja vê na hora e a cooperativa vê por tipo e por loja (concluído).
+- ~~Km, tempo em operação e médias (R$ por km e R$ por hora) na aba Ganhos do entregador~~ (concluído).
+- ~~Custo estimado do veículo (combustível, manutenção e depreciação) e resultado estimado~~ (concluído).
+- ~~Comunicados da cooperativa para os cooperados~~ (concluído).
+- ~~PIN de entrega, que a loja pode exigir~~ (concluído).
 
 ### 0.6.0: Auditoria de dados
 - Trilha de auditoria: quem mudou o quê e quando, com o valor anterior e o novo, para pedidos, cardápio e preços, caixa, ganhos e vínculos.
@@ -389,7 +430,8 @@ Ideias que ainda precisam ser melhoradas antes de entrar numa versão:
 - Vários idiomas.
 - Federação de cooperativas e governança compartilhada.
 
-[Não lançado]: https://github.com/LucasRamos-Developer/openbag/compare/v0.4.0...HEAD
+[Não lançado]: https://github.com/LucasRamos-Developer/openbag/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/LucasRamos-Developer/openbag/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/LucasRamos-Developer/openbag/compare/v0.2.0...v0.4.0
 [0.2.0]: https://github.com/LucasRamos-Developer/openbag/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/LucasRamos-Developer/openbag/releases/tag/v0.1.0

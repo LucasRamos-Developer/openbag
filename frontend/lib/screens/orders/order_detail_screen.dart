@@ -10,6 +10,7 @@ import '../../services/realtime_service.dart';
 import '../../utils/feedback.dart';
 import '../../utils/formatters.dart';
 import '../../utils/maps.dart';
+import '../../widgets/order/delivery_pin_card.dart';
 import '../../widgets/order/order_items_list.dart';
 import '../../widgets/order/order_status_chip.dart';
 import '../../widgets/courier/order_courier_card.dart';
@@ -152,6 +153,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
+                if (order.deliveryPin != null) ...[
+                  DeliveryPinCard(pin: order.deliveryPin!),
+                  const SizedBox(height: 12),
+                ],
                 if (order.review != null || order.reviewableUntil != null) ...[
                   OrderReviewCard(order: order, onReview: () => _review(order)),
                   const SizedBox(height: 12),

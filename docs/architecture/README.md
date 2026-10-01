@@ -1,6 +1,6 @@
 # Arquitetura do OpenBag
 
-> Versão da documentação: **0.4.0**, atualizada em 2026-09-29. O que mudou está no [CHANGELOG](../../CHANGELOG.md).
+> Versão da documentação: **0.5.0**, atualizada em 2026-10-01. O que mudou está no [CHANGELOG](../../CHANGELOG.md).
 
 Este documento explica como o sistema está organizado hoje: módulos do backend, tempo real, segurança, despacho de entregas, rotas, caixa, dados e a estrutura do app Flutter. Para rodar o projeto, veja o [guia de desenvolvimento](../../README-DEVELOPER.md).
 
@@ -75,7 +75,8 @@ com/openbag/
 ├── order/
 │   ├── core/          #   Pedidos do cliente e do balcão, gestão pela loja
 │   ├── realtime/      #   Eventos de pedido e de localização enviados por WebSocket
-│   └── review/        #   Avaliações da loja e do entregador
+│   ├── review/        #   Avaliações da loja e do entregador
+│   └── incident/      #   Ocorrências relatadas pelo entregador
 ├── delivery/
 │   ├── courier/       #   Perfil, veículos, turno, ganhos e rastreio do entregador
 │   ├── dispatch/      #   Despacho, ofertas, frete e configurações de entrega da loja
@@ -84,7 +85,7 @@ com/openbag/
 ├── association/
 │   ├── core/          #   Associações e cooperativas, membros, convites, tabela de entrega
 │   ├── finance/       #   Mensalidade, adicionais, faturas, livro-caixa, caixinha
-│   ├── community/     #   Convênios, enquetes, atas e documentos
+│   ├── community/     #   Comunicados, convênios, enquetes, atas e documentos
 │   ├── member/        #   O que o cooperado vê em /me/association
 │   └── partnership/   #   Parcerias com as lojas (tabela especial) e relatórios
 └── admin/             # Painel da plataforma (só leitura)
@@ -104,6 +105,7 @@ Todas as rotas ficam sob o prefixo `/api`. A lista completa está no Swagger: `h
 | `restaurant.cash` | `/restaurants/{id}/cash` | Caixa da loja e acerto com os entregadores |
 | `order.core` | `/orders`, `/restaurants/{id}/orders` | Checkout do cliente, pedido do balcão e ciclo do pedido na loja (aceitar, preparar, pronto, despachar, entregar) |
 | `order.review` | `/orders/{id}/review`, `/restaurants/{id}/reviews` | Avaliações e respostas da loja |
+| `order.incident` | `/me/courier/work/orders/{id}/incidents` | Ocorrências da entrega: a loja vê no pedido e a cooperativa no relatório |
 | `delivery.courier` | `/me/courier`, `/me/courier/work`, `/public/couriers` | Perfil e veículos do entregador, turno, ofertas e ganhos |
 | `delivery.dispatch` | `/restaurants/{id}/delivery` | Configurações de entrega da loja, entregadores disponíveis e despacho |
 | `delivery.route` | `/restaurants/{id}/routes` | Rotas da loja |
@@ -344,7 +346,7 @@ As capturas de tela de cada área estão em [`layout/`](../../layout/).
 
 O roadmap completo, versão por versão, está no [CHANGELOG](../../CHANGELOG.md#roadmap). A 0.4.0 (segurança, integridade e pedido do balcão) foi lançada. O detalhe está em [docs/roadmap/0.4.0-seguranca.md](../roadmap/0.4.0-seguranca.md). Os próximos pontos que afetam a arquitetura são:
 
-- **0.5.0 Operação do dia a dia (próxima):** as ocorrências ligadas ao `Order`, as métricas e o custo do veículo em `CourierEarningsService`, os comunicados da cooperativa e o PIN de entrega. O detalhe está em [docs/roadmap/0.5.0-operacao.md](../roadmap/0.5.0-operacao.md).
+- **0.5.0 Operação do dia a dia (lançada):** ocorrências ligadas ao `Order` (`order/incident`), km, tempo, médias e custo do veículo em `CourierEarningsService` (`CourierWorkStats` e `VehicleCostEstimator`), comunicados em `association/community` e PIN de entrega no `Order`. O detalhe está em [docs/roadmap/0.5.0-operacao.md](../roadmap/0.5.0-operacao.md).
 - **0.6.0 Auditoria de dados:** trilha de auditoria com o valor anterior e o novo, histórico que não pode ser alterado para caixa e ganhos, e LGPD.
 - **0.7.0 Pronto para o piloto:** envio de email (senha e confirmação), Web Push, renovação e revogação do token, deploy com HTTPS, backup e monitoramento.
 - **Depois:** Spring Boot 4, broker externo do WebSocket (várias instâncias) e a decisão sobre as rotas antigas de produtos e combos.

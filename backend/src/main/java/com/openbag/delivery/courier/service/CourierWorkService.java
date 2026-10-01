@@ -1,5 +1,9 @@
 package com.openbag.delivery.courier.service;
 
+import com.openbag.delivery.courier.dto.DeliverRequest;
+import com.openbag.platform.web.exception.WrongDeliveryPinException;
+import com.openbag.order.incident.entity.IncidentType;
+import com.openbag.order.incident.service.OrderIncidentService;
 import com.openbag.delivery.link.entity.CourierLinkStatus;
 import com.openbag.delivery.courier.entity.CourierWorkStatus;
 import com.openbag.delivery.dispatch.entity.DeliveryOfferStatus;
@@ -59,6 +63,9 @@ import java.util.Locale;
 @Slf4j
 public class CourierWorkService {
 
+    // Erros de PIN permitidos antes de só a loja poder confirmar a entrega
+    static final int MAX_PIN_ATTEMPTS = 5;
+
     // Pedido aceito pelo entregador e ainda não entregue
     private static final EnumSet<OrderStatus> IN_PROGRESS = EnumSet.of(OrderStatus.CONFIRMED, OrderStatus.PREPARING,
             OrderStatus.READY_FOR_PICKUP, OrderStatus.OUT_FOR_DELIVERY);
@@ -95,6 +102,9 @@ public class CourierWorkService {
 
     @Autowired
     private ApplicationEventPublisher events;
+
+    @Autowired
+    private OrderIncidentService incidentService;
 
     @Autowired
     private Clock clock;
@@ -305,13 +315,25 @@ public class CourierWorkService {
         return toState(courier);
     }
 
-    public CourierWorkStateDTO deliver(User user, Long orderId) {
+    /**
+     * "Entreguei". Se a loja exige o PIN e o pedido tem um (pedidos do app), confere o código; cada erro fica gravado
+     * e, depois de {@value #MAX_PIN_ATTEMPTS} erros, só a loja confirma a entrega. Registra onde o entregador estava.
+     */
+    @Transactional(noRollbackFor = WrongDeliveryPinException.class)
+    public CourierWorkStateDTO deliver(User user, Long orderId, DeliverRequest request) {
         DeliveryPerson courier = findCourier(user);
         Order order = findAssignedOrder(courier, orderId);
+        if (order.getStatus() == OrderStatus.OUT_FOR_DELIVERY) {
+            checkPin(order, request != null ? request.pin() : null);
+        }
+        Double latitude = request != null && request.latitude() != null ? request.latitude() : courier.getLastLatitude();
+        Double longitude = request != null && request.longitude() != null ? request.longitude() : courier.getLastLongitude();
         restaurantOrderService.advance(order, EnumSet.of(OrderStatus.OUT_FOR_DELIVERY), OrderStatus.DELIVERED,
                 "Pedido entregue", (o, now) -> {
                     o.setDeliveredAt(now);
                     o.setPaymentStatus(Order.PaymentStatus.PAID);
+                    o.setDeliveredLatitude(latitude);
+                    o.setDeliveredLongitude(longitude);
                 });
         // Próxima entrega da rota: o cliente dela passa a ver o entregador no mapa
         CourierTracking.currentStop(ordersOnTheWay(courier).stream()
@@ -319,6 +341,41 @@ public class CourierWorkService {
                 .ifPresent(next -> events.publishEvent(new OrderChangedEvent(next.getId(), OrderChangedEvent.Type.ORDER_UPDATED)));
         // Liberação do entregador e contadores: DispatchService, depois do commit
         return toState(courier);
+    }
+
+    /**
+     * Relata uma ocorrência na entrega em andamento (pedido não pronto, cliente não localizado...).
+     * Trava o pedido, como as outras ações sobre ele.
+     */
+    public CourierWorkStateDTO reportIncident(User user, Long orderId, IncidentType type, String note) {
+        DeliveryPerson courier = findCourier(user);
+        Order order = findAssignedOrder(courier, orderId);
+        if (!IN_PROGRESS.contains(order.getStatus())) {
+            throw new BadRequestException("Essa entrega já terminou");
+        }
+        incidentService.report(order, courier, type, note);
+        return toState(courier);
+    }
+
+    private void checkPin(Order order, String pin) {
+        if (order.getDeliveryPin() == null || !order.getRestaurant().requiresDeliveryPin()) {
+            return;
+        }
+        if (order.getDeliveryPinAttempts() >= MAX_PIN_ATTEMPTS) {
+            throw new BadRequestException("Muitas tentativas com o código errado. Peça para a loja confirmar a entrega.");
+        }
+        String typed = pin == null ? "" : pin.trim();
+        if (typed.isEmpty()) {
+            throw new BadRequestException("Peça ao cliente o código de 4 dígitos que aparece no pedido dele");
+        }
+        if (!typed.equals(order.getDeliveryPin())) {
+            order.setDeliveryPinAttempts(order.getDeliveryPinAttempts() + 1);
+            orderRepository.save(order);
+            int left = MAX_PIN_ATTEMPTS - order.getDeliveryPinAttempts();
+            throw new WrongDeliveryPinException(left > 0
+                    ? "Código errado. " + (left == 1 ? "Resta 1 tentativa." : "Restam " + left + " tentativas.")
+                    : "Código errado de novo. Peça para a loja confirmar a entrega.");
+        }
     }
 
     // ============= Consultas usadas por outros serviços =============

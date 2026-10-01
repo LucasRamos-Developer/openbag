@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../courier/vehicle_type.dart';
+import 'order_incident.dart';
 import 'order_review.dart';
+
+export 'order_incident.dart';
 
 double _money(dynamic value) => (value as num?)?.toDouble() ?? 0;
 DateTime? _date(dynamic value) => value is String ? DateTime.tryParse(value) : null;
@@ -114,6 +117,12 @@ class Order {
   /// Aceito e sem entregador disponível desde este momento
   final DateTime? searchingCourierSince;
 
+  /// Ocorrências relatadas pelo entregador (só para a loja)
+  final List<OrderIncident> incidents;
+
+  /// Código que o cliente mostra ao entregador (só para o cliente, quando a loja exige)
+  final String? deliveryPin;
+
   /// Posição do entregador (só para o cliente, e só quando é a vez deste pedido)
   final GeoPosition? courierLocation;
 
@@ -160,6 +169,8 @@ class Order {
     this.assignedAt,
     this.pickedUpAt,
     this.searchingCourierSince,
+    this.incidents = const [],
+    this.deliveryPin,
     this.courierLocation,
     this.review,
     this.reviewableUntil,
@@ -226,6 +237,8 @@ class Order {
         assignedAt: _date(json['assignedAt']),
         pickedUpAt: _date(json['pickedUpAt']),
         searchingCourierSince: _date(json['searchingCourierSince']),
+        incidents: [for (final i in (json['incidents'] as List? ?? [])) OrderIncident.fromJson(i)],
+        deliveryPin: json['deliveryPin'],
         courierLocation: json['courierLocation'] != null ? GeoPosition.fromJson(json['courierLocation']) : null,
         review: json['review'] != null ? OrderReview.fromJson(json['review']) : null,
         reviewableUntil: _date(json['reviewableUntil']),

@@ -10,6 +10,7 @@ import com.openbag.delivery.courier.dto.CourierProfileUpdateRequest;
 import com.openbag.delivery.courier.dto.CourierPublicDTO;
 import com.openbag.delivery.courier.dto.SocialLinkDTO;
 import com.openbag.delivery.courier.dto.VehicleDTO;
+import com.openbag.delivery.courier.dto.VehicleCostsRequest;
 import com.openbag.delivery.courier.dto.VehicleRequest;
 import com.openbag.delivery.courier.entity.CourierSocialLink;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
@@ -155,6 +156,21 @@ public class CourierProfileService {
             deliveryPerson.useVehicle(vehicle);
             deliveryPersonRepository.save(deliveryPerson);
         }
+        return VehicleDTO.from(vehicle, isActive(deliveryPerson, vehicle));
+    }
+
+    /**
+     * Custos do veículo para o resultado estimado da aba Ganhos. Vazio apaga; combustível só em moto e carro.
+     */
+    public VehicleDTO updateVehicleCosts(User user, Long vehicleId, VehicleCostsRequest request) {
+        DeliveryPerson deliveryPerson = findByUser(user);
+        Vehicle vehicle = findVehicle(deliveryPerson, vehicleId);
+        boolean fuel = vehicle.isMotorized();
+        vehicle.setFuelConsumptionKmPerLiter(fuel ? request.fuelConsumptionKmPerLiter() : null);
+        vehicle.setFuelPricePerLiter(fuel ? request.fuelPricePerLiter() : null);
+        vehicle.setMaintenancePerKm(request.maintenancePerKm());
+        vehicle.setDepreciationPerKm(request.depreciationPerKm());
+        vehicleRepository.save(vehicle);
         return VehicleDTO.from(vehicle, isActive(deliveryPerson, vehicle));
     }
 

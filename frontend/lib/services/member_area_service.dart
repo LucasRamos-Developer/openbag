@@ -1,10 +1,11 @@
 import 'package:flutter/foundation.dart';
+import '../models/cooperative/announcement.dart';
 import '../models/cooperative/billing.dart';
 import '../models/cooperative/community.dart';
 import '../models/cooperative/ledger.dart';
 import 'api_client.dart';
 
-/// Área do cooperado: faturas, adicionais, caixinha, convênios, enquetes e documentos da associação dele
+/// Área do cooperado: faturas, adicionais, caixinha, convênios, enquetes, comunicados e documentos da associação dele
 class MemberAreaService {
   final ApiClient _api;
 
@@ -35,6 +36,12 @@ class MemberAreaService {
 
   Future<Poll> vote(int pollId, int optionId) async =>
       Poll.fromJson(await _api.post('$_base/polls/$pollId/vote', data: {'optionId': optionId}));
+
+  Future<List<Announcement>> fetchAnnouncements() async =>
+      [for (final a in await _api.get('$_base/announcements') as List) Announcement.fromJson(a)];
+
+  Future<Announcement> markAnnouncementRead(int announcementId) async =>
+      Announcement.fromJson(await _api.post('$_base/announcements/$announcementId/read'));
 
   Future<List<AssociationDocument>> fetchDocuments() async =>
       [for (final d in await _api.get('$_base/documents') as List) AssociationDocument.fromJson(d)];

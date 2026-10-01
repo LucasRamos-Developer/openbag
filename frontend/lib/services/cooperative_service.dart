@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/cooperative/billing.dart';
+import '../models/cooperative/announcement.dart';
 import '../models/cooperative/community.dart';
 import '../models/cooperative/ledger.dart';
 import '../utils/formatters.dart';
@@ -155,6 +156,26 @@ class CooperativeService {
       Poll.fromJson(await _api.post('${_base(organizationId)}/polls/$pollId/$action'));
 
   Future<void> deletePoll(int organizationId, int pollId) => _api.delete('${_base(organizationId)}/polls/$pollId');
+
+  // ============= Comunicados =============
+
+  Future<List<Announcement>> fetchAnnouncements(int organizationId) async => [
+        for (final a in await _api.get('${_base(organizationId)}/announcements') as List) Announcement.fromJson(a),
+      ];
+
+  /// Publica (sem [announcementId]) ou corrige um comunicado
+  Future<Announcement> saveAnnouncement(int organizationId,
+      {required AnnouncementType type, required String title, required String body, DateTime? eventAt,
+      int? announcementId}) async {
+    final data = {'type': type.name, 'title': title, 'body': body, 'eventAt': eventAt?.toIso8601String()};
+    return Announcement.fromJson(announcementId == null
+        ? await _api.post('${_base(organizationId)}/announcements', data: data)
+        : await _api.put('${_base(organizationId)}/announcements/$announcementId', data: data));
+  }
+
+  /// archive ou restore
+  Future<Announcement> announcementAction(int organizationId, int announcementId, String action) async =>
+      Announcement.fromJson(await _api.post('${_base(organizationId)}/announcements/$announcementId/$action'));
 
   // ============= Documentos =============
 

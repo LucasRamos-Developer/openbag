@@ -36,7 +36,8 @@ class _CouriersTabState extends State<CouriersTab> {
     if (id != null) WidgetsBinding.instance.addPostFrameCallback((_) => service.load(id));
   }
 
-  Future<void> _update({CourierPolicy? policy, bool? fallback, bool? covers, bool? passes, int? noShowMinutes}) async {
+  Future<void> _update(
+      {CourierPolicy? policy, bool? fallback, bool? covers, bool? passes, int? noShowMinutes, bool? requirePin}) async {
     final service = context.read<RestaurantDeliveryService>();
     final current = service.settings!;
     setState(() => _saving = true);
@@ -48,6 +49,7 @@ class _CouriersTabState extends State<CouriersTab> {
         coversDeliveryDifference: covers ?? current.coversDeliveryDifference,
         passesDeliveryFee: passes,
         courierNoShowMinutes: noShowMinutes,
+        requireDeliveryPin: requirePin,
       ),
       success: 'Regras de entrega atualizadas',
     );
@@ -221,6 +223,20 @@ class _CouriersTabState extends State<CouriersTab> {
           onChanged: (v) {
             if (v != null && v != settings.courierNoShowMinutes) _update(noShowMinutes: v);
           },
+        ),
+        const Divider(height: 32),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          value: settings.requireDeliveryPin,
+          onChanged: _saving ? null : (v) => _update(requirePin: v),
+          title: const Text('Exigir o código de entrega (PIN)'),
+          subtitle: Text(
+            settings.requireDeliveryPin
+                ? 'O cliente do app vê um código de 4 dígitos no pedido e o entregador só conclui a entrega com ele. '
+                    'Pedidos do balcão e do telefone seguem com a confirmação simples.'
+                : 'O entregador conclui a entrega com um toque. Ligue para confirmar que o pedido chegou à pessoa certa.',
+            style: textTheme.bodySmall,
+          ),
         ),
       ],
     );
