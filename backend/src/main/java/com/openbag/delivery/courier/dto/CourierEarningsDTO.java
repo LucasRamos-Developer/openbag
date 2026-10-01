@@ -30,6 +30,7 @@ public class CourierEarningsDTO {
     private List<Day> daily;
     private List<Delivery> deliveries;
     private Stats stats;
+    private CostEstimate cost;
 
     /** @param distanceKm km rodados: com o pedido e até a retirada */
     public record Total(BigDecimal amount, long deliveries, double distanceKm) {
@@ -52,6 +53,22 @@ public class CourierEarningsDTO {
     }
 
     public record Average(BigDecimal amount, Double distanceKm, Long minutes) {
+    }
+
+    /**
+     * Resultado estimado do período: o que sobra do ganho depois do combustível, da manutenção e da depreciação.
+     * É estimativa, não valor contábil. Vem nulo quando nenhum veículo usado tem custo informado (a tela convida a
+     * preencher em vez de mostrar zero). Uma parte vem nula quando nenhum veículo a informou.
+     *
+     * @param complete todos os veículos com km no período têm todos os custos que se aplicam a eles
+     * @param vehicles os veículos usados, com os km de cada um
+     */
+    public record CostEstimate(double distanceKm, BigDecimal revenue, BigDecimal fuel, BigDecimal maintenance,
+                               BigDecimal depreciation, BigDecimal total, BigDecimal result, boolean complete,
+                               List<VehicleCost> vehicles) {
+    }
+
+    public record VehicleCost(Long vehicleId, String name, double distanceKm, boolean complete) {
     }
 
     public record Day(LocalDate date, BigDecimal amount, long deliveries) {

@@ -107,6 +107,9 @@ class CourierEarnings {
   final List<EarningsDelivery> deliveries;
   final CourierWorkStats? stats;
 
+  /// Resultado estimado; nulo quando nenhum veículo usado tem custo informado
+  final VehicleCostEstimate? cost;
+
   CourierEarnings({
     required this.today,
     required this.week,
@@ -115,6 +118,7 @@ class CourierEarnings {
     required this.daily,
     required this.deliveries,
     this.stats,
+    this.cost,
   });
 
   factory CourierEarnings.fromJson(Map<String, dynamic> json) => CourierEarnings(
@@ -125,6 +129,7 @@ class CourierEarnings {
         daily: [for (final d in (json['daily'] as List? ?? [])) EarningsDay.fromJson(d)],
         deliveries: [for (final d in (json['deliveries'] as List? ?? [])) EarningsDelivery.fromJson(d)],
         stats: json['stats'] != null ? CourierWorkStats.fromJson(json['stats']) : null,
+        cost: json['cost'] != null ? VehicleCostEstimate.fromJson(json['cost']) : null,
       );
 }
 
@@ -192,4 +197,53 @@ class WorkHistory {
         restaurants: [for (final r in (json['restaurants'] as List? ?? [])) WorkedRestaurant.fromJson(r)],
         recentShifts: [for (final s in (json['recentShifts'] as List? ?? [])) ShiftEntry.fromJson(s)],
       );
+}
+
+/// Resultado estimado do período: ganho menos combustível, manutenção e depreciação. Estimativa, não valor contábil.
+/// Uma parte nula não foi informada em nenhum veículo usado.
+class VehicleCostEstimate {
+  final double distanceKm;
+  final double revenue;
+  final double? fuel;
+  final double? maintenance;
+  final double? depreciation;
+  final double total;
+  final double result;
+  final bool complete;
+  final List<({int vehicleId, String name, double distanceKm, bool complete})> vehicles;
+
+  VehicleCostEstimate({
+    required this.distanceKm,
+    required this.revenue,
+    this.fuel,
+    this.maintenance,
+    this.depreciation,
+    required this.total,
+    required this.result,
+    required this.complete,
+    required this.vehicles,
+  });
+
+  factory VehicleCostEstimate.fromJson(Map<String, dynamic> json) {
+    double? opt(dynamic v) => v == null ? null : _money(v);
+    return VehicleCostEstimate(
+      distanceKm: (json['distanceKm'] as num?)?.toDouble() ?? 0,
+      revenue: _money(json['revenue']),
+      fuel: opt(json['fuel']),
+      maintenance: opt(json['maintenance']),
+      depreciation: opt(json['depreciation']),
+      total: _money(json['total']),
+      result: _money(json['result']),
+      complete: json['complete'] ?? false,
+      vehicles: [
+        for (final v in json['vehicles'] as List? ?? [])
+          (
+            vehicleId: v['vehicleId'] as int,
+            name: (v['name'] ?? '') as String,
+            distanceKm: (v['distanceKm'] as num?)?.toDouble() ?? 0,
+            complete: (v['complete'] ?? false) as bool,
+          ),
+      ],
+    );
+  }
 }

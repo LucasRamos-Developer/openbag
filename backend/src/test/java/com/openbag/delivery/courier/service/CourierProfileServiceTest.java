@@ -4,6 +4,7 @@ import com.openbag.delivery.courier.entity.SocialPlatform;
 import com.openbag.delivery.courier.entity.VehicleType;
 import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.delivery.courier.dto.VehicleDTO;
+import com.openbag.delivery.courier.dto.VehicleCostsRequest;
 import com.openbag.delivery.courier.dto.VehicleRequest;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.delivery.courier.entity.Vehicle;
@@ -18,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -154,5 +156,37 @@ class CourierProfileServiceTest {
         assertThat(first.isArchived()).isTrue();
         assertThat(deliveryPerson.getActiveVehicle()).isSameAs(second);
         assertThat(deliveryPerson.getVehicleType()).isEqualTo(VehicleType.CAR);
+    }
+
+    @Test
+    void vehicleCostsAreSavedAndABicycleIgnoresFuel() {
+        Vehicle bike = new Vehicle();
+        bike.setId(5L);
+        bike.setType(VehicleType.BICYCLE);
+        when(vehicleRepository.findByIdAndDeliveryPersonIdAndArchivedFalse(5L, 2L)).thenReturn(Optional.of(bike));
+
+        VehicleDTO dto = service.updateVehicleCosts(user, 5L, new VehicleCostsRequest(new BigDecimal("35"),
+                new BigDecimal("6.20"), new BigDecimal("0.05"), new BigDecimal("0.02")));
+
+        assertThat(dto.getFuelConsumptionKmPerLiter()).as("bicicleta não usa combustível").isNull();
+        assertThat(dto.getFuelPricePerLiter()).isNull();
+        assertThat(dto.getMaintenancePerKm()).isEqualByComparingTo("0.05");
+        assertThat(bike.getDepreciationPerKm()).isEqualByComparingTo("0.02");
+    }
+
+    @Test
+    void anEmptyCostClearsIt() {
+        Vehicle moto = new Vehicle();
+        moto.setId(5L);
+        moto.setType(VehicleType.MOTORCYCLE);
+        moto.setMaintenancePerKm(new BigDecimal("0.18"));
+        when(vehicleRepository.findByIdAndDeliveryPersonIdAndArchivedFalse(5L, 2L)).thenReturn(Optional.of(moto));
+
+        service.updateVehicleCosts(user, 5L, new VehicleCostsRequest(new BigDecimal("35"), new BigDecimal("6.20"),
+                null, null));
+
+        assertThat(moto.getFuelConsumptionKmPerLiter()).isEqualByComparingTo("35");
+        assertThat(moto.getMaintenancePerKm()).isNull();
+        assertThat(moto.hasCosts()).isTrue();
     }
 }

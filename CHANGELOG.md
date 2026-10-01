@@ -65,6 +65,12 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - Numa rota, o mesmo minuto conta uma vez.
   - Sem base para a conta, a média fica vazia, em vez de zero.
   - Só o próprio entregador vê.
+- **Custo estimado do veículo** (item 3 da 0.5.0):
+  - O entregador informa, se quiser, o consumo e o preço do combustível, a manutenção por km e a depreciação por km de cada veículo (`PUT /me/courier/vehicles/{id}/costs`, V7).
+  - Na aba Ganhos, o card **Resultado estimado** mostra os ganhos, o custo de cada parte e a sobra estimada do período: km × (preço ÷ consumo + manutenção + depreciação).
+  - Cada entrega usa o veículo do turno em que foi feita. Bicicleta e a pé não têm combustível.
+  - Sem custos informados, o card convida a preencher em vez de mostrar zero. Quando falta o custo de um veículo usado, ele diz qual.
+  - É sempre uma estimativa, e o card avisa.
 
 ---
 
@@ -343,7 +349,7 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 | 0.2.0 | Operação do restaurante, associações e personalização | Lançada |
 | 0.3.0 | Entregador, cooperativa e cliente | Lançada (sem tag; o código está na v0.4.0) |
 | 0.4.0 | Segurança, integridade dos dados e pedido do balcão | **Atual** |
-| 0.5.0 | Operação do dia a dia | Em andamento (2 de 5) |
+| 0.5.0 | Operação do dia a dia | Em andamento (3 de 5) |
 | 0.6.0 | Auditoria de dados | Planejada |
 | 0.7.0 | Pronto para o piloto | Planejada |
 | 1.0.0 | Primeira versão estável (piloto real) | Planejada |
@@ -373,7 +379,7 @@ O detalhe de cada item, com o que foi feito e o que ficou para depois, está em 
 O detalhe de cada item, com o código em que ele se apoia e o que falta, está em [docs/roadmap/0.5.0-operacao.md](docs/roadmap/0.5.0-operacao.md).
 - ~~Ocorrências ligadas ao pedido~~: o entregador relata, a loja vê na hora e a cooperativa vê por tipo e por loja (concluído).
 - ~~Km, tempo em operação e médias (R$ por km e R$ por hora) na aba Ganhos do entregador~~ (concluído).
-- Custo estimado do veículo (combustível, manutenção e depreciação) e resultado estimado.
+- ~~Custo estimado do veículo (combustível, manutenção e depreciação) e resultado estimado~~ (concluído).
 - Comunicados da cooperativa para os cooperados.
 - PIN de entrega, que a loja pode exigir.
 

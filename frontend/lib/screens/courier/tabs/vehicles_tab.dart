@@ -5,6 +5,7 @@ import '../../../core/ui/ui.dart';
 import '../../../models/courier/vehicle.dart';
 import '../../../services/courier_service.dart';
 import '../../../utils/feedback.dart';
+import '../../../widgets/courier/vehicle_costs_sheet.dart';
 import '../../../widgets/courier/vehicle_tile.dart';
 import '../vehicle_form_dialog.dart';
 
@@ -68,6 +69,7 @@ class VehiclesTab extends StatelessWidget {
                       onActivate: () => runWithFeedback(context, () => service.activateVehicle(vehicle.id),
                           success: '${vehicle.title} em uso'),
                       onEdit: () => showVehicleFormDialog(context, vehicle: vehicle),
+                      onEditCosts: () => showVehicleCostsSheet(context, vehicle),
                       onChangePhoto: () => _changePhoto(context, vehicle),
                       onRemove: () => _remove(context, vehicle),
                     ),

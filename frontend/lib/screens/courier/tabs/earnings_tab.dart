@@ -9,6 +9,8 @@ import '../../../utils/formatters.dart';
 import '../../../widgets/association/association_report_widgets.dart';
 import '../../../widgets/courier/earnings_chart.dart';
 import '../../../widgets/courier/earnings_summary.dart';
+import '../../../widgets/courier/vehicle_cost_card.dart';
+import '../../../widgets/courier/vehicle_costs_sheet.dart';
 import '../../../widgets/courier/work_stats_card.dart';
 
 enum _Period {
@@ -76,6 +78,19 @@ class EarningsTabState extends State<EarningsTab> {
     }
   }
 
+  /// Custos do veículo pedido (ou do ativo); ao salvar, recalcula o resultado estimado
+  Future<void> _editCosts(int? vehicleId) async {
+    final vehicles = context.read<CourierService>().vehicles;
+    final vehicle = vehicles.where((v) => vehicleId == null ? v.active : v.id == vehicleId).firstOrNull ??
+        vehicles.firstOrNull;
+    if (vehicle == null) {
+      AppToast.show(context, message: 'Cadastre um veículo na aba Veículos', type: ToastType.warning);
+      return;
+    }
+    final saved = await showVehicleCostsSheet(context, vehicle);
+    if (saved == true && mounted) refresh();
+  }
+
   @override
   Widget build(BuildContext context) {
     final earnings = _earnings;
@@ -139,6 +154,8 @@ class EarningsTabState extends State<EarningsTab> {
                     const SizedBox(height: 16),
                     WorkStatsCard(stats: earnings.stats!),
                   ],
+                  const SizedBox(height: 16),
+                  VehicleCostCard(cost: earnings.cost, onEditCosts: _editCosts),
                   if (_association != null) ...[
                     const SizedBox(height: 24),
                     _AssociationShare(report: _association!, days: _period.days),

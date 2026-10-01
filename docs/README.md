@@ -2,7 +2,7 @@
 
 > Versão da documentação: **0.4.0**, atualizada em 2026-09-29. Veja o que mudou no [CHANGELOG](../CHANGELOG.md).
 >
-> **Em andamento:** a 0.5.0 (operação do dia a dia), em cinco entregas pequenas. As ocorrências e os km, tempo e médias do entregador estão prontos; a próxima é o custo estimado do veículo. O resumo está na seção [Versões e roadmap](../README.md#versões-e-roadmap) do README.
+> **Em andamento:** a 0.5.0 (operação do dia a dia), em cinco entregas pequenas. As ocorrências, os km, tempo e médias e o custo estimado do veículo estão prontos; a próxima são os comunicados da cooperativa. O resumo está na seção [Versões e roadmap](../README.md#versões-e-roadmap) do README.
 
 ## 📖 Estrutura da documentação
 

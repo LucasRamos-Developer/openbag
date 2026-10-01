@@ -10,6 +10,12 @@ class Vehicle {
   final String? photoUrl;
   final bool active;
 
+  /// Custos informados para o resultado estimado da aba Ganhos (nulos quando não informados)
+  final double? fuelConsumptionKmPerLiter;
+  final double? fuelPricePerLiter;
+  final double? maintenancePerKm;
+  final double? depreciationPerKm;
+
   Vehicle({
     required this.id,
     required this.type,
@@ -18,6 +24,10 @@ class Vehicle {
     this.color,
     this.photoUrl,
     this.active = false,
+    this.fuelConsumptionKmPerLiter,
+    this.fuelPricePerLiter,
+    this.maintenancePerKm,
+    this.depreciationPerKm,
   });
 
   factory Vehicle.fromJson(Map<String, dynamic> json) => Vehicle(
@@ -28,7 +38,17 @@ class Vehicle {
         color: json['color'],
         photoUrl: json['photoUrl'],
         active: json['active'] ?? false,
+        fuelConsumptionKmPerLiter: (json['fuelConsumptionKmPerLiter'] as num?)?.toDouble(),
+        fuelPricePerLiter: (json['fuelPricePerLiter'] as num?)?.toDouble(),
+        maintenancePerKm: (json['maintenancePerKm'] as num?)?.toDouble(),
+        depreciationPerKm: (json['depreciationPerKm'] as num?)?.toDouble(),
       );
+
+  /// Moto e carro gastam combustível
+  bool get usesFuel => type.requiresPlate;
+
+  bool get hasCosts =>
+      fuelConsumptionKmPerLiter != null || fuelPricePerLiter != null || maintenancePerKm != null || depreciationPerKm != null;
 
   /// "Honda CG 160 · Vermelha"
   String get description => [model, color].whereType<String>().where((s) => s.isNotEmpty).join(' · ');

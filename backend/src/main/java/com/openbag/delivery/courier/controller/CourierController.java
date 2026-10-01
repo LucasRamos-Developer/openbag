@@ -6,6 +6,7 @@ import com.openbag.delivery.courier.dto.CourierProfileDTO;
 import com.openbag.delivery.courier.dto.CourierProfileUpdateRequest;
 import com.openbag.delivery.link.dto.LinkTargetRequest;
 import com.openbag.delivery.courier.dto.VehicleDTO;
+import com.openbag.delivery.courier.dto.VehicleCostsRequest;
 import com.openbag.delivery.courier.dto.VehicleRequest;
 import com.openbag.delivery.courier.dto.WorkHistoryDTO;
 import com.openbag.delivery.courier.service.CourierEarningsService;
@@ -85,6 +86,13 @@ public class CourierController {
     public ResponseEntity<VehicleDTO> updateVehicle(@PathVariable Long vehicleId,
                                                     @Valid @RequestBody VehicleRequest request) {
         return ResponseEntity.ok(profileService.updateVehicle(userService.getCurrentUser(), vehicleId, request));
+    }
+
+    @PutMapping("/vehicles/{vehicleId}/costs")
+    @Operation(summary = "Custos do veículo (consumo, combustível, manutenção e depreciação) para o resultado estimado")
+    public ResponseEntity<VehicleDTO> updateVehicleCosts(@PathVariable Long vehicleId,
+                                                         @Valid @RequestBody VehicleCostsRequest request) {
+        return ResponseEntity.ok(profileService.updateVehicleCosts(userService.getCurrentUser(), vehicleId, request));
     }
 
     @PostMapping(value = "/vehicles/{vehicleId}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

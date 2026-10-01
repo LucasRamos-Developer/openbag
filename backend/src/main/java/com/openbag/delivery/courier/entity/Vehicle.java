@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -47,6 +48,19 @@ public class Vehicle {
     @Column(name = "archived", nullable = false)
     private boolean archived = false;
 
+    // Custos informados pelo entregador, todos opcionais, para o resultado estimado da aba Ganhos
+    @Column(name = "fuel_consumption_km_per_liter", precision = 6, scale = 2)
+    private BigDecimal fuelConsumptionKmPerLiter;
+
+    @Column(name = "fuel_price_per_liter", precision = 6, scale = 2)
+    private BigDecimal fuelPricePerLiter;
+
+    @Column(name = "maintenance_per_km", precision = 6, scale = 3)
+    private BigDecimal maintenancePerKm;
+
+    @Column(name = "depreciation_per_km", precision = 6, scale = 3)
+    private BigDecimal depreciationPerKm;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -54,6 +68,12 @@ public class Vehicle {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    /** Algum custo informado */
+    public boolean hasCosts() {
+        return fuelConsumptionKmPerLiter != null || fuelPricePerLiter != null || maintenancePerKm != null
+                || depreciationPerKm != null;
+    }
 
     public boolean isMotorized() {
         return type == VehicleType.MOTORCYCLE || type == VehicleType.CAR;

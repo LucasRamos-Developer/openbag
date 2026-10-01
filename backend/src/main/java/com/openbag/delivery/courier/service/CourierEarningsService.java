@@ -5,6 +5,7 @@ import com.openbag.platform.web.exception.BadRequestException;
 import com.openbag.platform.web.exception.ResourceNotFoundException;
 import com.openbag.delivery.courier.dto.CourierEarningsDTO;
 import com.openbag.delivery.courier.dto.WorkHistoryDTO;
+import com.openbag.delivery.courier.entity.CourierShift;
 import com.openbag.delivery.courier.entity.DeliveryPerson;
 import com.openbag.delivery.courier.repository.CourierShiftRepository;
 import com.openbag.delivery.courier.repository.DeliveryPersonRepository;
@@ -84,8 +85,8 @@ public class CourierEarningsService {
         Map<Long, Double> pickupKm = pickupKm(courier, List.of(period, todayOrders, weekOrders, monthOrders));
         LocalDateTime periodStart = start.atStartOfDay();
         LocalDateTime periodEnd = end.plusDays(1).atStartOfDay();
-        List<CourierWorkStats.Interval> shifts = shiftRepository.findOverlapping(courier.getId(), periodStart, periodEnd)
-                .stream()
+        List<CourierShift> periodShifts = shiftRepository.findOverlapping(courier.getId(), periodStart, periodEnd);
+        List<CourierWorkStats.Interval> shifts = periodShifts.stream()
                 .map(s -> new CourierWorkStats.Interval(s.getStartedAt(), s.getEndedAt()))
                 .toList();
         Map<LocalDate, List<Order>> byDay = period.stream()
@@ -109,6 +110,8 @@ public class CourierEarningsService {
                                 o.getRestaurant().getName(), o.getDeliveryDistanceKm(), fee(o)))
                         .toList())
                 .stats(CourierWorkStats.of(period, pickupKm, shifts, periodStart, periodEnd, LocalDateTime.now(clock)))
+                .cost(VehicleCostEstimator.estimate(period, pickupKm, periodShifts, courier.getActiveVehicle(),
+                        sum(period)))
                 .build();
     }
 

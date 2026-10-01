@@ -136,6 +136,16 @@ Item 2 da 0.5.0: a aba Ganhos mostra os km de hoje, da semana e do mês e, no pe
 
 ---
 
+## Custo estimado do veículo, no celular
+
+Item 3 da 0.5.0: sem custos, o card convida a preencher; com custos, mostra a sobra estimada do período.
+
+| Convite | Custos do veículo | Resultado estimado |
+|---|---|---|
+| <img src="custos/1-convite.png" alt="Convite" width="220"> | <img src="custos/2-custos-do-veiculo.png" alt="Custos" width="220"> | <img src="custos/3-resultado-estimado.png" alt="Resultado" width="220"> |
+
+---
+
 ## Rastreio, avaliações e diferença assumida
 
 Depois da retirada, o cliente vê o entregador no mapa, mas só quando é a vez do pedido dele na rota. Depois da entrega, ele avalia a loja e o entregador.

@@ -103,7 +103,8 @@ As tabelas mostram as rotas principais de cada área. Todas as rotas estão no S
 | `PUT /me/courier/work/location` | Posição (o servidor aceita no máximo uma a cada 10 s) |
 | `POST /me/courier/work/offers/{id}/accept` e `/decline` | Responder a oferta. Repetir o aceite devolve a mesma entrega. |
 | `POST /me/courier/work/orders/{id}/pickup` e `/deliver` | Retirada e entrega |
-| `GET /me/courier/earnings?from=&to=` | Ganhos de hoje, da semana e do mês (com km) e do período, com km, tempo e médias (`stats`). Só o próprio entregador. |
+| `GET /me/courier/earnings?from=&to=` | Ganhos de hoje, da semana e do mês (com km) e do período, com km, tempo e médias (`stats`). Só o próprio entregador. Traz também o resultado estimado (`cost`) com os custos do veículo. |
+| `PUT /me/courier/vehicles/{id}/costs` | Custos do veículo: consumo, preço do combustível, manutenção e depreciação por km (todos opcionais; vazio apaga) |
 | `POST /me/courier/work/orders/{id}/incidents` | Relatar uma ocorrência (`type`, `note`) na entrega em andamento. A loja vê no pedido; o cliente não. |
 | `/me/association/**` | Área do cooperado: vínculo, resumo, faturas, adicionais, caixinha, convênios, enquetes e documentos |
 

@@ -8,10 +8,13 @@ class VehicleTile extends StatelessWidget {
   final Vehicle vehicle;
   final VoidCallback? onActivate;
   final VoidCallback? onEdit;
+
+  /// Custos por km, para o resultado estimado da aba Ganhos
+  final VoidCallback? onEditCosts;
   final VoidCallback? onRemove;
   final VoidCallback? onChangePhoto;
 
-  const VehicleTile({super.key, required this.vehicle, this.onActivate, this.onEdit, this.onRemove, this.onChangePhoto});
+  const VehicleTile({super.key, required this.vehicle, this.onActivate, this.onEdit, this.onEditCosts, this.onRemove, this.onChangePhoto});
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +62,7 @@ class VehicleTile extends StatelessWidget {
               ],
             ),
           ),
-          if (onActivate != null || onEdit != null || onRemove != null || onChangePhoto != null)
+          if (onActivate != null || onEdit != null || onEditCosts != null || onRemove != null || onChangePhoto != null)
             PopupMenuButton<VoidCallback>(
               tooltip: 'Ações',
               onSelected: (action) => action(),
@@ -67,6 +70,8 @@ class VehicleTile extends StatelessWidget {
                 if (onActivate != null && !vehicle.active)
                   PopupMenuItem(value: onActivate, child: const Text('Usar este veículo')),
                 if (onEdit != null) PopupMenuItem(value: onEdit, child: const Text('Editar')),
+                if (onEditCosts != null)
+                  PopupMenuItem(value: onEditCosts, child: Text(vehicle.hasCosts ? 'Custos por km' : 'Informar custos')),
                 if (onChangePhoto != null) PopupMenuItem(value: onChangePhoto, child: const Text('Trocar foto')),
                 if (onRemove != null) PopupMenuItem(value: onRemove, child: const Text('Remover')),
               ],

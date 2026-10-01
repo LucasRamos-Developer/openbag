@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,6 +23,12 @@ public class VehicleDTO {
     private String photoUrl;
     private boolean active;
 
+    // Custos informados para o resultado estimado (nulos quando não informados)
+    private BigDecimal fuelConsumptionKmPerLiter;
+    private BigDecimal fuelPricePerLiter;
+    private BigDecimal maintenancePerKm;
+    private BigDecimal depreciationPerKm;
+
     public static VehicleDTO from(Vehicle vehicle, boolean active) {
         return VehicleDTO.builder()
                 .id(vehicle.getId())
@@ -30,6 +38,10 @@ public class VehicleDTO {
                 .color(vehicle.getColor())
                 .photoUrl(vehicle.getPhotoUrl())
                 .active(active)
+                .fuelConsumptionKmPerLiter(vehicle.getFuelConsumptionKmPerLiter())
+                .fuelPricePerLiter(vehicle.getFuelPricePerLiter())
+                .maintenancePerKm(vehicle.getMaintenancePerKm())
+                .depreciationPerKm(vehicle.getDepreciationPerKm())
                 .build();
     }
 }
