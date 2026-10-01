@@ -75,6 +75,11 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
   - O gestor publica no mural da associação, na aba **Comunicados** da Assembleia: aviso, reunião (com data e hora), mudança na operação, alteração de valor, nova parceria ou treinamento. Dá para corrigir e arquivar, e ele vê quantos cooperados leram.
   - O cooperado vê os comunicados na área dele. Os não lidos aparecem no topo do **Resumo**, e um toque marca como lido.
   - Rotas em `/associations/{id}/announcements` e `/me/association/announcements` (V8).
+- **PIN de entrega** (item 5 da 0.5.0):
+  - A loja pode exigir, nas regras de entrega, o código do cliente para concluir as entregas dos pedidos do app.
+  - O cliente vê um código de 4 dígitos no pedido, e o entregador o digita em "Entreguei". Com o código errado, a entrega não é concluída. Depois de 5 erros, só a loja confirma.
+  - Pedidos do balcão, do telefone e do WhatsApp seguem com a confirmação simples.
+  - A posição do entregador no momento da entrega fica registrada no pedido (V9).
 
 ---
 
@@ -353,7 +358,7 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 | 0.2.0 | Operação do restaurante, associações e personalização | Lançada |
 | 0.3.0 | Entregador, cooperativa e cliente | Lançada (sem tag; o código está na v0.4.0) |
 | 0.4.0 | Segurança, integridade dos dados e pedido do balcão | **Atual** |
-| 0.5.0 | Operação do dia a dia | Em andamento (4 de 5) |
+| 0.5.0 | Operação do dia a dia | Concluída, falta lançar |
 | 0.6.0 | Auditoria de dados | Planejada |
 | 0.7.0 | Pronto para o piloto | Planejada |
 | 1.0.0 | Primeira versão estável (piloto real) | Planejada |
@@ -385,7 +390,7 @@ O detalhe de cada item, com o código em que ele se apoia e o que falta, está e
 - ~~Km, tempo em operação e médias (R$ por km e R$ por hora) na aba Ganhos do entregador~~ (concluído).
 - ~~Custo estimado do veículo (combustível, manutenção e depreciação) e resultado estimado~~ (concluído).
 - ~~Comunicados da cooperativa para os cooperados~~ (concluído).
-- PIN de entrega, que a loja pode exigir.
+- ~~PIN de entrega, que a loja pode exigir~~ (concluído).
 
 ### 0.6.0: Auditoria de dados
 - Trilha de auditoria: quem mudou o quê e quando, com o valor anterior e o novo, para pedidos, cardápio e preços, caixa, ganhos e vínculos.

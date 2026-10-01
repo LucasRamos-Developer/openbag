@@ -71,6 +71,7 @@ class RestaurantDeliveryService extends ChangeNotifier {
     required bool coversDeliveryDifference,
     bool? passesDeliveryFee,
     int? courierNoShowMinutes,
+    bool? requireDeliveryPin,
   }) async {
     _settings = RestaurantDeliverySettings.fromJson(await _api.put('$_base/settings', data: {
       'courierPolicy': policy.name,
@@ -78,6 +79,7 @@ class RestaurantDeliveryService extends ChangeNotifier {
       'coversDeliveryDifference': coversDeliveryDifference,
       if (passesDeliveryFee != null) 'deliveryFeeMode': passesDeliveryFee ? 'PASS_THROUGH' : 'ASSUME',
       if (courierNoShowMinutes != null) 'courierNoShowMinutes': courierNoShowMinutes,
+      if (requireDeliveryPin != null) 'requireDeliveryPin': requireDeliveryPin,
     }));
     notifyListeners();
   }

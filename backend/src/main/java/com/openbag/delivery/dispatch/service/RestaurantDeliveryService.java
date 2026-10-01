@@ -94,6 +94,9 @@ public class RestaurantDeliveryService {
         if (request.getCourierNoShowMinutes() != null) {
             restaurant.setCourierNoShowMinutes(request.getCourierNoShowMinutes());
         }
+        if (request.getRequireDeliveryPin() != null) {
+            restaurant.setRequireDeliveryPin(request.getRequireDeliveryPin());
+        }
         log.info("Restaurante {} atualizou as regras de entrega: {} (fallback={}, cobre diferença={}, taxa={})",
                 restaurantId, request.getCourierPolicy(), request.isFallbackToOpen(),
                 request.isCoversDeliveryDifference(), feeMode);
@@ -194,6 +197,7 @@ public class RestaurantDeliveryService {
                 .pendingFixedCouriers(linkRepository.findByRestaurant(restaurant.getId(),
                         EnumSet.of(CourierLinkStatus.PENDING)).size())
                 .courierNoShowMinutes(restaurant.getCourierNoShowMinutes())
+                .requireDeliveryPin(restaurant.requiresDeliveryPin())
                 .build();
     }
 

@@ -133,6 +133,9 @@ class CourierOrder {
   /// Ocorrências que o entregador já relatou nesta entrega
   final Set<IncidentType> reportedIncidents;
 
+  /// A loja exige o código do cliente para concluir
+  final bool pinRequired;
+
   CourierOrder({
     required this.orderId,
     this.displayCode,
@@ -157,6 +160,7 @@ class CourierOrder {
     this.routeSequence,
     this.neighborhood,
     this.reportedIncidents = const {},
+    this.pinRequired = false,
   });
 
   factory CourierOrder.fromJson(Map<String, dynamic> json) => CourierOrder(
@@ -183,6 +187,7 @@ class CourierOrder {
         routeSequence: json['routeSequence'],
         neighborhood: json['neighborhood'],
         reportedIncidents: {for (final t in (json['reportedIncidents'] as List? ?? [])) IncidentType.fromName(t)},
+        pinRequired: json['pinRequired'] ?? false,
       );
 
   bool get pickedUp => status == OrderStatus.OUT_FOR_DELIVERY;

@@ -24,4 +24,7 @@ public class RestaurantDeliverySettingsRequest {
     @Min(value = 3, message = "Mínimo de 3 minutos")
     @Max(value = 60, message = "Máximo de 60 minutos")
     private Integer courierNoShowMinutes;
+
+    // Exige o PIN do cliente nas entregas dos pedidos do app (nulo = mantém)
+    private Boolean requireDeliveryPin;
 }

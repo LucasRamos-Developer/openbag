@@ -248,6 +248,21 @@ public class Order {
     @Column(name = "courier_settled_at")
     private LocalDateTime courierSettledAt;
 
+    // PIN de entrega: só nos pedidos do app; o cliente mostra ao entregador quando a loja exige
+    @Column(name = "delivery_pin", length = 4)
+    private String deliveryPin;
+
+    // Tentativas erradas do PIN (depois do limite, só a loja confirma a entrega)
+    @Column(name = "delivery_pin_attempts", nullable = false)
+    private int deliveryPinAttempts = 0;
+
+    // Onde o entregador estava ao marcar "Entreguei"
+    @Column(name = "delivered_latitude")
+    private Double deliveredLatitude;
+
+    @Column(name = "delivered_longitude")
+    private Double deliveredLongitude;
+
     // Desde quando o pedido espera um entregador sem nenhum disponível
     @Column(name = "searching_courier_since")
     private LocalDateTime searchingCourierSince;

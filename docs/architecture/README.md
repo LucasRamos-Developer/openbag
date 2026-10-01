@@ -346,7 +346,7 @@ As capturas de tela de cada área estão em [`layout/`](../../layout/).
 
 O roadmap completo, versão por versão, está no [CHANGELOG](../../CHANGELOG.md#roadmap). A 0.4.0 (segurança, integridade e pedido do balcão) foi lançada. O detalhe está em [docs/roadmap/0.4.0-seguranca.md](../roadmap/0.4.0-seguranca.md). Os próximos pontos que afetam a arquitetura são:
 
-- **0.5.0 Operação do dia a dia (próxima):** as ocorrências ligadas ao `Order`, as métricas e o custo do veículo em `CourierEarningsService`, os comunicados da cooperativa e o PIN de entrega. O detalhe está em [docs/roadmap/0.5.0-operacao.md](../roadmap/0.5.0-operacao.md).
+- **0.5.0 Operação do dia a dia (concluída, falta lançar):** ocorrências ligadas ao `Order` (`order/incident`), km, tempo, médias e custo do veículo em `CourierEarningsService` (`CourierWorkStats` e `VehicleCostEstimator`), comunicados em `association/community` e PIN de entrega no `Order`. O detalhe está em [docs/roadmap/0.5.0-operacao.md](../roadmap/0.5.0-operacao.md).
 - **0.6.0 Auditoria de dados:** trilha de auditoria com o valor anterior e o novo, histórico que não pode ser alterado para caixa e ganhos, e LGPD.
 - **0.7.0 Pronto para o piloto:** envio de email (senha e confirmação), Web Push, renovação e revogação do token, deploy com HTTPS, backup e monitoramento.
 - **Depois:** Spring Boot 4, broker externo do WebSocket (várias instâncias) e a decisão sobre as rotas antigas de produtos e combos.

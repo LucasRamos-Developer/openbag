@@ -54,6 +54,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class OrderService {
 
+    private static final java.security.SecureRandom PIN_RANDOM = new java.security.SecureRandom();
+
     private static final DateTimeFormatter ORDER_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final NumberFormat BRL = NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
 
@@ -124,6 +126,8 @@ public class OrderService {
         Order order = newOrder(restaurant, now, lines, subtotal, deliveryFee);
         order.setUser(customer);
         order.setChannel(OrderChannel.APP);
+        // PIN de entrega: sempre gerado; só é pedido ao entregador se a loja exigir
+        order.setDeliveryPin(String.format("%04d", PIN_RANDOM.nextInt(10_000)));
         order.setFulfillment(FulfillmentType.DELIVERY);
         order.setPaymentMethod(request.getPaymentMethod());
         order.setChangeFor(changeFor(request.getPaymentMethod(), request.getChangeFor(), total));

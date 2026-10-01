@@ -1,6 +1,7 @@
 package com.openbag.delivery.courier.controller;
 
 import com.openbag.delivery.courier.dto.CourierWorkStateDTO;
+import com.openbag.delivery.courier.dto.DeliverRequest;
 import com.openbag.delivery.courier.dto.LocationRequest;
 import com.openbag.delivery.courier.service.CourierWorkService;
 import com.openbag.order.incident.dto.ReportIncidentRequest;
@@ -92,8 +93,9 @@ public class CourierWorkController {
     }
 
     @PostMapping("/orders/{orderId}/deliver")
-    @Operation(summary = "Entreguei o pedido")
-    public ResponseEntity<CourierWorkStateDTO> deliver(@PathVariable Long orderId) {
-        return ResponseEntity.ok(workService.deliver(userService.getCurrentUser(), orderId));
+    @Operation(summary = "Entreguei o pedido", description = "Com o PIN do cliente quando a loja exige, e a posição")
+    public ResponseEntity<CourierWorkStateDTO> deliver(@PathVariable Long orderId,
+                                                       @RequestBody(required = false) DeliverRequest request) {
+        return ResponseEntity.ok(workService.deliver(userService.getCurrentUser(), orderId, request));
     }
 }

@@ -160,6 +160,16 @@ Item 4 da 0.5.0: o gestor publica uma reunião, e o cooperado a vê no resumo e 
 
 ---
 
+## PIN de entrega, no celular
+
+Item 5 da 0.5.0: a loja exige o código, o cliente o vê no pedido e o entregador só conclui a entrega com o código certo.
+
+| A loja exige | O cliente vê | O entregador digita | Código errado |
+|---|---|---|---|
+| <img src="pin/1-loja-exige-pin.png" alt="Loja" width="180"> | <img src="pin/2-cliente-ve-o-codigo.png" alt="Cliente" width="180"> | <img src="pin/3-entregador-digita.png" alt="Entregador" width="180"> | <img src="pin/4-codigo-errado.png" alt="Erro" width="180"> |
+
+---
+
 ## Rastreio, avaliações e diferença assumida
 
 Depois da retirada, o cliente vê o entregador no mapa, mas só quando é a vez do pedido dele na rota. Depois da entrega, ele avalia a loja e o entregador.

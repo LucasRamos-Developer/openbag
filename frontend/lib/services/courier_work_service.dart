@@ -253,7 +253,13 @@ class CourierWorkService extends ChangeNotifier {
         (key) => _action(() => _api.post('$_base/orders/${order.orderId}/incidents', data: body, idempotencyKey: key)));
   }
 
-  Future<void> deliver(CourierOrder order) => _action(() => _api.post('$_base/orders/${order.orderId}/deliver'));
+  /// "Entreguei", com o código do cliente quando a loja exige e a posição que o app já acompanha. Não espera uma
+  /// leitura nova do GPS (pode levar segundos); sem posição, o servidor usa a última recebida.
+  Future<void> deliver(CourierOrder order, {String? pin}) {
+    final position = _lastPosition;
+    return _action(() => _api.post('$_base/orders/${order.orderId}/deliver',
+        data: {'pin': pin, if (position != null) ..._coords(position)}));
+  }
 
   @override
   void dispose() {

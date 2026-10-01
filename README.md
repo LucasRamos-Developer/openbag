@@ -129,13 +129,13 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 | 0.2.0 | Operação do restaurante, associações e personalização da loja | Lançada |
 | 0.3.0 | Entregador, cooperativa e cliente | Lançada |
 | **0.4.0** | **Segurança, integridade dos dados e pedido do balcão** | **Atual** |
-| 0.5.0 | Operação do dia a dia | Em andamento (4 de 5) |
+| 0.5.0 | Operação do dia a dia | Concluída, falta lançar |
 | 0.6.0 | Auditoria de dados | Planejada |
 | 0.7.0 | Pronto para o piloto | Planejada |
 | 1.0.0 | Primeira versão estável, com piloto real | Planejada |
 
 > **Em andamento agora**
-> - **0.5.0: Operação do dia a dia (4 de 5).** As ocorrências, os km, tempo e médias, o custo estimado do veículo e os comunicados da cooperativa estão prontos. Falta o **PIN de entrega**, que fecha a versão.
+> - **0.5.0: Operação do dia a dia (5 de 5).** Os cinco itens estão prontos e testados no celular, na branch `feature/0.5.0-operacao`. Falta lançar a versão.
 >
 > Cada versão tem no máximo cinco ou seis itens, para o piloto sair logo. O que não é preciso para o piloto fica em [Depois da 1.0](#depois-da-10).
 
@@ -163,7 +163,7 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 - [x] Km, tempo e médias na aba Ganhos do entregador
 - [x] Custo estimado do veículo e resultado estimado
 - [x] Comunicados da cooperativa
-- [ ] PIN de entrega
+- [x] PIN de entrega
 
 **0.6.0: Auditoria de dados**
 - [ ] Trilha de auditoria (quem, o quê, quando, antes e depois) pode ser um PGaudit

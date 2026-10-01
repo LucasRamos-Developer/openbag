@@ -49,6 +49,8 @@ public class CourierOrderDTO {
     private Long routeId;
     private Integer routeSequence;
     private String neighborhood;
+    // A loja exige o PIN do cliente para concluir esta entrega
+    private boolean pinRequired;
     // Tipos de ocorrência que o entregador já relatou nesta entrega
     private List<IncidentType> reportedIncidents;
 
@@ -78,6 +80,7 @@ public class CourierOrderDTO {
                 .routeId(order.getRoute() != null ? order.getRoute().getId() : null)
                 .routeSequence(order.getRouteSequence())
                 .neighborhood(order.getDeliveryNeighborhood())
+                .pinRequired(order.getDeliveryPin() != null && order.getRestaurant().requiresDeliveryPin())
                 .reportedIncidents(order.getIncidents().stream().map(OrderIncident::getType).distinct().toList())
                 .build();
     }

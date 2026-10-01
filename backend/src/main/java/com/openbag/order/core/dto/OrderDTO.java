@@ -95,6 +95,8 @@ public class OrderDTO {
     private Location courierLocation;
     private OrderReviewDTO review;
     private LocalDateTime reviewableUntil;
+    // Só para o cliente: o código que ele mostra ao entregador, quando a loja exige
+    private String deliveryPin;
 
     @Data
     @NoArgsConstructor

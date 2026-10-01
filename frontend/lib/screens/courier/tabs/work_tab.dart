@@ -9,6 +9,7 @@ import '../../../services/courier_work_service.dart';
 import '../../../utils/formatters.dart';
 import '../../../utils/maps.dart';
 import '../../../widgets/courier/active_delivery_card.dart';
+import '../../../widgets/courier/delivery_pin_dialog.dart';
 import '../../../widgets/courier/offer_card.dart';
 import '../../../widgets/courier/report_incident_sheet.dart';
 import '../../../widgets/order/live_indicator.dart';
@@ -67,6 +68,12 @@ class _WorkTabState extends State<WorkTab> {
   }
 
   Future<void> _deliver(CourierOrder order) async {
+    if (order.pinRequired) {
+      final pin = await showDeliveryPinDialog(context,
+          charge: '${formatMoney(order.totalAmount)} (${order.paymentMethod.label})');
+      if (pin != null) await _run(() => _work.deliver(order, pin: pin), success: 'Entrega concluída!');
+      return;
+    }
     final confirmed = await AppDialog.confirm(
       context,
       title: 'Confirmar entrega?',
