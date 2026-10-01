@@ -82,7 +82,7 @@
         <dependency>
             <groupId>com.bucket4j</groupId>
             <artifactId>bucket4j_jdk17-lettuce</artifactId>
-            <version>8.14.0</version>
+            <version>8.20.0</version>
         </dependency>
 
         <!-- Trava distribuída dos jobs agendados: com várias instâncias, cada job roda em uma só -->
