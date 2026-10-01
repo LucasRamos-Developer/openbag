@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/vers%C3%A3o-0.4.0-16a34a" alt="Versão 0.4.0"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/vers%C3%A3o-0.5.0-16a34a" alt="Versão 0.5.0"></a>
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/licen%C3%A7a-AGPL--3.0-blue" alt="Licença AGPL-3.0"></a>
   <a href="layout/"><img src="https://img.shields.io/badge/layout-ver%20telas-0f766e" alt="Ver o layout"></a>
 </p>
@@ -18,7 +18,7 @@
   <img src="layout/temas/01-fresh-green.png" alt="Página de um restaurante no OpenBag" width="860">
 </p>
 
-> Esta documentação descreve a versão **0.4.0**. Veja o que mudou no [CHANGELOG](CHANGELOG.md).
+> Esta documentação descreve a versão **0.5.0**. Veja o que mudou no [CHANGELOG](CHANGELOG.md).
 
 ---
 
@@ -128,14 +128,14 @@ Usamos [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto esti
 | 0.1.0 | MVP: cadastro, onboarding, carrinho, pedidos, mapas | Lançada |
 | 0.2.0 | Operação do restaurante, associações e personalização da loja | Lançada |
 | 0.3.0 | Entregador, cooperativa e cliente | Lançada |
-| **0.4.0** | **Segurança, integridade dos dados e pedido do balcão** | **Atual** |
-| 0.5.0 | Operação do dia a dia | Concluída, falta lançar |
-| 0.6.0 | Auditoria de dados | Planejada |
+| 0.4.0 | Segurança, integridade dos dados e pedido do balcão | Lançada |
+| **0.5.0** | **Operação do dia a dia** | **Atual** |
+| 0.6.0 | Auditoria de dados | Próxima |
 | 0.7.0 | Pronto para o piloto | Planejada |
 | 1.0.0 | Primeira versão estável, com piloto real | Planejada |
 
 > **Em andamento agora**
-> - **0.5.0: Operação do dia a dia (5 de 5).** Os cinco itens estão prontos e testados no celular, na branch `feature/0.5.0-operacao`. Falta lançar a versão.
+> - **0.6.0: Auditoria de dados.** A 0.5.0 foi lançada. A próxima versão começa pela **trilha de auditoria** (quem mudou o quê e quando).
 >
 > Cada versão tem no máximo cinco ou seis itens, para o piloto sair logo. O que não é preciso para o piloto fica em [Depois da 1.0](#depois-da-10).
 

@@ -2,7 +2,7 @@
 
 Documentação técnica completa para desenvolvedores que desejam contribuir com o projeto OpenBag.
 
-> Versão da documentação: **0.4.0**, atualizada em 2026-09-29. Veja o [CHANGELOG](CHANGELOG.md) e a [arquitetura](docs/architecture/README.md).
+> Versão da documentação: **0.5.0**, atualizada em 2026-10-01. Veja o [CHANGELOG](CHANGELOG.md) e a [arquitetura](docs/architecture/README.md).
 
 ## 📋 Índice
 
@@ -257,7 +257,7 @@ mvn spring-boot:run
 mvn spring-boot:run -Dspring-boot.run.profiles=docker
 
 # Rodar JAR diretamente
-java -jar target/openbag-backend-0.4.0.jar
+java -jar target/openbag-backend-0.5.0.jar
 ```
 
 ### Conta de demonstração

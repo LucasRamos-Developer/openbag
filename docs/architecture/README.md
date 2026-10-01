@@ -1,6 +1,6 @@
 # Arquitetura do OpenBag
 
-> Versão da documentação: **0.4.0**, atualizada em 2026-09-29. O que mudou está no [CHANGELOG](../../CHANGELOG.md).
+> Versão da documentação: **0.5.0**, atualizada em 2026-10-01. O que mudou está no [CHANGELOG](../../CHANGELOG.md).
 
 Este documento explica como o sistema está organizado hoje: módulos do backend, tempo real, segurança, despacho de entregas, rotas, caixa, dados e a estrutura do app Flutter. Para rodar o projeto, veja o [guia de desenvolvimento](../../README-DEVELOPER.md).
 
@@ -346,7 +346,7 @@ As capturas de tela de cada área estão em [`layout/`](../../layout/).
 
 O roadmap completo, versão por versão, está no [CHANGELOG](../../CHANGELOG.md#roadmap). A 0.4.0 (segurança, integridade e pedido do balcão) foi lançada. O detalhe está em [docs/roadmap/0.4.0-seguranca.md](../roadmap/0.4.0-seguranca.md). Os próximos pontos que afetam a arquitetura são:
 
-- **0.5.0 Operação do dia a dia (concluída, falta lançar):** ocorrências ligadas ao `Order` (`order/incident`), km, tempo, médias e custo do veículo em `CourierEarningsService` (`CourierWorkStats` e `VehicleCostEstimator`), comunicados em `association/community` e PIN de entrega no `Order`. O detalhe está em [docs/roadmap/0.5.0-operacao.md](../roadmap/0.5.0-operacao.md).
+- **0.5.0 Operação do dia a dia (lançada):** ocorrências ligadas ao `Order` (`order/incident`), km, tempo, médias e custo do veículo em `CourierEarningsService` (`CourierWorkStats` e `VehicleCostEstimator`), comunicados em `association/community` e PIN de entrega no `Order`. O detalhe está em [docs/roadmap/0.5.0-operacao.md](../roadmap/0.5.0-operacao.md).
 - **0.6.0 Auditoria de dados:** trilha de auditoria com o valor anterior e o novo, histórico que não pode ser alterado para caixa e ganhos, e LGPD.
 - **0.7.0 Pronto para o piloto:** envio de email (senha e confirmação), Web Push, renovação e revogação do token, deploy com HTTPS, backup e monitoramento.
 - **Depois:** Spring Boot 4, broker externo do WebSocket (várias instâncias) e a decisão sobre as rotas antigas de produtos e combos.

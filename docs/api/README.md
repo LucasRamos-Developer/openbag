@@ -1,6 +1,6 @@
 # API REST do OpenBag
 
-> Descreve a versão 0.4.0. A lista completa e sempre atualizada fica no **Swagger**: `http://localhost:8080/api/swagger-ui.html`. O Swagger só existe em desenvolvimento e fica desligado no perfil `prod`.
+> Descreve a versão 0.5.0. A lista completa e sempre atualizada fica no **Swagger**: `http://localhost:8080/api/swagger-ui.html`. O Swagger só existe em desenvolvimento e fica desligado no perfil `prod`.
 
 Todas as rotas ficam sob o prefixo **`/api`**. Os exemplos abaixo omitem esse prefixo.
 

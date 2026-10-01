@@ -4,7 +4,7 @@ Todas as mudanças relevantes do OpenBag ficam registradas aqui.
 
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e as versões seguem o [Versionamento Semântico (SemVer)](https://semver.org/lang/pt-BR/).
 
-**Versão atual: 0.4.0**
+**Versão atual: 0.5.0**
 
 ---
 
@@ -45,6 +45,14 @@ A documentação (README, arquitetura e site) indica no topo a versão que descr
 ---
 
 ## [Não lançado]
+
+Nada ainda. A próxima versão é a [0.6.0](#060-auditoria-de-dados).
+
+---
+
+## [0.5.0] - 2026-10-01
+
+Operação do dia a dia: cinco entregas pequenas, cada uma testada de ponta a ponta no celular.
 
 ### Adicionado
 
@@ -357,9 +365,9 @@ Cada etapa vira uma versão `MENOR`. A ordem pode mudar; o que valer fica regist
 | 0.1.0 | MVP | Lançada |
 | 0.2.0 | Operação do restaurante, associações e personalização | Lançada |
 | 0.3.0 | Entregador, cooperativa e cliente | Lançada (sem tag; o código está na v0.4.0) |
-| 0.4.0 | Segurança, integridade dos dados e pedido do balcão | **Atual** |
-| 0.5.0 | Operação do dia a dia | Concluída, falta lançar |
-| 0.6.0 | Auditoria de dados | Planejada |
+| 0.4.0 | Segurança, integridade dos dados e pedido do balcão | Lançada |
+| 0.5.0 | Operação do dia a dia | **Atual** |
+| 0.6.0 | Auditoria de dados | Próxima |
 | 0.7.0 | Pronto para o piloto | Planejada |
 | 1.0.0 | Primeira versão estável (piloto real) | Planejada |
 
@@ -422,7 +430,8 @@ Ideias que ainda precisam ser melhoradas antes de entrar numa versão:
 - Vários idiomas.
 - Federação de cooperativas e governança compartilhada.
 
-[Não lançado]: https://github.com/LucasRamos-Developer/openbag/compare/v0.4.0...HEAD
+[Não lançado]: https://github.com/LucasRamos-Developer/openbag/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/LucasRamos-Developer/openbag/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/LucasRamos-Developer/openbag/compare/v0.2.0...v0.4.0
 [0.2.0]: https://github.com/LucasRamos-Developer/openbag/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/LucasRamos-Developer/openbag/releases/tag/v0.1.0
