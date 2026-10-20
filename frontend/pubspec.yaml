@@ -32,8 +32,8 @@ dependencies:
   
   # Mapa com estilo próprio (MapLibre na web, Android e iOS; dados do OpenFreeMap, estilo em assets/map/)
   maplibre_gl: ^0.27.1
-  geolocator: ^10.1.0
-  geolocator_web: ^2.2.0
+  geolocator: ^14.0.3
+  geolocator_web: ^4.1.4
   
   # Image (Web compatible)
   cached_network_image: ^3.3.0
